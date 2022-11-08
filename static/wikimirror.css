@@ -223,7 +223,7 @@
 	background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cg%20fill%3D%22%2354595d%22%3E%3Cpath%20d%3D%22M4.83%2015h2.91a4.88%204.88%200%2001-1.55-2H5a3%203%200%20110-6h3a3%203%200%20012.82%204h2.1a4.82%204.82%200%2000.08-.83v-.34A4.83%204.83%200%20008.17%205H4.83A4.83%204.83%200%20000%209.83v.34A4.83%204.83%200%20004.83%2015z%22%2F%3E%3Cpath%20d%3D%22M15.17%205h-2.91a4.88%204.88%200%20011.55%202H15a3%203%200%20110%206h-3a3%203%200%2001-2.82-4h-2.1a4.82%204.82%200%2000-.08.83v.34A4.83%204.83%200%200011.83%2015h3.34A4.83%204.83%200%200020%2010.17v-.34A4.83%204.83%200%200015.17%205z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E);
 }
 
-#frbanner, #frbanner2, #scrollUpButton, #t-shorturl, #xtools {
+#frbanner, #frbanner2, #scrollUpButton, #xtools {
 	display: none !important;
 }
 
@@ -242,6 +242,7 @@ pre, .mw-code, .mw-highlight, .ve-init-mw-desktopArticleTarget .CodeMirror-code,
 	html.anyi-darkmode,
 	.anyi-darkmode iframe,
 	.anyi-darkmode img,
+	.anyi-darkmode ogvjs,
 	.anyi-darkmode svg,
 	.anyi-darkmode video,
 	.anyi-darkmode .cx-slitem__image:not(.oo-ui-icon-article),
