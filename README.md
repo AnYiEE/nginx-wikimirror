@@ -3,7 +3,7 @@
 
 **使用方法**
 
-1. 将文件夹n`nginx-wikimirror`下载至本地，并保持目录结构
+1. 将文件夹`nginx-wikimirror`下载至本地，并保持目录结构
 2. 将文件夹`nginx-wikimirror`重命名为`wikimirror`，并记录此时的绝对路径
 3. 重编译Nginx以添加[ngx_http_substitutions_filter_module](https://github.com/yaoweibin/ngx_http_substitutions_filter_module)
 
