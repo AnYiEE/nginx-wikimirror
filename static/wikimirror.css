@@ -73,6 +73,15 @@
 	background: rgba(255, 255, 255, 0.2);
 }
 
+.skin-minerva .AnYiTip {
+	border: 0.1rem solid #0645ad;
+}
+
+.AnYiTip > *:first-child {
+	font-size: 0.75em;
+	border-right: none;
+}
+
 .skin-minerva div.mw-highlight {
 	background-color: #f8f8f8;
 }
