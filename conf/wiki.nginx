@@ -74,7 +74,7 @@ server {
 }
 
 server {
-    server_name  ~^(?<subdomain>(analytics|annual|bugzilla|config-master|dbtree|design|doc|grafana|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|phabricator|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency))\.example\.org$;
+    server_name  ~^(?<subdomain>(analytics|annual|bugzilla|config-master|dbtree|design|developer|doc|grafana|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|phabricator|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency))\.example\.org$;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
     set          $hostdomain wikimedia;
 

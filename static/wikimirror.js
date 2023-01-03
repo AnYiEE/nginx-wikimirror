@@ -57,7 +57,7 @@ AnYiMirrorPrivateMethod = new function() {
 						reg1.test(dom.href) && (dom.href = AnYi.getRealText(dom.href));
 					}
 					for (const dom of d.querySelectorAll(`a[href$="${h}/"]`)) {
-						if (!/(?:analytics|annual|bugzilla|config-master|dbtree|design|doc|grafana|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|phabricator|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency)\./.test(dom.href)) dom.href = `${dom.href}w`;
+						if (!/(?:analytics|annual|bugzilla|config-master|dbtree|design|developer|doc|grafana|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|phabricator|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency)\./.test(dom.href)) dom.href = `${dom.href}w`;
 					}
 					for (const dom of d.querySelectorAll('input[name="clientUrl"],input[name="intendedWikitext"]')) {
 						reg1.test(dom.value) && (dom.value = AnYi.getRealText(dom.value));
