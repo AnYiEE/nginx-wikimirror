@@ -575,7 +575,7 @@ AnYiMirrorPrivateMain = () => {
 		});
 	};
 	AnYiMirrorPublicMethod.prototype.ahCallback_Request = config => {
-		const [textArr, urlObj] = [['appendtext', 'claim', 'content', 'ehcontent', 'epcontent', 'etcontent', 'etssummary', 'html', 'ntcontent', 'nttopic', 'prependtext', 'repcontent', 'summary', 'text', 'url', 'wikitext'], new mw.Uri(`/w/api.php?${config.body}`)];
+		const [textArr, getObj, postObj] = [['apfrom', 'appendtext', 'apprefix', 'claim', 'content', 'ehcontent', 'epcontent', 'etcontent', 'etssummary', 'html', 'ntcontent', 'nttopic', 'prependtext', 'repcontent', 'search', 'summary', 'text', 'titles', 'url', 'wikitext'], new mw.Uri(config.url), new mw.Uri(`/w/api.php?${config.body}`)];
 		try {
 			const bodyObj = JSON.parse(config.body);
 			delete bodyObj.md5;
@@ -584,7 +584,7 @@ AnYiMirrorPrivateMain = () => {
 			}
 			config.body = JSON.stringify(bodyObj);
 		} catch(e) {
-			if (/\?(?:%5Bobject\+FormData%5D|null)/.test(urlObj.toString())) {
+			if (config.body && /\?(?:%5Bobject\+FormData%5D|null)/.test(postObj.toString())) {
 				config.body.delete('md5');
 				switch (config.body.get('action')) {
 				case 'discussiontoolsedit':
@@ -607,11 +607,13 @@ AnYiMirrorPrivateMain = () => {
 					break;
 				}
 			} else {
-				delete urlObj.query.md5;
+				delete postObj.query.md5;
 				for (const text of textArr) {
-					urlObj.query && urlObj.query[text] && (urlObj.query[text] = AnYiMirror.getRealText(urlObj.query[text]));
+					getObj.query && getObj.query[text] && (getObj.query[text] = AnYiMirror.getRealText(getObj.query[text]));
+					postObj.query && postObj.query[text] && (postObj.query[text] = AnYiMirror.getRealText(postObj.query[text]));
 				}
-				config.body = urlObj.toString().replace(`${location.origin}/w/api.php?`, '');
+				config.body && (config.body = postObj.toString().replace(`${location.origin}/w/api.php?`, ''));
+				config.url = decodeURIComponent(getObj.toString());
 			}
 		}
 		return config;
@@ -682,12 +684,12 @@ AnYiMirrorPrivateMain = () => {
 							if (typeof revision[index] === 'object') {
 								for (const i in revision[index].slots) {
 									for (const j in revision[index].slots[i]) {
-										if (j !== 'content') continue;
+										if (!['content', '*'].includes(j)) continue;
 										const slot = revision[index].slots[i];
 										responseObj.query.pages[id].revisions[item][index].slots[i][j] = AnYiMirror.getRealText(slot[j]);
 									}
 								}
-							} else if (index === 'content') {
+							} else if (['content', '*'].includes(index)) {
 								responseObj.query.pages[id].revisions[item][index] = AnYiMirror.getRealText(revision[index]);
 							}
 						}
