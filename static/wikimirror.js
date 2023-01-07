@@ -575,22 +575,15 @@ AnYiMirrorPrivateMain = () => {
 		});
 	};
 	AnYiMirrorPublicMethod.prototype.ahCallback_Request = config => {
+		const [textArr, urlObj] = [['appendtext', 'claim', 'content', 'ehcontent', 'epcontent', 'etcontent', 'etssummary', 'html', 'ntcontent', 'nttopic', 'prependtext', 'repcontent', 'summary', 'text', 'url', 'wikitext'], new mw.Uri(`/w/api.php?${config.body}`)];
 		try {
-			const [textArr, urlObj] = [['appendtext', 'claim', 'content', 'ehcontent', 'epcontent', 'etcontent', 'etssummary', 'html', 'ntcontent', 'nttopic', 'prependtext', 'repcontent', 'summary', 'text', 'url', 'wikitext'], new mw.Uri(`/w/api.php?${config.body}`)];
-			delete urlObj.query.md5;
-			for (const item in urlObj.query) {
-				if (!textArr.includes(item)) continue;
-				urlObj.query[item] = AnYiMirror.getRealText(urlObj.query[item]);
+			const bodyObj = JSON.parse(config.body);
+			delete bodyObj.md5;
+			for (const text of textArr) {
+				bodyObj.query && bodyObj.query[text] && (bodyObj.query[text] = AnYiMirror.getRealText(bodyObj.query[text]));
 			}
-			try {
-				const bodyObj = JSON.parse(config.body);
-				delete bodyObj.md5;
-				for (const item in bodyObj) {
-					if (!textArr.includes(item)) continue;
-					bodyObj[item] = AnYiMirror.getRealText(bodyObj[item]);
-				}
-				config.body = JSON.stringify(bodyObj);
-			} catch(e) {}
+			config.body = JSON.stringify(bodyObj);
+		} catch(e) {
 			if (/\?(?:%5Bobject\+FormData%5D|null)/.test(urlObj.toString())) {
 				config.body.delete('md5');
 				switch (config.body.get('action')) {
@@ -614,12 +607,13 @@ AnYiMirrorPrivateMain = () => {
 					break;
 				}
 			} else {
+				delete urlObj.query.md5;
 				for (const text of textArr) {
 					urlObj.query && urlObj.query[text] && (urlObj.query[text] = AnYiMirror.getRealText(urlObj.query[text]));
 				}
 				config.body = urlObj.toString().replace(`${location.origin}/w/api.php?`, '');
 			}
-		} catch (e) {}
+		}
 		return config;
 	};
 	AnYiMirrorPublicMethod.prototype.ahCallback_Response = response => {
