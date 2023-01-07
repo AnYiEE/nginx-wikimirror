@@ -64,7 +64,7 @@ AnYiMirrorPrivateMethod = new function() {
 					}
 					const dom = d.querySelector('#ca-fileExporter a'),
 						url = dom ? dom.href.match(/clientUrl=(\S+?)&/)[1] : '';
-					if (dom) dom.href = dom.href.replace(url, AnYi.getRealText(url));
+					dom && (dom.href = dom.href.replace(url, AnYi.getRealText(url)));
 				};
 		if (method === 'emoji') return value.match(reg6) ? value.replace(reg6, '<anyi-emoji class="mw-no-invert">$1</anyi-emoji>') : value;
 		if (method === 'wiki') {
@@ -230,7 +230,7 @@ AnYiMirrorPrivateMethod = new function() {
 		case 'init':
 			w.matchMedia('(prefers-color-scheme:dark)').addListener(modeObserver.dark);
 			w.matchMedia('(prefers-color-scheme:light)').addListener(modeObserver.light);
-			w.addEventListener('storage', e => e.key === name ? AnYi.darkMode('insert') : void 0);
+			w.addEventListener('storage', e => e.key === name && AnYi.darkMode('insert'));
 			const dc = () => {
 					/^(?!zh\.)\S+?(?:\.m)?\.wikipedia/.test(w.location.host) && (AnYi.hasClass('skin-monobook') || AnYi.hasClass('skin-vector-legacy')) && d.getElementById('p-logo') && (d.getElementById('p-logo').style.transition = 'background-size,height .5s ease-in-out');
 					d.removeEventListener('DOMContentLoaded', dc);
@@ -550,7 +550,7 @@ AnYiMirrorPrivateMain = () => {
 			},
 		uint8arrayToBase64 = value => {
 				const chunk = 0x8000;
-				let [index, result, slice] = [0, '', void 0];
+				let [index, result, slice] = [0, ''];
 				while (index < value.length) {
 					slice = value.subarray(index, Math.min(index + chunk, value.length));
 					result += String.fromCharCode.apply(null, slice);
@@ -613,7 +613,7 @@ AnYiMirrorPrivateMain = () => {
 					postObj.query && postObj.query[text] && (postObj.query[text] = AnYiMirror.getRealText(postObj.query[text]));
 				}
 				config.body && (config.body = postObj.toString().replace(`${location.origin}/w/api.php?`, ''));
-				config.url = decodeURIComponent(getObj.toString());
+				config.url && (config.url = mw.Uri.decode(getObj.toString()));
 			}
 		}
 		return config;
@@ -736,10 +736,11 @@ AnYiMirrorPrivateMain = () => {
 	});
 	const {fetch: origFetch} = w;
 	w.fetch = async (url, options) => {
-		const urlObj = new URL(url);
-		urlObj.search && (urlObj.search = AnYiMirror.ahCallback_Request({body: urlObj.search}).body.replace('%3F', ''));
+		typeof url === 'object' && (url = url.toString());
+		const urlObj = new mw.Uri(url);
+		Object.keys(urlObj.query).length !== 0 && (url = AnYiMirror.ahCallback_Request({url: urlObj.toString()}).url);
 		options && options.body && (options.body = AnYiMirror.ahCallback_Request(options).body);
-		const response = await origFetch(urlObj.href, options);
+		const response = await origFetch(url, options);
 		if (!/html|json|plain|text|xml/i.test(response.headers.get('content-type'))) return response;
 		let responseOptions = {};
 		for (const item of ['headers', 'status', 'statusText']) {
