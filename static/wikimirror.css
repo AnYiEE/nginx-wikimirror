@@ -1,0 +1,434 @@
+/*!
+ * @author 安忆 i@anyi.in
+ * @file wikimirror.css
+ *
+ * Copyright (c) 2019-present, 安忆.
+ *
+ * This source code is licensed under the GPL v3 license.
+ */
+.AnYiNotice {
+	background: #ffffff;
+	border: 0.1rem solid #0645ad;
+	cursor: default;
+	direction: ltr;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+.skin-minerva .AnYiNotice {
+	background: transparent;
+	border: 0.1rem solid #ffffff;
+	color: inherit;
+}
+
+.AnYiNotice > *:first-child {
+	border-right: 0.1rem dotted #0645ad;
+	font-size: 0.8em;
+	font-weight: 500;
+	line-height: 1.8;
+	margin: 0;
+	min-width: calc(100% - 3rem);
+	padding: 0.4em !important;
+	width: -webkit-fit-content;
+	width: -moz-fit-content;
+	width: fit-content;
+	word-break: break-word;
+}
+
+.skin-minerva .AnYiNotice > *:first-child {
+	border-right: 0.1em dotted #ffffff;
+}
+
+.AnYiNotice button {
+	background: #ffffff;
+	border: none;
+	color: inherit;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 0.8em;
+	padding: 0.4em 0;
+	width: 3rem;
+}
+
+.AnYiNotice button:active, .AnYiNotice button:focus, .AnYiNotice button:hover {
+	background: #f7f7f7;
+	color: #0645ad;
+}
+
+.skin-minerva .AnYiNotice button {
+	background: transparent;
+	color: inherit;
+}
+
+.skin-minerva .AnYiNotice button:active, .skin-minerva .AnYiNotice button:focus, .skin-minerva .AnYiNotice button:hover {
+	background: rgba(255, 255, 255, 0.2);
+}
+
+.skin-minerva .AnYiTip {
+	border: 0.1rem solid #0645ad;
+}
+
+.AnYiTip > *:first-child {
+	font-size: 0.75em;
+	border-right: none;
+}
+
+.skin-minerva div.mw-highlight {
+	background-color: #f8f8f8;
+}
+
+.skin-minerva dl dd {
+	overflow: unset;
+}
+
+.skin-minerva ul.mw-contributions-list .comment, .skin-minerva ul.special .comment {
+	word-break: break-word;
+}
+
+.skin-minerva .mw-highlight pre {
+	position: unset;
+}
+
+.skin-minerva .mw-notification-area {
+	z-index: 5;
+}
+
+.skin-minerva #footer-places-cookiestatement:after {
+	display: none;
+}
+
+.skin-timeless .content-table-left, .skin-timeless .content-table-right {
+	height: auto !important;
+}
+
+.skin-timeless .infobox caption, .skin-timeless .wikitable > caption {
+	width: auto !important;
+}
+
+.skin-timeless .catlinks-allhidden {
+	display: none !important;
+}
+
+.skin-timeless #catlinks-sidebar {
+	display: none;
+}
+
+.skin-timeless #catlinks {
+	background: #f8f9fa;
+	border: solid #eaecf0;
+	border-width: 1px 1px 0.2em;
+	box-shadow: 0 1px 2px 1px rgba(0, 0, 0, 0.02);
+	display: inherit;
+	font-size: 0.95em;
+	margin: 1em 0 0 0;
+	padding: 1em 2em;
+}
+
+.skin-timeless #catlinks div {
+	margin: 0 0 0.35em;
+}
+
+.skin-timeless #catlinks div:last-of-type {
+	margin: 0;
+}
+
+.skin-timeless #catlinks li {
+	border-left: 0;
+}
+
+.mw-parser-output a.external, sup.reference {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+.mw-parser-output a.external.free, .mw-parser-output a.external.text {
+	-webkit-user-select: unset;
+	-moz-user-select: unset;
+	user-select: unset;
+}
+
+.oo-ui-windowManager-modal > .oo-ui-dialog {
+	-webkit-backdrop-filter: blur(5px);
+	backdrop-filter: blur(5px);
+}
+
+#anyi-articleinfo, .skin-minerva #anyi-articleinfo + #mw-content-subtitle .subpages, .skin-timeless #anyi-articleinfo + #contentSub .subpages {
+	font-size: 0.8em;
+	line-height: 1;
+	width: auto;
+}
+
+.skin-minerva #anyi-articleinfo + #mw-content-subtitle {
+	margin: 0;
+}
+
+.skin-minerva #anyi-articleinfo, .skin-timeless #anyi-articleinfo, .skin-timeless #anyi-articleinfo + #contentSub .subpages {
+	border: solid #eaecf0;
+	border-width: 1px 0;
+	padding: 0.4em 0;
+}
+
+.skin-minerva #anyi-articleinfo + #mw-content-subtitle .subpages, .skin-timeless #anyi-articleinfo + #contentSub .subpages {
+	padding: 0.4em 0 0.4em 19px;
+}
+
+.skin-minerva #anyi-darkmode a:before {
+	background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20fill%3D%22%2354595d%22%20d%3D%22M5%201a2%202%200%200%200-2%202v14a2%202%200%200%200%202%202h10a2%202%200%200%200%202-2V3a2%202%200%200%200-2-2zm0%203h5v1H5zm0%202h5v1H5zm0%202h5v1H5zm10%207H5v-1h10zm0-2H5v-1h10zm0-2H5v-1h10zm0-2h-4V4h4z%22%2F%3E%3C%2Fsvg%3E);
+}
+
+.mw-ui-icon-portletlink-anyi-difflink:before, .mw-ui-icon-portletlink-anyi-shorturl:before {
+	background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cg%20fill%3D%22%2354595d%22%3E%3Cpath%20d%3D%22M4.83%2015h2.91a4.88%204.88%200%2001-1.55-2H5a3%203%200%20110-6h3a3%203%200%20012.82%204h2.1a4.82%204.82%200%2000.08-.83v-.34A4.83%204.83%200%20008.17%205H4.83A4.83%204.83%200%20000%209.83v.34A4.83%204.83%200%20004.83%2015z%22%2F%3E%3Cpath%20d%3D%22M15.17%205h-2.91a4.88%204.88%200%20011.55%202H15a3%203%200%20110%206h-3a3%203%200%2001-2.82-4h-2.1a4.82%204.82%200%2000-.08.83v.34A4.83%204.83%200%200011.83%2015h3.34A4.83%204.83%200%200020%2010.17v-.34A4.83%204.83%200%200015.17%205z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E);
+}
+
+#frbanner, #frbanner2 {
+	display: none !important;
+}
+
+#ipe-edit-toolbox {
+	bottom: 24px !important;
+	right: 68px !important;
+}
+
+html {
+	tab-size: 4;
+}
+
+pre, .mw-code, .mw-highlight, .ve-init-mw-desktopArticleTarget .CodeMirror-code, .ve-init-mw-desktopArticleTarget .CodeMirror-code *, .ve-init-mw-desktopArticleTarget .ve-ui-mwWikitextSurface .ve-ce-paragraphNode {
+	line-break: anywhere !important;
+	white-space: pre-wrap !important;
+	word-break: break-all !important;
+	word-wrap: break-word !important;
+}
+
+@media only screen {
+	html.anyi-darkmode,
+	.anyi-darkmode iframe,
+	.anyi-darkmode img,
+	.anyi-darkmode ogvjs,
+	.anyi-darkmode svg,
+	.anyi-darkmode video,
+	.anyi-darkmode .cx-slitem__image:not(.oo-ui-icon-article),
+	.anyi-darkmode .ext-related-articles-card-thumb:not(.ext-related-articles-card-thumb-placeholder),
+	.anyi-darkmode .frb-image,
+	.anyi-darkmode .image-carousel,
+	.anyi-darkmode .k-player.fullscreen,
+	.anyi-darkmode .k-player .ttmlStyled,
+	.anyi-darkmode .leaflet-tile,
+	.anyi-darkmode .list-thumb:not(.list-thumb-none),
+	.anyi-darkmode .mw-mmv-main.jq-fullscreened,
+	.anyi-darkmode .mw-mmv-pre-image,
+	.anyi-darkmode .mw-no-invert,
+	.anyi-darkmode .mw-tmh-play-icon,
+	.anyi-darkmode .mwe-math-element,
+	.anyi-darkmode .vjs-fullscreen,
+	.anyi-darkmode .vjs-text-track-display,
+	.anyi-darkmode .wvui-typeahead-suggestion__thumbnail,
+	.anyi-darkmode #mp-2012-banner-logo {
+		filter: invert(0.95) hue-rotate(0.5turn);
+	}
+	.anyi-darkmode .mw-mmv-image img.blurred {
+		filter: blur(3px) invert(0.95) hue-rotate(0.5turn) !important;
+	}
+	.anyi-darkmode img,
+	.anyi-darkmode .mw-ui-icon:before,
+	.anyi-darkmode .mw-wiki-logo,
+	.anyi-darkmode #mp-2012-banner,
+	.anyi-darkmode #mp-2012-banner-logo {
+		opacity: 0.8;
+		transition: opacity 0.5s ease-in-out;
+	}
+	.anyi-darkmode img:hover {
+		opacity: 1;
+	}
+	.anyi-darkmode .branding-box img:hover,
+	.anyi-darkmode .minerva-footer img:hover,
+	.anyi-darkmode .mw-logo-container img:hover,
+	.anyi-darkmode .mw-logo-icon:hover,
+	.anyi-darkmode .mw-wiki-logo.timeless-logo img:hover,
+	.anyi-darkmode #p-banner img:hover,
+	.anyi-darkmode #sidebarCollapse:hover {
+		opacity: 0.8;
+	}
+	.anyi-darkmode .filehistory img,
+	.anyi-darkmode .mw-ext-score img,
+	.anyi-darkmode .mw-mmv-image *,
+	.anyi-darkmode .mwe-math-element *,
+	.anyi-darkmode #file img,
+	.anyi-darkmode #gallerypreview img {
+		opacity: 1;
+	}
+	.anyi-darkmode img[alt*='-at-'],
+	.anyi-darkmode img[alt*='- at -'],
+	.anyi-darkmode img[alt*='Lightblue'],
+	.anyi-darkmode img[alt*='Wikimedia-logo black'],
+	.anyi-darkmode img[alt='詩詞賞析'],
+	.anyi-darkmode img[src*='Blue-bg'],
+	.anyi-darkmode img[src*='Bluebg'],
+	.anyi-darkmode img[src*='Black_x'],
+	.anyi-darkmode img[src*='China_char'],
+	.anyi-darkmode img[src*='CWLA'],
+	.anyi-darkmode img[src*='CWMoA'],
+	.anyi-darkmode img[src*='CWS'],
+	.anyi-darkmode img[src*='Inkscape_Logo'],
+	.anyi-darkmode img[src*='Qiuwen'],
+	.anyi-darkmode img[src*='_Shadow.'],
+	.anyi-darkmode img[src*='Weiji.svg'],
+	.anyi-darkmode img[src*='Wikimedia-logo_black'],
+	.anyi-darkmode img[src*='Wikipedia%27s_W'],
+	.anyi-darkmode img[src*='wikipedia-wordmark'],
+	.anyi-darkmode img[src*='Wikipedia_wordmark'],
+	.anyi-darkmode img[src*='Wikipedian_Journal_Title'],
+	.anyi-darkmode .branding-box img,
+	.anyi-darkmode .mainpage_box h3 .header_icon img,
+	.anyi-darkmode .minerva-footer img,
+	.anyi-darkmode .mw-logo-container img,
+	.anyi-darkmode .mw-ext-score img,
+	.anyi-darkmode .wd-mp-headerimage,
+	.anyi-darkmode .wikipedia-ko.main-box .main-shortcut-item img,
+	.anyi-darkmode .wvui-icon svg,
+	.anyi-darkmode #mf-wel img,
+	.anyi-darkmode #p-banner img,
+	.anyi-darkmode #portal img,
+	.anyi-darkmode #topics-list img {
+		filter: invert(0);
+	}
+	.anyi-darkmode body.skin-timeless,
+	.anyi-darkmode .drawer-container__mask,
+	.anyi-darkmode .main-menu-mask,
+	.anyi-darkmode .mw-mmv-image,
+	.anyi-darkmode .overlay.media-viewer,
+	.anyi-darkmode .vjs-poster,
+	.anyi-darkmode #menus-cover {
+		background-color: #f7f7f7 !important;
+	}
+	.anyi-darkmode .diff-addedline .diffchange {
+		background: #7fd7c4;
+	}
+	.anyi-darkmode .diff-deletedline .diffchange {
+		background: #e88e89;
+	}
+	.anyi-darkmode .mw-kartographer-mapDialog-map {
+		background-color: #000000;
+	}
+	.anyi-darkmode .mwe-popups {
+		border: 10px solid #c8ccd1;
+		border-radius: 10px;
+		box-shadow: none;
+	}
+	.anyi-darkmode #mw-footer-container a,
+	.anyi-darkmode .skin-modern .mw-editsection *,
+	.anyi-darkmode .skin-modern .Wikiplus-Edit-SectionBtn {
+		color: #3366cc;
+	}
+	.anyi-darkmode .locmap .pr {
+		color: #ffffff;
+	}
+	.anyi-darkmode .skin-minerva .main-menu-mask {
+		background: rgba(0, 0, 0, 0.2);
+	}
+	.anyi-darkmode .skin-timeless h1.firstHeading,
+	.anyi-darkmode .skin-timeless .mw-footer-container,
+	.anyi-darkmode .skin-timeless #mw-content-container,
+	.anyi-darkmode .skin-timeless #mw-header-hack,
+	.anyi-darkmode .skin-timeless #mw-header-nav-hack {
+		box-shadow: none;
+	}
+	.anyi-darkmode .skin-timeless h1.firstHeading,
+	.anyi-darkmode .skin-timeless #mw-content-container {
+		border-bottom: solid 4px #c8ccd1;
+	}
+	.anyi-darkmode .skin-timeless .mw-footer-container {
+		border-top: none;
+	}
+	.anyi-darkmode .skin-timeless #mw-header-hack .color-left,
+	.anyi-darkmode .skin-timeless #mw-header-hack .color-middle,
+	.anyi-darkmode .skin-timeless #mw-header-hack .color-right,
+	.anyi-darkmode .skin-timeless #mw-header-nav-hack .color-left,
+	.anyi-darkmode .skin-timeless #mw-header-nav-hack .color-middle,
+	.anyi-darkmode .skin-timeless #mw-header-nav-hack .color-right {
+		background: #c8ccd1;
+	}
+	.anyi-darkmode #scrollDownButton,
+	.anyi-darkmode #scrollDownButton-zhwiki,
+	.anyi-darkmode #scrollUpButton,
+	.anyi-darkmode #scrollUpButton-zhwiki {
+		transition: unset;
+	}
+	.anyi-darkmode input,
+	.anyi-darkmode textarea,
+	.anyi-darkmode .in-page-edit .CodeMirror {
+		background: #eaecf0 !important;
+	}
+	.anyi-darkmode input,
+	.anyi-darkmode textarea,
+	.anyi-darkmode .mw-mmv-image .error-box,
+	.anyi-darkmode .skin-timeless .mw-footer-container,
+	.anyi-darkmode .in-page-edit .CodeMirror {
+		color: #000000 !important;
+	}
+	/* cxserver */
+	.anyi-darkmode .swagger-ui .topbar {
+		background-color: #e3e3e3;
+	}
+	/* diff */
+	.anyi-darkmode .site-footer#colophon {
+		filter: invert(0.95) hue-rotate(0.5turn);
+	}
+	/* gitlab */
+	.anyi-darkmode 	body.ui-gray .navbar-gitlab {
+		background-color: #ffffff;
+	}
+	/* phabricator */
+	.anyi-darkmode .phui-comment-image,
+	.anyi-darkmode .phui-curtain-object-ref-view-image-cell,
+	.anyi-darkmode .phui-icon-view,
+	.anyi-darkmode .phui-oi-image,
+	.anyi-darkmode .phui-timeline-image,
+	.anyi-darkmode .phabricator-main-menu-eye,
+	.anyi-darkmode .phabricator-wordmark {
+		filter: invert(0.95) hue-rotate(0.5turn);
+	}
+	.anyi-darkmode .phui-theme-blue .phabricator-main-menu-background {
+		background: #ffffff;
+	}
+	/* stream */
+	.anyi-darkmode #eventstreams-ui-app .nav-bar {
+		background-color: #ffffff;
+	}
+	.anyi-darkmode #eventstreams-ui-app .nav-bar a {
+		color: #000000 !important;
+	}
+}
+
+@media only screen and (max-width: 550px) {
+	.skin-monobook #echo-hack-badges,
+	.skin-monobook #globalWrapper-toggle {
+		display: none;
+	}
+}
+
+@media only screen and (max-width: 850px) {
+	.skin-timeless .diff {
+		width: 100% !important;
+	}
+	.skin-timeless .mw-body table {
+		width: auto;
+		word-break: break-all;
+	}
+	.skin-timeless .mw-body table table {
+		width: 100%;
+	}
+}
+
+@media only screen and (min-width: 1340px) {
+	.skin-timeless #site-tools {
+		position: -webkit-sticky;
+		position: sticky;
+		top: 4.475em;
+	}
+}

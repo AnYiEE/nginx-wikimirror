@@ -1,0 +1,716 @@
+map $http_upgrade $connection_upgrade {
+    default  upgrade;
+    ""       close;
+}
+upstream wiki-IPAddress {
+#    server     208.80.154.224:443;  #美国阿什本
+#    server     208.80.153.224:443;  #美国卡罗尔顿
+#    server     198.35.26.96:443;    #美国旧金山
+#    server     91.198.174.192:443;  #荷兰阿姆斯特丹
+#    server     103.102.166.224:443; #新加坡
+#    server     185.15.58.224:443;   #法国马赛
+    keepalive  300;
+}
+upstream upload-IPAddress {
+#    server     208.80.154.240:443;  #美国阿什本
+#    server     208.80.153.240:443;  #美国卡罗尔顿
+#    server     198.35.26.112:443;   #美国旧金山
+#    server     91.198.174.208:443;  #荷兰阿姆斯特丹
+#    server     103.102.166.240:443; #新加坡
+#    server     185.15.58.240:443;   #法国马赛
+    keepalive  300;
+}
+upstream static-IPAddress {
+    server  127.0.0.1:80;
+}
+
+server {
+    listen       80 reuseport default;
+    listen       443 ssl http2 reuseport default;
+    server_name  _;
+    include      /path/to/wikimirror/conf/wiki-site-http.conf;
+
+    ssl_certificate          /path/to/fullchain.crt;
+    ssl_certificate_key      /path/to/key;
+    ssl_trusted_certificate  /path/to/fullchain.crt;
+
+    return 301 https://www.example.org;
+}
+
+server {
+    listen       80;
+    server_name  static-internal.example.org;
+
+    if ($http_user_agent ~* "Bot|Spider|Barkrowler|BingPreview|Feedfetcher-Google|ia_archiver|libwww-perl|MBCrawler|Mediapartners-Google|MSNot-media|Python|Teoma|Yahoo! Slurp|^$") {
+        return 444;
+    }
+
+    root        /path/to/wikimirror/static;
+    error_page  400 403 404 500 = https://static-internal.example.org;
+
+    location = / {
+        return 204;
+    }
+    location = /robots.txt {
+        index  robots.txt;
+    }
+    location ~ ^(?:.+?)\.(?:gif|ico|jpe?g|png|svg|webp)$ {
+        expires 30d;
+    }
+}
+
+server {
+    listen       80;
+    server_name  example.org;
+    include      /path/to/wikimirror/conf/wiki-site-http.conf;
+
+    return 301 https://$host;
+}
+
+server {
+    listen       443 ssl;
+    server_name  example.org;
+    include      /path/to/wikimirror/conf/wiki-site-http.conf;
+
+    ssl_certificate          /path/to/fullchain.crt;
+    ssl_certificate_key      /path/to/key;
+    ssl_trusted_certificate  /path/to/fullchain.crt;
+
+    add_header  Strict-Transport-Security "max-age=31536000; includeSubdomains; preload" always;
+
+    return 301 https://www.$host;
+}
+
+server {
+    listen       80;
+    server_name  ~^[^.]+(?:\.m)?(?:\.(?:wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki|planet))?\.example\.org$;
+    include      /path/to/wikimirror/conf/wiki-site-http.conf;
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    server_name  ~^(?<subdomain>(analytics|annual|bugzilla|config-master|cxserver|dbtree|design|developer|doc|grafana|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency))\.example\.org$;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+
+    include  /path/to/wikimirror/conf/wiki-location-api.conf;
+    include  /path/to/wikimirror/conf/wiki-location-main.conf;
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  ~^(?<subdomain>(advisors(?:\.m)?|advisory(?:\.m)?|affcom|am(?:\.m)?|api(?:\.m)?|ar(?:\.m)?|auditcom|bd(?:\.m)?|be(?:\.m)?|board|boardgovcom|br(?:\.m)?|ca(?:\.m)?|chair|checkuser(?:\.m)?|cn(?:\.m)?|co(?:\.m)?|collab|(?:test-)?commons(?:\.m)?|dk(?:\.m)?|ec(?:\.m)?|ee(?:\.m)?|electcom(?:\.m)?|exec(?:\.m)?|fdc(?:\.m)?|fi(?:\.m)?|foundation(?:\.m)?|ge(?:\.m)?|gr(?:\.m)?|grants(?:\.m)?|hi(?:\.m)?|id(?:\.m)?|iegcom(?:\.m)?|incubator(?:\.m)?|internal|labtestwikitech|legalteam(?:\.m)?|login(?:\.m)?|mai(?:\.m)?|meta(?:\.m)?|mk(?:\.m)?|movementroles|mx(?:\.m)?|ng(?:\.m)?|nl(?:\.m)?|no(?:\.m)?|noboard-chapters|nyc(?:\.m)?|nz(?:\.m)?|ombuds(?:\.m)?|ombudsmen|ores|otrs-wiki(?:\.m)?|outreach(?:\.m)?|pa-us(?:\.m)?|people|pl(?:\.m)?|pt(?:\.m)?|projectcom|punjabi(?:\.m)?|quality(?:\.m)?|romd(?:\.m)?|rs(?:\.m)?|rt|ru(?:\.m)?|se(?:\.m)?|searchcom|spcom|species(?:\.m)?|steward(?:\.m)?|strategy(?:\.m)?|techconduct|tr(?:\.m)?|transitionteam(?:\.m)?|ua(?:\.m)?|usability|vote(?:\.m)?|vrt-wiki(?:\.m)?|wb(?:\.m)?|wikimania(?:200[5-9]|201[0-8]|team)?(?:\.m)?|wikitech))\.example\.org$;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+
+    include  /path/to/wikimirror/conf/wiki-location-api.conf;
+    include  /path/to/wikimirror/conf/wiki-location-main.conf;
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    include  /path/to/wikimirror/conf/wiki-location-upload-fix.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  blog.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  blog;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://blog.wikimedia.org;
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  diff.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  diff;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://diff.wikimedia.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  etherpad.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  etherpad;
+
+    location / {
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  Upgrade;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $subdomain.$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    location /socket.io {
+        include             /path/to/wikimirror/conf/wiki.conf;
+        proxy_http_version  1.1;
+        proxy_pass          https://wiki-IPAddress/socket.io;
+        proxy_read_timeout  300s;
+        proxy_send_timeout  300s;
+        proxy_set_header    Connection $connection_upgrade;
+        proxy_set_header    Host $subdomain.$hostdomain.org;
+        proxy_set_header    Referer https://$subdomain.$hostdomain.org$request_uri;
+        proxy_set_header    Upgrade $http_upgrade;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+}
+
+server {
+    server_name  gerrit.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  gerrit;
+
+    location / {
+        rewrite ^\/r\/plugins\/gitiles\/wikipedia\/gadgets\/ProveIt\/\+\/master\/i18n\/zh-cn\.json(.*?)$ /r/plugins/gitiles/wikipedia/gadgets/ProveIt/+/master/i18n/zh-hans.json$1 break;
+        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://gerrit.wikimedia.org;
+        proxy_hide_header  access-control-allow-credentials;
+        proxy_hide_header  access-control-allow-origin;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $subdomain.$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  gitlab.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  gitlab;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://gitlab.wikimedia.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  graphite.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  graphite;
+
+    location / {
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  Upgrade;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $subdomain.$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    location /render {
+        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress/render;
+        proxy_hide_header  access-control-allow-credentials;
+        proxy_hide_header  access-control-allow-origin;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $subdomain.$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+}
+
+server {
+    server_name  idp.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  idp;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://idp.wikimedia.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Origin https://$subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  lists.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  lists;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://lists.wikimedia.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  maps.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  maps;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://upload-IPAddress;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    location /img {
+        if ($arg_domain ~* (.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org) {
+            set    $arg_domain $1$2.org;
+            return 301 https://$host$uri?lang=$arg_lang&domain=$arg_domain&title=$arg_title&groups=$arg_groups;
+        }
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://upload-IPAddress/img;
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    location /osm-intl {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://upload-IPAddress/osm-intl;
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  phabricator.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  phabricator;
+
+    location = / {
+        include             /path/to/wikimirror/conf/wiki-sub.conf;
+        include             /path/to/wikimirror/conf/wiki.conf;
+        proxy_http_version  1.1;
+        proxy_pass          https://wiki-IPAddress;
+        proxy_read_timeout  300s;
+        proxy_send_timeout  300s;
+        proxy_set_header    Accept-Encoding "";
+        proxy_set_header    Connection $connection_upgrade;
+        proxy_set_header    Host $subdomain.$hostdomain.org;
+        proxy_set_header    Referer https://$subdomain.$hostdomain.org$request_uri;
+        proxy_set_header    Upgrade $http_upgrade;
+    }
+    location / {
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  Upgrade;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $subdomain.$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+}
+
+server {
+    server_name  planet.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  planet;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://wiki-IPAddress;
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  policy.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  policy;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://policy.wikimedia.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  stream.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  stream;
+
+    location / {
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://stream.wikimedia.org;
+        proxy_hide_header  Upgrade;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $subdomain.$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    location /v2/stream {
+        include             /path/to/wikimirror/conf/wiki.conf;
+        proxy_http_version  1.1;
+        proxy_pass          https://stream.wikimedia.org/v2/stream;
+        proxy_read_timeout  300s;
+        proxy_send_timeout  300s;
+        proxy_set_header    Connection $connection_upgrade;
+        proxy_set_header    Host $subdomain.$hostdomain.org;
+        proxy_set_header    Referer https://$subdomain.$hostdomain.org$request_uri;
+        proxy_set_header    Upgrade $http_upgrade;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+}
+
+server {
+    server_name  techblog.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  techblog;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://techblog.wikimedia.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  wikitech-static.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  wikitech-static;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://wikitech-static.wikimedia.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  articleinfo.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+
+    location / {
+        if ($request_uri ~* ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$) {
+            more_set_headers  "Access-Control-Allow-Origin: $http_origin";
+            rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
+        }
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://xtools.wmflabs.org/api/page/articleinfo/;
+        proxy_hide_header  set-cookie;
+        proxy_hide_header  x-clacks-overhead;
+        proxy_set_header   Host xtools.wmflabs.org;
+        proxy_set_header   Referer https://xtools.wmflabs.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  intake-analytics.example.org intake-logging.example.org piwik.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+
+    return 204;
+}
+
+server {
+    server_name  latex-png.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    add_header   Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; img-src 'self'";
+    set          $hostdomain wikimedia;
+
+    location / {
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress/api/rest_v1/media/math/render/png/;
+        proxy_hide_header  set-cookie;
+        proxy_set_header   Host $hostdomain.org;
+        proxy_set_header   Referer https://$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  latex-svg.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+
+    location / {
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress/api/rest_v1/media/math/render/svg/;
+        proxy_hide_header  set-cookie;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $hostdomain.org;
+        proxy_set_header   Referer https://$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  pageviews.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+
+    location / {
+        if ($request_uri ~* ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$) {
+            more_set_headers  "Access-Control-Allow-Origin: $http_origin";
+            rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
+        }
+        more_set_headers   "Access-Control-Allow-Credentials: true";
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  access-control-allow-credentials;
+        proxy_hide_header  set-cookie;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $hostdomain.org;
+        proxy_set_header   Referer https://$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  phab.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wmfusercontent;
+    set          $subdomain  phab;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://phab.wmfusercontent.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    location /file {
+        more_set_headers  "Content-Security-Policy: default-src https://phab.example.org; base-uri 'none'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'self'; img-src https://phab.example.org data:; object-src 'none'; script-src https://phab.example.org; style-src https://phab.example.org 'unsafe-inline'";
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://phab.wmfusercontent.org/file;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  upload.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain  upload;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://upload-IPAddress;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    location /wikimirror/zh/darkmode {
+        proxy_pass        http://static-IPAddress/images/darkmode;
+        proxy_set_header  Host static-internal.example.org;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  20.wikipedia.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+
+    return 301 https://wikimediafoundation.org/wikipedia20/;
+}
+
+server {
+    server_name  ~^(?<subdomain>(m\.)?)wikisource\.example\.org$;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikisource;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://wiki-IPAddress;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain$hostdomain.org$request_uri;
+    }
+    location /beacon/event {
+        return 204;
+    }
+    location /beacon/statsv {
+        return 204;
+    }
+    location /api/rest_v1 {
+        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  access-control-allow-credentials;
+        proxy_hide_header  access-control-allow-origin;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $subdomain$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain$hostdomain.org$request_uri;
+    }
+    location /api/rest_v1/page/pdf {
+        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  access-control-allow-credentials;
+        proxy_hide_header  access-control-allow-origin;
+        proxy_set_header   Host $subdomain.$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    location /w/api.php {
+        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress/w/api.php;
+        proxy_hide_header  access-control-allow-credentials;
+        proxy_hide_header  access-control-allow-origin;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $subdomain$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain$hostdomain.org$request_uri;
+    }
+    location /w/index.php {
+        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress/w/index.php;
+        proxy_hide_header  access-control-allow-credentials;
+        proxy_hide_header  access-control-allow-origin;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host $subdomain$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  ~^(?<subdomain>[^.]+(?:\.m)?)?\.planet\.example\.org$;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain planet.wikimedia;
+
+    include  /path/to/wikimirror/conf/wiki-location-main.conf;
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  ~^(?<subdomain>[^.]+(?:\.m)?)?\.(?<hostdomain>(wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki))\.example\.org$;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+
+    if ($subdomain ~* ^(?:m(?:\.m)?|www\.m)$) {
+        return 301 https://www.$hostdomain.example.org;
+    }
+
+    include  /path/to/wikimirror/conf/wiki-location-api.conf;
+    include  /path/to/wikimirror/conf/wiki-location-main.conf;
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    include  /path/to/wikimirror/conf/wiki-location-upload-fix.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  www.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimedia;
+    set          $subdomain www;
+
+    location / {
+        return 302 https://www.wikipedia.example.org;
+    }
+    location ^~ /static/images/wmf {
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  set-cookie;
+        proxy_set_header   Host $subdomain.$hostdomain.org;
+        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  ~^(?<subdomain>[^.]+(?:\.m)?)?\.example\.org$;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+
+    error_page  400 403 404 500 = https://www.example.org;
+
+    if ($subdomain ~* ^(?:m(?:\.m)?|www\.m)$) {
+        return 301 https://www.wikipedia.example.org;
+    }
+
+    location / {
+        return 302 https://$subdomain.wikipedia.example.org;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+}
