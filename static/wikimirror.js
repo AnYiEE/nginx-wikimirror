@@ -741,7 +741,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 				!isBanSite && AnYiMirrorPrivateMethod.darkMode('init');
 				const fn = () => {
 					document.querySelector('.pure-form#search-form')?.action.replace(/org\//, BaseMirrorDomain);
-					window.portalSearchDomain && window.portalSearchDomain = portalSearchDomain.replace(/org$/, BaseMirrorDomain);
+					window.portalSearchDomain && (window.portalSearchDomain = portalSearchDomain.replace(/org$/, BaseMirrorDomain));
 					AnYiMirrorPrivateMethod.getRealText(void 0, 'wikiless');
 				};
 				document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn);
