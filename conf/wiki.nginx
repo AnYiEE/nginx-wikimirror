@@ -686,7 +686,7 @@ server {
     server_name  ~^(?<subdomain>[^.]+(?:\.m)?)?\.(?<hostdomain>(wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki))\.example\.org$;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
-    if ($subdomain ~* ^(?:m(?:\.m)?|www\.m)$) {
+    if ($subdomain ~* ^(?:(?:m|www)\.m)$) {
         return 301 https://www.$hostdomain.example.org;
     }
 
