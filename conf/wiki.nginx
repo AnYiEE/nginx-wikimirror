@@ -450,6 +450,24 @@ server {
 }
 
 server {
+    server_name  wma.wmmirror.live;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wmcloud;
+    set          $subdomain  wma;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://wma.wmcloud.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
     server_name  articleinfo.example.org;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
