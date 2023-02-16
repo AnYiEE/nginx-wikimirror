@@ -57,10 +57,6 @@ AnYiMirrorPrivateMethod = new function () {
 				const text = dom.href;
 				reg1.test(text) && (dom.href = AnYi.getRealText(text));
 			}
-			for (const dom of document.querySelectorAll(`a[href$="${BaseMirrorDomain}/"]`)) {
-				const text = dom.href;
-				!/(?:analytics|annual|articleinfo|blog|bugzilla|config-master|cxserver|dbtree|design|developer|diff|doc|etherpad|gerrit|gitlab|grafana|graphite|horizon|id-internal(?:\.m)?|idp|il|intake-(?:analytics|logging)|integration|latex-(?:png|svg)|lists|logstash|maps|noc|office(?:\.m)?|pageviews|performance|phab(?:ricator)?|piwik|planet|policy|research|schema|secure|static-bugzilla|stream|svn|techblog|ticket|toolsadmin|transparency|upload)\./.test(text) && (dom.href = `${text}w`);
-			}
 			for (const dom of document.querySelectorAll('input[name="clientUrl"],input[name="intendedWikitext"]')) {
 				const text = dom.value;
 				reg1.test(text) && (dom.value = AnYi.getRealText(text));
