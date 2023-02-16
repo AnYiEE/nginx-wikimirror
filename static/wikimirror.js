@@ -12,7 +12,7 @@ const BaseMirrorDomain = 'example.org', [BaseMirrorDomainRegex, BaseMirrorDomain
 AnYiMirrorPrivateMethod = new function () {
 	const AnYi = this;
 	AnYi.getConf = key => {
-		if (typeof mw === 'object' && typeof mw.config.get === 'function') return mw.config.get(key);
+		if (typeof mw === 'object' && typeof mw.config?.get === 'function') return mw.config.get(key);
 		if (typeof RLCONF === 'object' && RLCONF[key] !== void 0) return RLCONF[key];
 		return null;
 	}
