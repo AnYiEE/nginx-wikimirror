@@ -855,7 +855,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 	AnYiMirrorPublicMethod.prototype.ahCallback_Response = response => {
 		const recursiveObj = (obj, callback, preKey) => {
 			for (const key in obj) {
-				if (!obj.hasOwnProperty(key)) continue;
+				if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
 				typeof obj[key] === 'object' ? recursiveObj(obj[key], callback, key) : callback(obj, key, preKey);
 			}
 		},
