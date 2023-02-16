@@ -73,7 +73,7 @@ AnYiMirrorPrivateMethod = new function () {
 				typeof jQuery === 'function' ? value = jQuery('#wpTextbox1').val() : value = wBox.value;
 			}
 		}
-		if (value !== null && value !== void 0) Object.prototype.toString.call(value) === '[object String]' ? value = value.replace(reg3, 'wikimedia.org/api/rest_v1/media/math/render/$1').replace(reg2, '$1.org').replace(reg1, 'wikimedia.org').replace(reg4, '\\.wikipedia\\.org').replace(/r-e-p-l-a-c-e\.org/g, BaseMirrorDomain) : (Object.prototype.toString.call(value) === '[object Boolean]' || Object.prototype.toString.call(value) === '[object BigInt]' || Object.prototype.toString.call(value) === '[object Number]') ? void 0 : value = Object.prototype.toString.call(value);
+		if (value !== null && value !== void 0) Object.prototype.toString.call(value) === '[object String]' ? value = value.replace(new RegExp(`phab\\.${BaseMirrorDomainRegex}`, 'gi'), 'phab.wmfusercontent.org').replace(new RegExp(`wma\\.${BaseMirrorDomainRegex}`, 'gi'), 'wma.wmcloud.org').replace(reg3, 'wikimedia.org/api/rest_v1/media/math/render/$1').replace(reg2, '$1.org').replace(reg1, 'wikimedia.org').replace(reg4, '\\.wikipedia\\.org').replace(/r-e-p-l-a-c-e\.org/g, BaseMirrorDomain) : (Object.prototype.toString.call(value) === '[object Boolean]' || Object.prototype.toString.call(value) === '[object BigInt]' || Object.prototype.toString.call(value) === '[object Number]') ? void 0 : value = Object.prototype.toString.call(value);
 		if (value && value !== true && wBox && method === 'wiki') {
 			typeof jQuery === 'function' ? jQuery('#wpTextbox1').val(value) : wBox.value = value;
 			typeof wikEd === 'object' && wikEd.useWikEd && wikEd.UpdateFrame();
