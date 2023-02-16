@@ -87,3 +87,7 @@
     - Safari 14+
 
   目前支持在2020年下半年后发行的浏览器
+
+**Tips**
+
+* MediaWiki有时会响应其特殊的mime-type类型`text/x-wiki`，如果你使用Brotil或Gzip压缩，可以适酌情调整`brotli_types`或`gzip_types`配置。
