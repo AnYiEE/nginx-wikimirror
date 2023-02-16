@@ -739,7 +739,11 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			} else if (time > 100) {
 				clearInterval(AnYiMirrorPrivateMainTimer);
 				!isBanSite && AnYiMirrorPrivateMethod.darkMode('init');
-				const fn = () => AnYiMirrorPrivateMethod.getRealText(void 0, 'wikiless');
+				const fn = () => {
+					document.querySelector('.pure-form#search-form')?.action.replace(/org\//, BaseMirrorDomain);
+					window.portalSearchDomain && window.portalSearchDomain = portalSearchDomain.replace(/org$/, BaseMirrorDomain);
+					AnYiMirrorPrivateMethod.getRealText(void 0, 'wikiless');
+				};
 				document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn);
 				resolve('AnYiMirror non-wiki mode.');
 			}
