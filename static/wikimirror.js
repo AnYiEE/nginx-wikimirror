@@ -179,7 +179,7 @@ AnYiMirrorPrivateMethod = new function () {
 				});
 				AnYi.ajaxLogin(void 0, {
 					username,
-					password: AnYiMirror.inflate(password),
+					password: AnYiMirror.inflateRaw(password),
 				});
 			}
 			return;
@@ -286,7 +286,7 @@ AnYiMirrorPrivateMethod = new function () {
 					tag: 'login',
 				});
 				AnYi.setCookie(`${CookiePrefix}UserName`, response.clientlogin.username, time);
-				autoLoginCheckbox.isSelected() ? AnYi.setCookie(`${CookiePrefix}Password`, AnYiMirror.deflate(password, ''), time) : !autoLogin && AnYi.setCookie(`${CookiePrefix}Password`, 'deleted', '-1');
+				autoLoginCheckbox.isSelected() ? AnYi.setCookie(`${CookiePrefix}Password`, AnYiMirror.deflateRaw(password, ''), time) : !autoLogin && AnYi.setCookie(`${CookiePrefix}Password`, 'deleted', '-1');
 				location.reload();
 			} else if (response.clientlogin?.messagecode) {
 				autoLogin && AnYi.setCookie(`${CookiePrefix}Password`, 'deleted', '-1');
@@ -780,13 +780,13 @@ AnYiMirrorPrivateMain = (time = 0) => {
 	if (!isWiki) return;
 	function AnYiMirrorPublicMethod() {console.log(this)}
 	AnYiMirrorPublicMethod.prototype.getRealText = AnYiMirrorPrivateMethod.getRealText;
-	AnYiMirrorPublicMethod.prototype.deflate = (value, prefix = 'rawdeflate,') => {
+	AnYiMirrorPublicMethod.prototype.deflateRaw = (value, prefix = 'rawdeflate,') => {
 		return prefix + uint8arrayToBase64(pako.deflateRaw(value, {
 			to: 'string',
 			level: 5,
 		}));
 	};
-	AnYiMirrorPublicMethod.prototype.inflate = value => {
+	AnYiMirrorPublicMethod.prototype.inflateRaw = value => {
 		return pako.inflateRaw(base64ToUint8Array(value.replace('rawdeflate,', '')), {
 			to: 'string',
 			level: 5,
@@ -811,9 +811,9 @@ AnYiMirrorPrivateMain = (time = 0) => {
 					if (config.body.has('html')) {
 						let html = config.body.get('html');
 						const isDeflate = html.startsWith('rawdeflate');
-						isDeflate && (html = AnYiMirror.inflate(html));
+						isDeflate && (html = AnYiMirror.inflateRaw(html));
 						html = AnYiMirror.getRealText(html);
-						config.body.set('html', isDeflate ? AnYiMirror.deflate(html) : html);
+						config.body.set('html', isDeflate ? AnYiMirror.deflateRaw(html) : html);
 					} else if (config.body.has('wikitext')) {
 						config.body.set('wikitext', AnYiMirror.getRealText(config.body.get('wikitext')));
 					}
@@ -830,13 +830,13 @@ AnYiMirrorPrivateMain = (time = 0) => {
 					postValue && (postObj.query[text] = AnYiMirror.getRealText(postValue));
 				}
 				if (postObj.query?.action) {
-					const getInflate = deflate => AnYiMirror.deflate(AnYiMirror.getRealText(AnYiMirror.inflate(deflate)));
+					const getDeflateRaw = deflateRawValue => AnYiMirror.deflateRaw(AnYiMirror.getRealText(AnYiMirror.inflateRaw(deflateRawValue)));
 					switch (postObj.query.action) {
 					case 'cxpublish':
-						postObj.query.html = getInflate(postObj.query.html);
+						postObj.query.html = getDeflateRaw(postObj.query.html);
 						break;
 					case 'cxsave':
-						postObj.query.content = getInflate(postObj.query.content);
+						postObj.query.content = getDeflateRaw(postObj.query.content);
 						break;
 					case 'logout':
 						for (const CookiePrefix of ['lastLogin', 'lastLoginWikitech']) {
