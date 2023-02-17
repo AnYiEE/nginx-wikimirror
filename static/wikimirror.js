@@ -839,7 +839,9 @@ AnYiMirrorPrivateMain = (time = 0) => {
 						postObj.query.content = getInflate(postObj.query.content);
 						break;
 					case 'logout':
-						document.cookie.includes('lastLoginPassword') && (document.cookie = `lastLoginPassword=deleted;domain=.${BaseMirrorDomain};path=/;Secure;expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+						for (const CookiePrefix of ['lastLogin', 'lastLoginWikitech']) {
+							document.cookie.includes(`${CookiePrefix}Password`) && (document.cookie = `${CookiePrefix}Password=deleted;domain=.${BaseMirrorDomain};path=/;Secure;expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+						}
 						break;
 					case 'shortenurl':
 						getObj.host = location.host;
