@@ -396,6 +396,10 @@ pre, .mw-code, .mw-highlight, .ve-init-mw-desktopArticleTarget .CodeMirror-code,
 	.anyi-darkmode .phui-theme-blue .phabricator-main-menu-background {
 		background: #ffffff;
 	}
+	/* project portal */
+	.anyi-darkmode body[id*="www"] [data-el-section="other projects"] .other-project-icon {
+		filter: invert(0.95) hue-rotate(0.5turn);
+	}
 	/* stream */
 	.anyi-darkmode #eventstreams-ui-app .nav-bar {
 		background-color: #ffffff;
