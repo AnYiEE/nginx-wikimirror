@@ -395,28 +395,28 @@ AnYiMirrorPrivateMethod = new function () {
 	}
 	AnYi.darkMode = (method, item, value) => {
 		if (!AnYi.localStorage()) return;
-		const [id, name] = ['anyi-darkmode', 'AnYiDarkMode'],
-		[ComHead, ComAnd, ComFoot] = [`<li id="${id}"><a class="mw-ui-icon mw-ui-icon-before" title="`, '"><span>', '</span></a></li>'],
+		const [Id, Name] = ['anyi-darkmode', 'AnYiDarkMode'],
+		[ComHead, ComAnd, ComFoot] = [`<li id="${Id}"><a class="mw-ui-icon mw-ui-icon-before" title="`, '"><span>', '</span></a></li>'],
 		[Dark, DarkTip, Light, LightTip] = [`深色主${AnYi.wgUVS('题', '題')}`, `${AnYi.wgUVS('将镜', '將鏡')}像站的主${AnYi.wgUVS('题', '題')}色切${AnYi.wgUVS('换', '換')}至深色`, `${AnYi.wgUVS('浅', '淺')}色主${AnYi.wgUVS('题', '題')}`, `${AnYi.wgUVS('将镜', '將鏡')}像站的主${AnYi.wgUVS('题', '題')}色切${AnYi.wgUVS('换', '換')}至${AnYi.wgUVS('浅', '淺')}色`],
 		isDarkMode = matchMedia('(prefers-color-scheme:dark)').matches,
 		modeObserver = {
 			dark: mediaQueryList => {
-				if (mediaQueryList.matches && AnYi.localStorage(name) === '0') {
+				if (mediaQueryList.matches && AnYi.localStorage(Name) === '0') {
 					modeSwitcher();
 					AnYi.darkMode('insert');
 				}
 			},
 			light: mediaQueryList => {
-				if (mediaQueryList.matches && AnYi.localStorage(name) === '1') {
+				if (mediaQueryList.matches && AnYi.localStorage(Name) === '1') {
 					modeSwitcher();
 					AnYi.darkMode('insert');
 				}
 			}
 		},
-		modeSwitcher = () => AnYi.localStorage(name) === '0' ? AnYi.localStorage(name, '1') : AnYi.localStorage(name, '0');
+		modeSwitcher = () => AnYi.localStorage(Name) === '0' ? AnYi.localStorage(Name, '1') : AnYi.localStorage(Name, '0');
 		switch (method) {
 		case 'add':
-			document.documentElement.classList.add(id);
+			document.documentElement.classList.add(Id);
 			document.documentElement.style.filter = '';
 			/^zh(?:\.m)?\.wikipedia/.test(location.host) && (AnYi.hasClass('skin-monobook') || AnYi.hasClass('skin-vector-legacy')) && AnYi.setCss('anyi-css-darkmode-logo-zhwiki', 'add');
 			if (!/^(?!zh\.)\S+?(?:\.m)?\.wikipedia/.test(location.host)) return;
@@ -424,19 +424,19 @@ AnYiMirrorPrivateMethod = new function () {
 			AnYi.hasClass('skin-vector-legacy') && AnYi.setCss('anyi-css-darkmode-logo-wiki-vector-legacy', 'add');
 			break;
 		case 'remove':
-			document.documentElement.classList.remove(id);
+			document.documentElement.classList.remove(Id);
 			AnYi.setCss('anyi-css-darkmode-logo-zhwiki', 'remove');
 			AnYi.setCss('anyi-css-darkmode-logo-wiki-monobook', 'remove');
 			AnYi.setCss('anyi-css-darkmode-logo-wiki-vector-legacy', 'remove');
 			break;
 		case 'check':
-			if (!AnYi.localStorage(name)) isDarkMode ? AnYi.localStorage(name, '1') : AnYi.localStorage(name, '0');
-			if (AnYi.localStorage(name) === '1') return true;
+			if (!AnYi.localStorage(Name)) isDarkMode ? AnYi.localStorage(Name, '1') : AnYi.localStorage(Name, '0');
+			if (AnYi.localStorage(Name) === '1') return true;
 			break;
 		case 'init':
 			matchMedia('(prefers-color-scheme:dark)').addListener(modeObserver.dark);
 			matchMedia('(prefers-color-scheme:light)').addListener(modeObserver.light);
-			window.addEventListener('storage', e => e.key === name && AnYi.darkMode('insert'));
+			window.addEventListener('storage', e => e.key === Name && AnYi.darkMode('insert'));
 			const dc = () => {
 				/^(?!zh\.)\S+?(?:\.m)?\.wikipedia/.test(location.host) && (AnYi.hasClass('skin-monobook') || AnYi.hasClass('skin-vector-legacy')) && document.getElementById('p-logo') && (document.getElementById('p-logo').style.transition = 'background-size,height .5s ease-in-out');
 				document.removeEventListener('DOMContentLoaded', dc);
@@ -482,15 +482,15 @@ AnYiMirrorPrivateMethod = new function () {
 				document.body.style.transition = 'background-color .5s ease-in-out';
 				document.documentElement.style.height = '100%';
 			}
-			const dom = document.querySelector(`#${id}>a`);
-			if (AnYi.localStorage(name) === '1') {
+			const dom = document.querySelector(`#${Id}>a`);
+			if (AnYi.localStorage(Name) === '1') {
 				AnYi.darkMode('add');
 				AnYi.darkMode('meta', 'color-scheme', 'dark');
 				AnYi.hasClass('skin-minerva') ? AnYi.darkMode('meta', 'theme-color', '#1c1e22') : AnYi.darkMode('meta', 'theme-color', '#0d0d0d');
 				if (!dom) return;
 				dom.innerHTML = dom.innerHTML.replace(Dark, Light);
 				dom.setAttribute('title', LightTip);
-			} else if (AnYi.localStorage(name) === '0') {
+			} else if (AnYi.localStorage(Name) === '0') {
 				AnYi.darkMode('remove');
 				AnYi.darkMode('meta', 'color-scheme', 'remove');
 				AnYi.hasClass('skin-cologneblue') ? AnYi.darkMode('meta', 'theme-color', '#68a')
@@ -513,13 +513,13 @@ AnYiMirrorPrivateMethod = new function () {
 			value === 'remove' ? tag?.remove() : tag ? tag.content = value : document.head.append(meta);
 			break;
 		case 'normal':
-			if (document.getElementById(id)) return;
-			const doClick = button => (button?.firstElementChild || document.getElementById(id)).addEventListener('click', e => {
+			if (document.getElementById(Id)) return;
+			const doClick = button => (button?.firstElementChild || document.getElementById(Id)).addEventListener('click', e => {
 				e.preventDefault();
 				modeSwitcher();
 				AnYi.darkMode('insert');
 			}),
-			[pos, set, unset] = [document.getElementById('pt-preferences') || document.getElementById('p-personal'), AnYi.localStorage(name) === '1', AnYi.localStorage(name) === '0'];
+			[pos, set, unset] = [document.getElementById('pt-preferences') || document.getElementById('p-personal'), AnYi.localStorage(Name) === '1', AnYi.localStorage(Name) === '0'];
 			if (pos && AnYi.hasClass('skin-minerva')) {
 				set && pos.insertAdjacentHTML('beforeEnd', `${ComHead}${LightTip}${ComAnd}${Light}${ComFoot}`);
 				unset && pos.insertAdjacentHTML('beforeEnd', `${ComHead}${DarkTip}${ComAnd}${Dark}${ComFoot}`);
@@ -527,8 +527,8 @@ AnYiMirrorPrivateMethod = new function () {
 			} else if (document.getElementById('p-tb') || AnYi.hasClass('skin-apioutput') || AnYi.hasClass('skin-nostalgia')) {
 				const pos = (AnYi.hasClass('skin-apioutput') || AnYi.hasClass('skin-nostalgia')) ? 'mw-content-text' : 'p-tb';
 				mw.loader.using('mediawiki.util').then(() => {
-					set && doClick(mw.util.addPortletLink(pos, '#', Light, id, LightTip));
-					unset && doClick(mw.util.addPortletLink(pos, '#', Dark, id, DarkTip));
+					set && doClick(mw.util.addPortletLink(pos, '#', Light, Id, LightTip));
+					unset && doClick(mw.util.addPortletLink(pos, '#', Dark, Id, DarkTip));
 				});
 			}
 			break;
@@ -541,7 +541,7 @@ AnYiMirrorPrivateMethod = new function () {
 		 : AnYi.hasClass('skin-minerva') ? pos = 'p-tb'
 		 : pos = 'p-cactions';
 		await mw.loader.using(['mediawiki.util', 'mediawiki.widgets', 'oojs-ui-windows']);
-		const ins = (tex, dec, link, prema, dom = document.getElementById(id)) => {
+		const doIns = (tex, dec, link, prema, dom = document.getElementById(id)) => {
 			if (dom === null) {
 				dom = mw.util.addPortletLink(pos, '#', tex, id, dec);
 				pos === 'mw-mf-diffarea' && AnYi.setCss(`#${id}{float:right}#${id}>a>span:first-child{vertical-align:text-bottom}`, 'css', `anyi-css-difflink`);
@@ -557,12 +557,12 @@ AnYiMirrorPrivateMethod = new function () {
 			const buildLink = (oldId, link = 'Special:Diff/') => {
 				oldId && (link += `${oldId}/`);
 				link += diffId;
-				ins(`${AnYi.wgUVS('当', '當')}前差${AnYi.wgUVS('异链接', '異連結')}`, `${AnYi.wgUVS('复制链接', '複製連結')}到${AnYi.wgUVS('当前', '當前')}差${AnYi.wgUVS('异', '異')}版本的${AnYi.wgUVS('维', '維')}基${AnYi.wgUVS('语', '語')}法`, link);
+				doIns(`${AnYi.wgUVS('当', '當')}前差${AnYi.wgUVS('异链接', '異連結')}`, `${AnYi.wgUVS('复制链接', '複製連結')}到${AnYi.wgUVS('当前', '當前')}差${AnYi.wgUVS('异', '異')}版本的${AnYi.wgUVS('维', '維')}基${AnYi.wgUVS('语', '語')}法`, link);
 			};
 			buildLink(oldId);
 			oldId && fetch(`/w/api.php?action=compare&format=json&fromrev=${diffId}&prop=ids&torelative=prev`).then(data => data.json()).then(data => diffId === AnYi.getConf('wgDiffNewId') && data.compare?.fromrevid === AnYi.getConf('wgDiffOldId') && buildLink(false));
 		} else if ([document.getElementById('contentSub').querySelectorAll('#mw-revision-nav').length, document.querySelectorAll('main#content>.pre-content #mw-revision-nav').length].includes(1) && revisionId) {
-			ins(`${AnYi.wgUVS('当', '當')}前修${AnYi.wgUVS('订链接', '訂連結')}`, `${AnYi.wgUVS('复制链接', '複製連結')}到${AnYi.wgUVS('当', '當')}前修${AnYi.wgUVS('订', '訂')}版本的${AnYi.wgUVS('维', '維')}基${AnYi.wgUVS('语', '語')}法`, `Special:PermaLink/${revisionId}`, true);
+			doIns(`${AnYi.wgUVS('当', '當')}前修${AnYi.wgUVS('订链接', '訂連結')}`, `${AnYi.wgUVS('复制链接', '複製連結')}到${AnYi.wgUVS('当', '當')}前修${AnYi.wgUVS('订', '訂')}版本的${AnYi.wgUVS('维', '維')}基${AnYi.wgUVS('语', '語')}法`, `Special:PermaLink/${revisionId}`, true);
 		}
 	}
 	AnYi.disableAnonEdit = () => {
@@ -773,8 +773,8 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			level: 5,
 		}));
 	};
-	AnYiMirrorPublicMethod.prototype.inflateRaw = value => {
-		return pako.inflateRaw(base64ToUint8Array(value.replace('rawdeflate,', '')), {
+	AnYiMirrorPublicMethod.prototype.inflateRaw = (value, prefix = 'rawdeflate,') => {
+		return pako.inflateRaw(base64ToUint8Array(value.replace(prefix, '')), {
 			to: 'string',
 			level: 5,
 		});
