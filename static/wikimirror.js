@@ -168,7 +168,7 @@ AnYiMirrorPrivateMethod = new function () {
 		const [Account, Auto, Get, Error, Login, Name, Token, User, Password, Recaptcha] = [AnYi.wgULS('账号', '帳戶'), `自${AnYi.wgULS('动', '動')}`, `${AnYi.wgULS('获', '獲')}取`, AnYi.wgULS('错误', '錯誤'), `登${AnYi.wgUVS('录', '入')}`, AnYi.wgULS('名', '名稱'), AnYi.wgULS('令牌', '權杖'), AnYi.wgULS(void 0, void 0, '用户', '使用者', '用戶'), AnYi.wgULS('密码', '密碼'), `2FA${AnYi.wgULS('验证码', '驗證碼')}`],
 		CookiePrefix = location.host.includes('wikitech') ? 'lastLoginWikitech' : 'lastLogin';
 		if (method === 'init') {
-			const dom = document.getElementById('ca-cb-login') || document.querySelector('.menu__item--login') || document.querySelector('#topbar>a[href*="UserLogin"]') || document.getElementById('pt-login') || document.querySelector('.vector-user-menu-login');
+			const dom = document.getElementById('ca-cb-login') || document.querySelector('.menu__item--login') || document.querySelector('#topbar>a[href*="UserLogin"]') || document.getElementById('pt-login-2') || document.getElementById('pt-login') || document.querySelector('.vector-user-menu-login');
 			dom?.addEventListener('click', e => {
 				e.preventDefault();
 				AnYi.ajaxLogin();
