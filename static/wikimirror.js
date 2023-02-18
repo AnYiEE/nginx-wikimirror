@@ -55,8 +55,10 @@ AnYiMirrorPrivateMethod = new function () {
 				}
 			}
 			for (const dom of [...document.querySelectorAll('a[href*="//archive."]'), ...document.querySelectorAll('a[href*="//pageviews."]'), ...document.querySelectorAll('a[href*="//xtools."]')]) {
-				const text = dom.href;
-				reg1.test(text) && (dom.href = AnYi.getRealText(text));
+				const href = dom.href;
+				reg1.test(href) && (dom.href = AnYi.getRealText(href));
+				const XtoolsApi = 'xtools.wmflabs.org/api/';
+				text.includes(XtoolsApi) && (dom.href = href.replace(XtoolsApi, `xtools-api.${BaseMirrorDomain}/`));
 			}
 			for (const dom of document.querySelectorAll('input[name="clientUrl"],input[name="intendedWikitext"]')) {
 				const text = dom.value;
@@ -74,7 +76,7 @@ AnYiMirrorPrivateMethod = new function () {
 				typeof jQuery === 'function' ? value = jQuery('#wpTextbox1').val() : value = wBox.value;
 			}
 		}
-		if (value !== null && value !== void 0) Object.prototype.toString.call(value) === '[object String]' ? value = value.replace(new RegExp(`phab\\.${BaseMirrorDomainRegex}`, 'gi'), 'phab.wmfusercontent.org').replace(new RegExp(`wma\\.${BaseMirrorDomainRegex}`, 'gi'), 'wma.wmcloud.org').replace(reg3, 'wikimedia.org/api/rest_v1/media/math/render/$1').replace(reg2, '$1.org').replace(reg1, 'wikimedia.org').replace(reg4, '\\.wikipedia\\.org').replace(/r-e-p-l-a-c-e\.org/g, BaseMirrorDomain) : (Object.prototype.toString.call(value) === '[object Boolean]' || Object.prototype.toString.call(value) === '[object BigInt]' || Object.prototype.toString.call(value) === '[object Number]') ? void 0 : value = Object.prototype.toString.call(value);
+		if (value !== null && value !== void 0) Object.prototype.toString.call(value) === '[object String]' ? value = value.replace(new RegExp(`phab\\.${BaseMirrorDomainRegex}`, 'gi'), 'phab.wmfusercontent.org').replace(new RegExp(`xtools-api\\.${BaseMirrorDomain}\\/`, 'gi'), 'xtools.wmflabs.org/api/').replace(new RegExp(`wma\\.${BaseMirrorDomainRegex}`, 'gi'), 'wma.wmcloud.org').replace(reg3, 'wikimedia.org/api/rest_v1/media/math/render/$1').replace(reg2, '$1.org').replace(reg1, 'wikimedia.org').replace(reg4, '\\.wikipedia\\.org').replace(/r-e-p-l-a-c-e\.org/g, BaseMirrorDomain) : (Object.prototype.toString.call(value) === '[object Boolean]' || Object.prototype.toString.call(value) === '[object BigInt]' || Object.prototype.toString.call(value) === '[object Number]') ? void 0 : value = Object.prototype.toString.call(value);
 		if (value && value !== true && wBox && method === 'wiki') {
 			typeof jQuery === 'function' ? jQuery('#wpTextbox1').val(value) : wBox.value = value;
 			typeof wikEd === 'object' && wikEd.useWikEd && wikEd.UpdateFrame();
@@ -364,21 +366,6 @@ AnYiMirrorPrivateMethod = new function () {
 			size: 'small',
 		});
 	}
-	AnYi.articleInfo = (id, dom) => {
-		if (document.getElementById(id) || RLPAGEMODULES?.includes('ext.gadget.XTools-ArticleInfo')) return;
-		AnYi.hasClass('skin-cologneblue') || AnYi.hasClass('skin-nostalgia') ? dom = document.getElementById('mw-content-text')
-		 : AnYi.hasClass('skin-minerva') && !AnYi.hasClass('page-Main_Page') ? dom = document.getElementById('mw-content-subtitle')
-		 : dom = document.getElementById('contentSub');
-		if (document.getElementById(id) || !dom || [AnYi.getConf('wgCurRevisionId'), AnYi.getConf('wgRevisionId')].includes(0) || AnYi.getConf('wgCurRevisionId') !== AnYi.getConf('wgRevisionId') || !AnYi.getConf('wgIsArticle') || !AnYi.hasClass('action-view')) return;
-		const e = `<span style="line-height:20px;margin-left:19px">ArticleInfo${AnYi.wgUVS('加载', '載入')}失${AnYi.wgUVS('败', '敗')}</span>`;
-		fetch(`//articleinfo.${BaseMirrorDomain}/${AnYi.getConf('wgDBname')}/${AnYi.getConf('wgPageName').replace(/["%&?+\\]/g, escape)}?format=html&uselang=${AnYi.getConf('wgUserLanguage')}`).then(data => {
-			if (data.status === 200) return data.text()
-			else return e;
-		}).catch(() => e).then(data => {
-			dom.insertAdjacentHTML('beforebegin', `<div class="noprint" id="${id}"><span id="${id}_result"></span></div>`);
-			document.getElementById(`${id}_result`).insertAdjacentHTML('afterbegin', data.replace(/\/\/([a-z-]+(?:\.m)?)\.wikimedia\.org/g, `//$1.${BaseMirrorDomain}`).replace(/\/\/([a-z-]+)?(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.org/g, `//$1$2.${BaseMirrorDomain}`));
-		});
-	}
 	AnYi.collapsibleSidebar = () => AnYi.hasClass('ltr') && AnYi.hasClass('skin-vector-legacy') && !RLPAGEMODULES?.includes('ext.gadget.CollapsibleSidebar') && !['bo', 'dz'].includes(AnYi.getConf('wgContentLanguage')) && mw.loader.using('mediawiki.storage').then(() => AnYi.setJs(`//zh.wikipedia.${BaseMirrorDomain}/wiki/MediaWiki:Gadget-CollapsibleSidebar.js?action=raw&ctype=text/javascript`, 'defer').then(() => console.log('AnYiMirror collapsibleSidebar.js load succeeded.')).catch(() => console.log('AnYiMirror collapsibleSidebar.js load failed.')));
 	AnYi.confirmLogout = () => {
 		const dom = document.querySelector('#ca-cb-logout>a') || document.querySelector('.menu__item--logout') || document.querySelector('#topbar>a[href*="UserLogout"]') || document.querySelector('#pt-logout>a') || document.querySelector('.vector-user-menu-logout');
@@ -654,7 +641,6 @@ AnYiMirrorPrivateLoader = () => {
 		AnYiMirrorPrivateMethod.disableAnonEdit();
 		AnYiMirrorPrivateMethod.showRedirect('anyi-redirect');
 		AnYiMirrorPrivateMethod.ajaxLogin('init');
-		AnYiMirrorPrivateMethod.articleInfo('anyi-articleinfo');
 		AnYiMirrorPrivateMethod.collapsibleSidebar();
 		AnYiMirrorPrivateMethod.confirmLogout();
 		AnYiMirrorPrivateMethod.scrollUpButton();
@@ -690,7 +676,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 	return new Promise(resolve => {
 		const isBanSite = /developer|techblog/.test(location.host);
 		!isBanSite && AnYiMirrorPrivateMethod.darkMode('check') && (document.documentElement.style.filter = 'invert(.95) hue-rotate(.5turn)');
-		AnYiMirrorPrivateMethod.setCss('/wikimirror.css?date=20230217', 'url').then(() => console.log('AnYiMirror basic stylesheet load succeeded.')).catch(() => console.log('AnYiMirror basic stylesheet load failed.'));
+		AnYiMirrorPrivateMethod.setCss('/wikimirror.css?date=20230218', 'url').then(() => console.log('AnYiMirror basic stylesheet load succeeded.')).catch(() => console.log('AnYiMirror basic stylesheet load failed.'));
 		const dc = () => {
 			const buttonDom = document.getElementById('wpSave'),
 			doClick = () => {
@@ -848,6 +834,12 @@ AnYiMirrorPrivateMain = (time = 0) => {
 						getObj.host = location.host;
 						break;
 					}
+				}
+				const XtoolsApi = 'xtools.wmflabs.org/api/';
+				if (`${getObj.host}${getObj.path}`.includes(XtoolsApi)) {
+					const path = AnYiMirror.getRealText(getObj.path);
+					getObj.host = `xtools-api.${BaseMirrorDomain}`;
+					getObj.path = path.replace('/api/', '/');
 				}
 				config.body && (config.body = postObj.toString().replace(`${location.origin}/w/api.php?`, ''));
 				config.url && (config.url = getObj.toString());

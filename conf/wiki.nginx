@@ -468,26 +468,6 @@ server {
 }
 
 server {
-    server_name  articleinfo.example.org;
-    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
-
-    location / {
-        if ($request_uri ~* ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$) {
-            more_set_headers  "Access-Control-Allow-Origin: $http_origin";
-            rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
-        }
-        include            /path/to/wikimirror/conf/wiki.conf;
-        proxy_pass         https://xtools.wmflabs.org/api/page/articleinfo/;
-        proxy_hide_header  set-cookie;
-        proxy_hide_header  x-clacks-overhead;
-        proxy_set_header   Host xtools.wmflabs.org;
-        proxy_set_header   Referer https://xtools.wmflabs.org$request_uri;
-    }
-    include  /path/to/wikimirror/conf/wiki-location-static.conf;
-    proxy_hide_header  Upgrade;
-}
-
-server {
     server_name  intake-analytics.example.org intake-logging.example.org piwik.example.org;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
@@ -595,6 +575,31 @@ server {
     location /wikimirror/zh/darkmode {
         proxy_pass        http://static-IPAddress/images/darkmode;
         proxy_set_header  Host static-internal.example.org;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
+    server_name  xtools-api.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+
+    location / {
+        if ($request_uri ~* ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$) {
+            more_set_headers  "Access-Control-Allow-Origin: $http_origin";
+            rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
+        }
+        error_page              404 = @errors;
+        include                 /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass              https://xtools.wmflabs.org/api/;
+        proxy_hide_header       set-cookie;
+        proxy_hide_header       x-clacks-overhead;
+        proxy_intercept_errors  on;
+        proxy_set_header        Host xtools.wmflabs.org;
+        proxy_set_header        Referer https://xtools.wmflabs.org$request_uri;
+    }
+    location @errors {
+        return 204;
     }
     include  /path/to/wikimirror/conf/wiki-location-static.conf;
     proxy_hide_header  Upgrade;
