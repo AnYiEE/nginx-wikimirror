@@ -702,10 +702,9 @@ AnYiMirrorPrivateMain = (time = 0) => {
 				childList: true,
 				subtree: true,
 			});
-			const [cx, st, wa] = [document.querySelector('.cx-skin-menu-content-list'), document.querySelector('#footer-places-statslink a') || document.querySelector('#statslink a'), document.querySelector('.wb-langlinks-edit.wb-langlinks-link>a')];
+			const [cx, st] = [document.querySelector('.cx-skin-menu-content-list'), document.querySelector('#footer-places-statslink a') || document.querySelector('#statslink a')];
 			cx && (cx.id = 'p-tb');
 			st && (st.href = AnYiMirrorPrivateMethod.getRealText(st.href));
-			wa && (wa.target = '_blank');
 			window.addEventListener('beforeprint', () => {
 				AnYiMirrorPrivateMethod.darkMode('meta', 'color-scheme', 'remove');
 				for (const dom of document.querySelectorAll('a')) {
