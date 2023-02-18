@@ -58,7 +58,7 @@ AnYiMirrorPrivateMethod = new function () {
 				const href = dom.href;
 				reg1.test(href) && (dom.href = AnYi.getRealText(href));
 				const XtoolsApi = 'xtools.wmflabs.org/api/';
-				text.includes(XtoolsApi) && (dom.href = href.replace(XtoolsApi, `xtools-api.${BaseMirrorDomain}/`));
+				href.includes(XtoolsApi) && (dom.href = href.replace(XtoolsApi, `xtools-api.${BaseMirrorDomain}/`));
 			}
 			for (const dom of document.querySelectorAll('input[name="clientUrl"],input[name="intendedWikitext"]')) {
 				const text = dom.value;
