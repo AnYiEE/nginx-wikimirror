@@ -514,7 +514,7 @@ server {
     set          $hostdomain wikimedia;
 
     location / {
-        if ($request_uri ~* ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$) {
+        if ($request_uri ~* ^\/.*?(?:\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/.*?$) {
             more_set_headers  "Access-Control-Allow-Origin: $http_origin";
             rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
         }
@@ -585,7 +585,7 @@ server {
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
     location / {
-        if ($request_uri ~* ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$) {
+        if ($request_uri ~* ^\/.*?(?:\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/.*?$) {
             more_set_headers  "Access-Control-Allow-Origin: $http_origin";
             rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
         }
