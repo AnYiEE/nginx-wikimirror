@@ -1,4 +1,4 @@
-<div align="center"><img src="https://github.com/AnYiEE/nginx-wikimirror/blob/master/wikimirror.png" alt="nginx-wikimirror" style="width:50%"></div>
+<div align="center"><img src="/wikimirror.png" alt="nginx-wikimirror" style="width:50%"></div>
 <p align="center">A Wikimedia Projects Reverse Proxy based on Nginx</p>
 
 **使用方法**
@@ -90,4 +90,4 @@
 
 **Tips**
 
-* MediaWiki有时会响应其特殊的mime-type类型`text/x-wiki`，如果你使用Brotil或Gzip压缩，可以适酌情调整`brotli_types`或`gzip_types`配置。
+* MediaWiki有时会响应其特殊的mime-type类型`text/x-wiki`，如果你使用Brotil或Gzip压缩，可以酌情调整`brotli_types`或`gzip_types`配置项。
