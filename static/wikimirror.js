@@ -722,7 +722,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 				AnYiMirrorPrivateMethod.darkMode('init');
 				AnYiMirrorPrivateMethod.displayAnonHide('anyi-css-anon-hide');
 				resolve('AnYiMirror basic methods load succeeded.');
-			} else if (time > 100) {
+			} else if (time > 2) {
 				clearInterval(AnYiMirrorPrivateMainTimer);
 				!isBanSite && AnYiMirrorPrivateMethod.darkMode('init');
 				const fn = () => {
@@ -733,7 +733,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 				document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn);
 				resolve('AnYiMirror non-wiki mode.');
 			}
-		}, 10);
+		}, 0);
 	});
 };
 (async() => {
