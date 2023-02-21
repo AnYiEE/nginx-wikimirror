@@ -73,7 +73,7 @@
 }
 
 .AnYiTip > *:first-child {
-	font-size: 0.75em;
+	font-size: 0.7em;
 	border-right: none;
 }
 
@@ -377,8 +377,12 @@ pre, .mw-code, .mw-highlight, .ve-init-mw-desktopArticleTarget .CodeMirror-code,
 		background: #ffffff;
 	}
 	/* project portal */
+	.anyi-darkmode body[id*="www"] [data-el-section="other projects"] .app-badges .sprite,
 	.anyi-darkmode body[id*="www"] [data-el-section="other projects"] .other-project-icon {
 		filter: invert(0.95) hue-rotate(0.5turn);
+	}
+	.anyi-darkmode body[id*="www"] [data-jsl10n="portal.slogan"] {
+		color: #000000;
 	}
 	/* stream */
 	.anyi-darkmode #eventstreams-ui-app .nav-bar {
