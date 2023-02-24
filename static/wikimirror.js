@@ -366,7 +366,7 @@ AnYiMirrorPrivateMethod = new function () {
 			size: 'small',
 		});
 	}
-	AnYi.collapsibleSidebar = () => AnYi.hasClass('ltr') && AnYi.hasClass('skin-vector-legacy') && !RLPAGEMODULES?.includes('ext.gadget.CollapsibleSidebar') && !['bo', 'dz'].includes(AnYi.getConf('wgContentLanguage')) && mw.loader.using('mediawiki.storage').then(() => AnYi.setJs(`//zh.wikipedia.${BaseMirrorDomain}/wiki/MediaWiki:Gadget-CollapsibleSidebar.js?action=raw&ctype=text/javascript`, 'defer').then(() => console.log('AnYiMirror collapsibleSidebar.js load succeeded.')).catch(() => console.log('AnYiMirror collapsibleSidebar.js load failed.')));
+	AnYi.collapsibleSidebar = () => AnYi.hasClass('ltr') && AnYi.hasClass('skin-vector-legacy') && !RLPAGEMODULES?.includes('ext.gadget.CollapsibleSidebar') && !['bo', 'dz'].includes(AnYi.getConf('wgContentLanguage')) && mw.loader.using('mediawiki.storage').then(() => AnYi.setJs(`//zh.wikipedia.${BaseMirrorDomain}/wiki/MediaWiki:Gadget-CollapsibleSidebar.js?action=raw&ctype=text/javascript&debug=1`, 'defer').then(() => console.log('AnYiMirror collapsibleSidebar.js load succeeded.')).catch(() => console.log('AnYiMirror collapsibleSidebar.js load failed.')));
 	AnYi.confirmLogout = () => {
 		const dom = document.querySelector('#ca-cb-logout>a') || document.querySelector('.menu__item--logout') || document.querySelector('#topbar>a[href*="UserLogout"]') || document.querySelector('#pt-logout>a') || document.querySelector('.vector-user-menu-logout');
 		if (!dom || !AnYi.getConf('wgUserName') || RLPAGEMODULES?.includes('ext.gadget.confirm-logout')) return;
@@ -585,7 +585,7 @@ AnYiMirrorPrivateMethod = new function () {
 		if (id === 'anyi-css-darkmode-logo-wiki-vector-legacy') return `${c}#p-logo{height:100px}#p-logo a{height:125px}`;
 		if (id === 'anyi-css-darkmode-logo-zhwiki') return `.mw-wiki-logo{background-image:url(${u}.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${u}-hans.png)}@media(-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(min-resolution:1.5dppx),(min-resolution:144dpi){.mw-wiki-logo{background-image:url(${u}-1.5x.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${u}-hans-1.5x.png)}}@media(-webkit-min-device-pixel-ratio:2),(min--moz-device-pixel-ratio:2),(min-resolution:2dppx),(min-resolution:192dpi){.mw-wiki-logo{background-image:url(${u}-2x.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${u}-hans-2x.png)}}`;
 	}
-	AnYi.scrollUpButton = () => !RLPAGEMODULES?.includes('ext.gadget.scrollUpButton') && AnYi.setJs(`//zh.wikipedia.${BaseMirrorDomain}/wiki/MediaWiki:Gadget-scrollUpButton.js?action=raw&ctype=text/javascript`, 'async').then(() => console.log('AnYiMirror scrollUpButton.js load succeeded.')).catch(() => console.log('AnYiMirror scrollUpButton.js load failed.'));
+	AnYi.scrollUpButton = () => !RLPAGEMODULES?.includes('ext.gadget.scrollUpButton') && AnYi.setJs(`//zh.wikipedia.${BaseMirrorDomain}/wiki/MediaWiki:Gadget-scrollUpButton.js?action=raw&ctype=text/javascript&debug=1`, 'async').then(() => console.log('AnYiMirror scrollUpButton.js load succeeded.')).catch(() => console.log('AnYiMirror scrollUpButton.js load failed.'));
 	AnYi.wgUXS = (wg, hans, hant, cn, tw, hk, sg, zh, mo, my) => {
 		const ret = {
 			'zh': zh ?? hans ?? hant ?? cn ?? tw ?? hk ?? sg ?? mo ?? my,
