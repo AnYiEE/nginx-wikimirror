@@ -778,7 +778,6 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			level: 5,
 		});
 	};
-	AnYiMirrorPublicMethod.prototype.ahCallback_ErrorNotify = (config, {autoHide = false, title = 'Network Error'} = {}) => mw.notify?.([`<b>Method: </b>${config.method}<br><b>Url: </b><span style="word-break:break-all">${config.url}</span>`], {autoHide, type: 'error', title});
 	AnYiMirrorPublicMethod.prototype.ahCallback_Request = config => {
 		const [textArr, getObj, postObj] = [['apfrom', 'appendtext', 'apprefix', 'claim', 'content', 'ehcontent', 'epcontent', 'etcontent', 'etssummary', 'fromtext', 'fromtext-main', 'html', 'ntcontent', 'nttopic', 'prependtext', 'repcontent', 'search', 'summary', 'text', 'titles', 'totext', 'totext-main', 'url', 'wikitext'], new mw.Uri(config.url), new mw.Uri(`/w/api.php?${config.body}`)];
 		try {
@@ -950,7 +949,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 	await mw.loader.using('mediawiki.Uri');
 	ah.proxy({
 		onError: (err, handler) => {
-			err.type === 'error' && AnYiMirror.ahCallback_ErrorNotify(err.config);
+			err.type === 'error' && console.log(err);
 			handler.next(err);
 		},
 		onRequest: (config, handler) => {
@@ -974,10 +973,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 		let isError = false;
 		const response = await origFetch(url, options).catch(err => {
 			isError = true;
-			AnYiMirror.ahCallback_ErrorNotify({
-				method: options?.method || 'GET',
-				url,
-			});
+			console.log({err: e, options, url});
 		});
 		if (isError) return;
 		const contentType = response.headers.get('content-type');
