@@ -281,7 +281,10 @@ pre, .mw-code, .mw-highlight, .ve-init-mw-desktopArticleTarget .CodeMirror-code,
 	.anyi-darkmode .drawer-container__mask,
 	.anyi-darkmode .main-menu-mask,
 	.anyi-darkmode .mw-mmv-image,
+	.anyi-darkmode .mw-mmv-overlay,
+	.anyi-darkmode .mw-tmh-media-dialog .oo-ui-dialog-content > .oo-ui-window-body .oo-ui-layout,
 	.anyi-darkmode .overlay.media-viewer,
+	.anyi-darkmode .video-js,
 	.anyi-darkmode .vjs-poster,
 	.anyi-darkmode #menus-cover {
 		background-color: #f7f7f7 !important;

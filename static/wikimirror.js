@@ -676,7 +676,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 	return new Promise(resolve => {
 		const isBanSite = /developer|techblog/.test(location.host);
 		!isBanSite && AnYiMirrorPrivateMethod.darkMode('check') && (document.documentElement.style.filter = 'invert(.95) hue-rotate(.5turn)');
-		AnYiMirrorPrivateMethod.setCss('/wikimirror.css?date=20230221', 'url').then(() => console.log('AnYiMirror basic stylesheet load succeeded.')).catch(() => console.log('AnYiMirror basic stylesheet load failed.'));
+		AnYiMirrorPrivateMethod.setCss('/wikimirror.css?date=20230225', 'url').then(() => console.log('AnYiMirror basic stylesheet load succeeded.')).catch(() => console.log('AnYiMirror basic stylesheet load failed.'));
 		const dc = () => {
 			const buttonDom = document.getElementById('wpSave'),
 			doClick = () => {
