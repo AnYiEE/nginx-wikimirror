@@ -184,11 +184,10 @@ server {
 
     location / {
         rewrite ^\/r\/plugins\/gitiles\/wikipedia\/gadgets\/ProveIt\/\+\/master\/i18n\/zh-cn\.json(.*?)$ /r/plugins/gitiles/wikipedia/gadgets/ProveIt/+/master/i18n/zh-hans.json$1 break;
-        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://gerrit.wikimedia.org;
-        proxy_hide_header  access-control-allow-credentials;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $subdomain.$hostdomain.org;
@@ -232,11 +231,10 @@ server {
         proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
     }
     location /render {
-        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress/render;
-        proxy_hide_header  access-control-allow-credentials;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $subdomain.$hostdomain.org;
@@ -511,11 +509,9 @@ server {
             more_set_headers  "Access-Control-Allow-Origin: $http_origin";
             rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
         }
-        more_set_headers   "Access-Control-Allow-Credentials: true";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress;
-        proxy_hide_header  access-control-allow-credentials;
         proxy_hide_header  set-cookie;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $hostdomain.org;
@@ -622,42 +618,38 @@ server {
         return 204;
     }
     location /api/rest_v1 {
-        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress;
-        proxy_hide_header  access-control-allow-credentials;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $subdomain$hostdomain.org;
         proxy_set_header   Referer https://$subdomain$hostdomain.org$request_uri;
     }
     location /api/rest_v1/page/pdf {
-        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress;
-        proxy_hide_header  access-control-allow-credentials;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Host $subdomain.$hostdomain.org;
         proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
     }
     location /w/api.php {
-        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress/w/api.php;
-        proxy_hide_header  access-control-allow-credentials;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $subdomain$hostdomain.org;
         proxy_set_header   Referer https://$subdomain$hostdomain.org$request_uri;
     }
     location /w/index.php {
-        more_set_headers   "Access-Control-Allow-Credentials: true" "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress/w/index.php;
-        proxy_hide_header  access-control-allow-credentials;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $subdomain$hostdomain.org;
