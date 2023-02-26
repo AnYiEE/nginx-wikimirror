@@ -363,7 +363,7 @@ pre, .mw-code, .mw-highlight, .ve-init-mw-desktopArticleTarget .CodeMirror-code,
 		filter: invert(0.95) hue-rotate(0.5turn);
 	}
 	/* gitlab */
-	.anyi-darkmode 	body.ui-gray .navbar-gitlab {
+	.anyi-darkmode body.ui-gray .navbar-gitlab {
 		background-color: #ffffff;
 	}
 	/* phabricator */

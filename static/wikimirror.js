@@ -7,15 +7,15 @@
  * This source code is licensed under the GPL v3 license.
  */
 'use strict';
-if ((function () {try {return eval('({})?.a??1')} catch (e) {}})()) {
+if ((() => {try {return eval('({})?.a??1')} catch (e) {}})()) {
 const BaseMirrorDomain = 'example.org', [BaseMirrorDomainRegex, BaseMirrorDomainSplit] = [BaseMirrorDomain.replace('.', '\\.'), BaseMirrorDomain.split('.')],
-AnYiMirrorPrivateMethod = new function () {
+AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 	const AnYi = this;
 	AnYi.getConf = key => {
 		if (typeof mw === 'object' && typeof mw.config?.get === 'function') return mw.config.get(key);
 		if (typeof RLCONF === 'object' && RLCONF[key] !== void 0) return RLCONF[key];
 		return null;
-	}
+	};
 	AnYi.getCookie = name => `; ${AnYi.decodeURIComponent(document.cookie)}`.split(`; ${name}=`).pop().split(';').shift();
 	AnYi.getLocate = method => {
 		const [originHash, originHost, originUrl] = [AnYi.getRealText(location.hash), AnYi.getRealText(location.host), AnYi.getRealText(location.href)];
@@ -29,7 +29,7 @@ AnYiMirrorPrivateMethod = new function () {
 		default:
 			return originUrl;
 		}
-	}
+	};
 	AnYi.getRealText = (value, method) => {
 		const [reg1, reg2, reg3] = [new RegExp(BaseMirrorDomainRegex, 'gi'), new RegExp(`(wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki|planet)\\.${BaseMirrorDomainRegex}`, 'gi'), new RegExp(`latex-(png|svg)\\.${BaseMirrorDomainRegex}`, 'gi')],
 		[reg4, reg5] = [new RegExp(`\\\\\\.wikipedia\\\\\\.\\(\\?:${BaseMirrorDomainSplit[0]}\\\\\\.\\)\\?${BaseMirrorDomainSplit[1]}`, 'g'), /background(-image)?:url\(('|")?(https?:)?\/\/upload\.wikimedia\.org/gi],
@@ -82,21 +82,21 @@ AnYiMirrorPrivateMethod = new function () {
 			typeof wikEd === 'object' && wikEd.useWikEd && wikEd.UpdateFrame();
 		}
 		return value;
-	}
+	};
 	AnYi.decodeURIComponent = value => decodeURIComponent((v => {
-				try {
-					return decodeURIComponent(v);
-				} catch (e) {
-					return v.replace(/%(?!\d+)/g, '%25');
-				}
-			})(value).replace(/\+/g, '%20'));
+		try {
+			return decodeURIComponent(v);
+		} catch (e) {
+			return v.replace(/%(?!\d+)/g, '%25');
+		}
+	})(value).replace(/\+/g, '%20'));
 	AnYi.encodeURIComponent = value => encodeURIComponent(value).replace(/%20/g, '+').replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%5B/g, '[').replace(/%5D/g, ']');
 	AnYi.hasClass = (name, selector = 'body') => {
 		if (!name || !document.querySelector(selector)) return;
 		for (const dom of document.querySelectorAll(selector)) {
 			if (dom.classList.contains(name)) return true;
 		}
-	}
+	};
 	AnYi.setCookie = (name, value, time, domain = `.${BaseMirrorDomain}`, path = '/', isSecure = true) => {
 		if (!name || !value || !time || !domain || !path) return;
 		const [base, date] = [`${name}=${AnYi.encodeURIComponent(value)};domain=${domain};path=${path}${isSecure?';Secure':''}`, new Date()];
@@ -106,7 +106,7 @@ AnYiMirrorPrivateMethod = new function () {
 			date.setTime(date.getTime() + time * 3600000);
 			document.cookie = `${base};expires=${date.toGMTString()}`;
 		}
-	}
+	};
 	AnYi.setCss = (value, method = 'css', id) => {
 		switch (method) {
 		case 'add':
@@ -134,7 +134,7 @@ AnYiMirrorPrivateMethod = new function () {
 				document.head.append(link);
 			});
 		}
-	}
+	};
 	AnYi.setJs = (url, method) => {
 		return new Promise((resolve, reject) => {
 			const script = document.createElement('script');
@@ -145,12 +145,12 @@ AnYiMirrorPrivateMethod = new function () {
 			script.onerror = () => reject();
 			document.head.append(script);
 		});
-	}
+	};
 	AnYi.notify = (msg, opt) => mw.loader.using('mediawiki.notification').then(() => mw.notification.notify(msg, opt));
 	AnYi.showNotice = (value, {autoHide = false, tag} = {}) => {
 		const [ComHead, ComFoot, O] = ['<div class="AnYiNotice">', '</div>', '<button>了解</button>'];
 		value && autoHide ? AnYi.notify([`${ComHead}${value}${O}${ComFoot}`], {tag}) : AnYi.notify([`${ComHead}${value}${O}${ComFoot}`], {autoHide: false, tag});
-	}
+	};
 	AnYi.showRedirect = id => {
 		if (document.getElementById(id)) return;
 		const [Text, Title] = [`${AnYi.wgULS('访问', '造訪')}官方${AnYi.wgULS('页面', '頁')}`, `${AnYi.wgUVS('将当', '將當')}前${AnYi.wgUVS('镜', '鏡')}像站${AnYi.wgUVS('页', '頁')}面重${AnYi.wgUVS('定', '新導')}向至官方相${AnYi.wgUVS('应页面', '應頁')}`],
@@ -163,7 +163,7 @@ AnYiMirrorPrivateMethod = new function () {
 		 : AnYi.hasClass('skin-monobook') && document.getElementById('f-list') ? document.getElementById('f-list').insertAdjacentHTML('beforeEnd', Redirect)
 		 : AnYi.hasClass('skin-nostalgia') && document.getElementById('searchform') ? document.getElementById('searchform').insertAdjacentHTML('beforebegin', Redirect.replace('<li', '<span').replace('li>', 'span>'))
 		 : (AnYi.hasClass('skin-timeless') || AnYi.hasClass('skin-vector')) && document.getElementById('footer-places') ? document.getElementById('footer-places').insertAdjacentHTML('beforeEnd', Redirect) : void 0;
-	}
+	};
 	AnYi.ajaxLogin = async(method, {username, password} = {}) => {
 		const [Account, Auto, Get, Error, Login, Name, Token, User, Password, Recaptcha] = [AnYi.wgULS('账号', '帳戶'), `自${AnYi.wgULS('动', '動')}`, `${AnYi.wgULS('获', '獲')}取`, AnYi.wgULS('错误', '錯誤'), `登${AnYi.wgUVS('录', '入')}`, AnYi.wgULS('名', '名稱'), AnYi.wgULS('令牌', '權杖'), AnYi.wgULS(void 0, void 0, '用户', '使用者', '用戶'), AnYi.wgULS('密码', '密碼'), `2FA${AnYi.wgULS('验证码', '驗證碼')}`],
 		CookiePrefix = location.host.includes('wikitech') ? 'lastLoginWikitech' : 'lastLogin';
@@ -254,7 +254,7 @@ AnYiMirrorPrivateMethod = new function () {
 						icon: 'key',
 						placeholder: retypePassword ? `新${Password}` : `6位${AnYi.wgULS('数', '數')}字`,
 						validate: 'integer',
-					}
+					},
 				});
 				if (value === null) {
 					AnYi.showNotice(`<span>${Login}取消</span>`, {
@@ -276,7 +276,7 @@ AnYiMirrorPrivateMethod = new function () {
 				} else {
 					params.OATHToken = value;
 				}
-			};
+			}
 			AnYi.showNotice(`<span>正在${Login}</span>`, {
 				autoHide: false,
 				tag: 'login',
@@ -365,7 +365,7 @@ AnYiMirrorPrivateMethod = new function () {
 			title: jQuery(`<b class="oo-ui-window-head">${Login}</b>`),
 			size: 'small',
 		});
-	}
+	};
 	AnYi.collapsibleSidebar = () => AnYi.hasClass('ltr') && AnYi.hasClass('skin-vector-legacy') && !RLPAGEMODULES?.includes('ext.gadget.CollapsibleSidebar') && !['bo', 'dz'].includes(AnYi.getConf('wgContentLanguage')) && mw.loader.using('mediawiki.storage').then(() => AnYi.setJs(`//zh.wikipedia.${BaseMirrorDomain}/wiki/MediaWiki:Gadget-CollapsibleSidebar.js?action=raw&ctype=text/javascript&debug=1`, 'defer').then(() => console.log('AnYiMirror collapsibleSidebar.js load succeeded.')).catch(() => console.log('AnYiMirror collapsibleSidebar.js load failed.')));
 	AnYi.confirmLogout = () => {
 		const dom = document.querySelector('#ca-cb-logout>a') || document.querySelector('.menu__item--logout') || document.querySelector('#topbar>a[href*="UserLogout"]') || document.querySelector('#pt-logout>a') || document.querySelector('.vector-user-menu-logout');
@@ -392,7 +392,7 @@ AnYiMirrorPrivateMethod = new function () {
 				}).then(() => location.reload());
 			});
 		});
-	}
+	};
 	AnYi.darkMode = (method, item, value) => {
 		if (!AnYi.localStorage()) return;
 		const [Id, Name] = ['anyi-darkmode', 'AnYiDarkMode'],
@@ -533,7 +533,7 @@ AnYiMirrorPrivateMethod = new function () {
 			}
 			break;
 		}
-	}
+	};
 	AnYi.diffLink = async(id, diffId, oldId, revisionId, pos) => {
 		if (document.getElementById(id) || !(document.getElementById('p-cactions') || document.getElementById('p-tb') || AnYi.hasClass('skin-nostalgia') || AnYi.hasClass('mw-special-MobileDiff')) || !(document.getElementById('mw-revision-nav') || AnYi.hasClass('diff', 'table')) || RLPAGEMODULES?.includes('ext.gadget.Difflink')) return;
 		AnYi.hasClass('mw-special-MobileDiff') ? pos = 'mw-mf-diffarea'
@@ -564,7 +564,7 @@ AnYiMirrorPrivateMethod = new function () {
 		} else if ([document.getElementById('contentSub').querySelectorAll('#mw-revision-nav').length, document.querySelectorAll('main#content>.pre-content #mw-revision-nav').length].includes(1) && revisionId) {
 			doIns(`${AnYi.wgUVS('当', '當')}前修${AnYi.wgUVS('订链接', '訂連結')}`, `${AnYi.wgUVS('复制链接', '複製連結')}到${AnYi.wgUVS('当', '當')}前修${AnYi.wgUVS('订', '訂')}版本的${AnYi.wgUVS('维', '維')}基${AnYi.wgUVS('语', '語')}法`, `Special:PermaLink/${revisionId}`, true);
 		}
-	}
+	};
 	AnYi.disableAnonEdit = () => {
 		if (AnYi.getConf('wgUserName')) return;
 		mw.hook('wikipage.editform').add($dom => {
@@ -573,18 +573,18 @@ AnYiMirrorPrivateMethod = new function () {
 		});
 		mw.hook('mobileFrontend.editorOpened').add(() => jQuery('#wikitext-editor').prop('readonly', true));
 		mw.hook('ve.activationComplete').add(($surface = ve.init.target.getSurface()) => $surface && $surface.setReadOnly(true));
-	}
+	};
 	AnYi.displayAnonHide = id => {
 		const isLogin = AnYi.getConf('wgUserName');
 		isLogin && AnYi.setCss(id, 'remove');
 		!isLogin && AnYi.hasClass('mw-special-CreateAccount') && location.replace('/wiki/Special:Userlogin');
-	}
+	};
 	AnYi.extraCss = id => {
 		const [c, u] = ['.mw-wiki-logo{background-image:url(/static/images/mobile/copyright/wikipedia.png)!important;background-size:100px;filter:invert(.9)}', `//upload.${BaseMirrorDomain}/wikimirror/zh/darkmode/zhwiki`];
 		if (id === 'anyi-css-darkmode-logo-wiki-monobook') return `${c}@media only screen and (min-width:551px){body.skin--responsive #column-one{padding-top: 110px}body.skin--responsive #p-logo a,body.skin--responsive #p-logo a:hover{background-position:50% 15%!important}}`;
 		if (id === 'anyi-css-darkmode-logo-wiki-vector-legacy') return `${c}#p-logo{height:100px}#p-logo a{height:125px}`;
 		if (id === 'anyi-css-darkmode-logo-zhwiki') return `.mw-wiki-logo{background-image:url(${u}.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${u}-hans.png)}@media(-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(min-resolution:1.5dppx),(min-resolution:144dpi){.mw-wiki-logo{background-image:url(${u}-1.5x.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${u}-hans-1.5x.png)}}@media(-webkit-min-device-pixel-ratio:2),(min--moz-device-pixel-ratio:2),(min-resolution:2dppx),(min-resolution:192dpi){.mw-wiki-logo{background-image:url(${u}-2x.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${u}-hans-2x.png)}}`;
-	}
+	};
 	AnYi.scrollUpButton = () => !RLPAGEMODULES?.includes('ext.gadget.scrollUpButton') && AnYi.setJs(`//zh.wikipedia.${BaseMirrorDomain}/wiki/MediaWiki:Gadget-scrollUpButton.js?action=raw&ctype=text/javascript&debug=1`, 'async').then(() => console.log('AnYiMirror scrollUpButton.js load succeeded.')).catch(() => console.log('AnYiMirror scrollUpButton.js load failed.'));
 	AnYi.wgUXS = (wg, hans, hant, cn, tw, hk, sg, zh, mo, my) => {
 		const ret = {
@@ -598,7 +598,7 @@ AnYiMirrorPrivateMethod = new function () {
 			'zh-tw': tw ?? hant ?? hk ?? mo,
 		};
 		return ret[wg] ?? zh ?? hans ?? hant ?? cn ?? tw ?? hk ?? sg ?? mo ?? my ?? '';
-	}
+	};
 	AnYi.wgULS = (hans, hant, cn, tw, hk, sg, zh, mo, my) => AnYi.wgUXS(AnYi.getConf('wgUserLanguage'), hans, hant, cn, tw, hk, sg, zh, mo, my);
 	AnYi.wgUVS = (hans, hant, cn, tw, hk, sg, zh, mo, my) => AnYi.wgUXS(AnYi.getConf('wgUserVariant'), hans, hant, cn, tw, hk, sg, zh, mo, my);
 	AnYi.localStorage = (name, value) => {
@@ -617,7 +617,7 @@ AnYiMirrorPrivateMethod = new function () {
 		} else {
 			return check;
 		}
-	}
+	};
 },
 AnYiMirrorPrivateHolder = (time = 0) => {
 	return new Promise((resolve, reject) => {
@@ -960,7 +960,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			const contentType = response.headers['content-type'];
 			/json|text|xml/.test(contentType) && !/css|(?:ecma|java)script/.test(contentType) && (response = AnYiMirror.ahCallback_Response(response));
 			handler.next(response);
-		}
+		},
 	});
 	const {fetch: origFetch} = window;
 	window.fetch = async(url, options) => {
