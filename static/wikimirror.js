@@ -165,6 +165,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 		 : (AnYi.hasClass('skin-timeless') || AnYi.hasClass('skin-vector')) && document.getElementById('footer-places') ? document.getElementById('footer-places').insertAdjacentHTML('beforeEnd', Redirect) : void 0;
 	};
 	AnYi.ajaxLogin = async(method, {username, password} = {}) => {
+		if (new RegExp(`^\\S+?\\.m\\.${BaseMirrorDomainRegex}`).test(location.host)) return; // API BUG <https://phabricator.wikimedia.org/T328397>
 		const [Account, Auto, Get, Error, Login, Name, Token, User, Password, Recaptcha] = [AnYi.wgULS('账号', '帳戶'), `自${AnYi.wgULS('动', '動')}`, `${AnYi.wgULS('获', '獲')}取`, AnYi.wgULS('错误', '錯誤'), `登${AnYi.wgUVS('录', '入')}`, AnYi.wgULS('名', '名稱'), AnYi.wgULS('令牌', '權杖'), AnYi.wgULS(void 0, void 0, '用户', '使用者', '用戶'), AnYi.wgULS('密码', '密碼'), `2FA${AnYi.wgULS('验证码', '驗證碼')}`],
 		CookiePrefix = location.host.includes('wikitech') ? 'lastLoginWikitech' : 'lastLogin';
 		if (method === 'init') {
@@ -175,7 +176,6 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			});
 			const [username, password] = [AnYi.getCookie(`${CookiePrefix}UserName`), AnYi.getCookie(`${CookiePrefix}Password`)];
 			if (username && !['', 'deleted'].includes(password) && !AnYi.getConf('wgUserName')) {
-				if (new RegExp(`^\\S+?\\.m\\.${BaseMirrorDomainRegex}`).test(location.host)) return; // API BUG <https://phabricator.wikimedia.org/T328397>
 				AnYi.showNotice(`<span>${AnYi.wgULS('开', '開')}始${Auto}${Login}</span>`, {
 					autoHide: true,
 					tag: 'login',
