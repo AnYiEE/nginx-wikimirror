@@ -936,6 +936,8 @@ AnYiMirrorPrivateMain = (time = 0) => {
 				response.response = `${htmlObj.dtd}${AnYiMirror.getRealText(htmlObj.dom.outerHTML)}`;
 			} else if (url.includes('/api/rest_v1/transform/html/to/wikitext')) {
 				response.response = AnYiMirror.getRealText(responseText);
+			} else if (url.includes(`xtools-api.${BaseMirrorDomain}`) && /format=html/.test(url)) {
+				response.response = responseText.replace(/\/\/([a-z-]+(?:\.m)?)\.wikimedia\.org/g, `//$1.${BaseMirrorDomain}`).replace(/\/\/([a-z-]+)?(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.org/g, `//$1$2.${BaseMirrorDomain}`);
 			}
 		}
 		return response;
