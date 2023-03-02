@@ -124,7 +124,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			break;
 		case 'url':
 			return new Promise((resolve, reject) => {
-				if (!value) e();
+				if (!value) reject();
 				const link = document.createElement('link');
 				id && (link.id = id);
 				link.href = value;
@@ -138,7 +138,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 	AnYi.setJs = (url, method) => {
 		return new Promise((resolve, reject) => {
 			const script = document.createElement('script');
-			url ? script.src = url : e();
+			url ? script.src = url : reject();
 			method === 'async' && (script.async = true);
 			method === 'defer' && (script.defer = true);
 			script.onload = () => resolve();
