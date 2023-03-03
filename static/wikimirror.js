@@ -950,7 +950,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			handler.next(err);
 		},
 		onRequest: (config, handler) => {
-			config = AnYiMirror.ahCallback_Request(config);
+			!/^%5Bobject\+(?:ArrayBuffer|Blob|DataView|Document)%5D=$/.test(config.body) && (config = AnYiMirror.ahCallback_Request(config));
 			handler.next(config);
 		},
 		onResponse: (response, handler) => {
@@ -961,12 +961,14 @@ AnYiMirrorPrivateMain = (time = 0) => {
 	});
 	const {fetch: origFetch} = window;
 	window.fetch = async(url, options) => {
-		typeof url === 'object' && (url = url.toString());
-		const urlObj = new URL(url, location.origin);
-		urlObj.search !== '' && (url = AnYiMirror.ahCallback_Request({
-			url: urlObj.toString(),
-		}).url);
-		options?.body && (options.body = AnYiMirror.ahCallback_Request(options).body);
+		if (['[object Object]', '[object String]', '[object URL]'].includes(Object.prototype.toString.call(url))) {
+			typeof url === 'object' && (url = url.toString());
+			const urlObj = new URL(url, location.origin);
+			urlObj.search !== '' && (url = AnYiMirror.ahCallback_Request({
+				url: urlObj.toString(),
+			}).url);
+		}
+		options?.body && ['[object FormData]', '[object String]', '[object URLSearchParams]'].includes(Object.prototype.toString.call(options.body)) && (options.body = AnYiMirror.ahCallback_Request(options).body);
 		let isError = false;
 		const response = await origFetch(url, options).catch(err => {
 			isError = true;
