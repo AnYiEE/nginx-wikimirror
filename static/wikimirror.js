@@ -153,7 +153,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 	};
 	AnYi.showRedirect = id => {
 		if (document.getElementById(id)) return;
-		const [Text, Title] = [`${AnYi.wgULS('访问', '造訪')}官方${AnYi.wgULS('页面', '頁')}`, `${AnYi.wgUVS('将当', '將當')}前${AnYi.wgUVS('镜', '鏡')}像站${AnYi.wgUVS('页', '頁')}面重${AnYi.wgUVS('定', '新導')}向至官方相${AnYi.wgUVS('应页面', '應頁')}`],
+		const [Text, Title] = [`${AnYi.wgULS('访问', '造訪')}官方${AnYi.wgULS('页面', '頁')}`, `${AnYi.wgULS('将当', '將當')}前${AnYi.wgULS('镜', '鏡')}像${AnYi.wgULS('站', '')}${AnYi.wgULS('页面', '頁')}重${AnYi.wgULS('定', '新導')}向至官方相${AnYi.wgULS('应页面', '應頁')}`],
 		[Redirect, RedirectMinerva] = [`<li id="${id}"><a href="${AnYi.getLocate('originUrl')}" target="_blank" title="${Title}">${Text}</a></li>`, `<li id="${id}"><a class="mw-ui-icon mw-ui-icon-before mw-ui-icon-minerva-logOut" href="${AnYi.getLocate('originUrl')}" target="_blank" title="${Title}"><span>${Text}</span></a></li>`];
 		AnYi.hasClass('skin-apioutput') && document.querySelector('.apihelp-flags>ul') ? document.querySelector('.apihelp-flags>ul').insertAdjacentHTML('beforeEnd', Redirect)
 		 : AnYi.hasClass('skin-cologneblue') && document.getElementById('titlelinks') ? document.getElementById('titlelinks').insertAdjacentHTML('beforeEnd', Redirect.replace('<li', '<span').replace('li>', 'span>'))
@@ -166,7 +166,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 	};
 	AnYi.ajaxLogin = async(method, {username, password} = {}) => {
 		if (new RegExp(`^\\S+?\\.m\\.${BaseMirrorDomainRegex}`).test(location.host)) return; // API BUG <https://phabricator.wikimedia.org/T328397>
-		const [Account, Auto, Get, Error, Login, Name, Token, User, Password, Recaptcha] = [AnYi.wgULS('账号', '帳戶'), `自${AnYi.wgULS('动', '動')}`, `${AnYi.wgULS('获', '獲')}取`, AnYi.wgULS('错误', '錯誤'), `登${AnYi.wgUVS('录', '入')}`, AnYi.wgULS('名', '名稱'), AnYi.wgULS('令牌', '權杖'), AnYi.wgULS(void 0, void 0, '用户', '使用者', '用戶'), AnYi.wgULS('密码', '密碼'), `2FA${AnYi.wgULS('验证码', '驗證碼')}`],
+		const [Account, Auto, Get, Error, Login, Name, Token, User, Password, Recaptcha] = [AnYi.wgULS('账号', '帳戶'), `自${AnYi.wgULS('动', '動')}`, `${AnYi.wgULS('获', '獲')}取`, AnYi.wgULS('错误', '錯誤'), `登${AnYi.wgULS('录', '入')}`, AnYi.wgULS('名', '名稱'), AnYi.wgULS('令牌', '權杖'), AnYi.wgULS(void 0, void 0, '用户', '使用者', '用戶'), AnYi.wgULS('密码', '密碼'), `2FA${AnYi.wgULS('验证码', '驗證碼')}`],
 		CookiePrefix = location.host.includes('wikitech') ? 'lastLoginWikitech' : 'lastLogin';
 		if (method === 'init') {
 			const dom = document.getElementById('ca-cb-login') || document.querySelector('.menu__item--login') || document.querySelector('#topbar>a[href*="UserLogin"]') || document.getElementById('pt-login-2') || document.getElementById('pt-login') || document.querySelector('.vector-user-menu-login');
@@ -380,7 +380,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			e.preventDefault();
 			e.stopPropagation();
 			await mw.loader.using('oojs-ui-windows');
-			OO.ui.confirm(jQuery(`<div class="AnYiNotice AnYiTip"><span style="font-size:1.2rem">您${AnYi.wgUVS('确', '確')}定要${AnYi.wgUVS('退', '登')}出${AnYi.wgUVS('吗', '嗎')}？</span></div>`)).then(async confirmed => {
+			OO.ui.confirm(jQuery(`<div class="AnYiNotice AnYiTip"><span style="font-size:1.2rem">您${AnYi.wgULS('确', '確')}定要${AnYi.wgULS('退', '登')}出${AnYi.wgULS('吗', '嗎')}？</span></div>`)).then(async confirmed => {
 				if (!confirmed) return;
 				AnYi.showNotice(`<span>正在${AnYi.wgULS('获', '獲')}取API${AnYi.wgULS('令牌', '權杖')}</span>`);
 				await fetch('/w/api.php?action=query&format=json&meta=tokens&type=csrf').then(data => data.json()).then(data => data.query?.tokens && (token = data.query.tokens.csrftoken.replace('+', '%2B')));
@@ -397,7 +397,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 		if (!AnYi.localStorage()) return;
 		const [Id, Name] = ['anyi-darkmode', 'AnYiDarkMode'],
 		[ComHead, ComAnd, ComFoot] = [`<li id="${Id}"><a class="mw-ui-icon mw-ui-icon-before" title="`, '"><span>', '</span></a></li>'],
-		[Dark, DarkTip, Light, LightTip] = [`深色主${AnYi.wgUVS('题', '題')}`, `${AnYi.wgUVS('将镜', '將鏡')}像站的主${AnYi.wgUVS('题', '題')}色切${AnYi.wgUVS('换', '換')}至深色`, `${AnYi.wgUVS('浅', '淺')}色主${AnYi.wgUVS('题', '題')}`, `${AnYi.wgUVS('将镜', '將鏡')}像站的主${AnYi.wgUVS('题', '題')}色切${AnYi.wgUVS('换', '換')}至${AnYi.wgUVS('浅', '淺')}色`],
+		[Dark, DarkTip, Light, LightTip] = [`深色主${AnYi.wgULS('题', '題')}`, `${AnYi.wgULS('将镜', '將鏡')}像站的主${AnYi.wgULS('题', '題')}色切${AnYi.wgULS('换', '換')}至深色`, `${AnYi.wgULS('浅', '淺')}色主${AnYi.wgULS('题', '題')}`, `${AnYi.wgULS('将镜', '將鏡')}像站的主${AnYi.wgULS('题', '題')}色切${AnYi.wgULS('换', '換')}至${AnYi.wgULS('浅', '淺')}色`],
 		isDarkMode = matchMedia('(prefers-color-scheme:dark)').matches,
 		modeObserver = {
 			dark: mediaQueryList => {
@@ -557,12 +557,12 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			const buildLink = (oldId, link = 'Special:Diff/') => {
 				oldId && (link += `${oldId}/`);
 				link += diffId;
-				doIns(`${AnYi.wgUVS('当', '當')}前差${AnYi.wgUVS('异链接', '異連結')}`, `${AnYi.wgUVS('复制链接', '複製連結')}到${AnYi.wgUVS('当前', '當前')}差${AnYi.wgUVS('异', '異')}版本的${AnYi.wgUVS('维', '維')}基${AnYi.wgUVS('语', '語')}法`, link);
+				doIns(`${AnYi.wgULS('当', '當')}前差${AnYi.wgULS('异链接', '異連結')}`, `${AnYi.wgULS('复制链接', '複製連結')}到${AnYi.wgULS('当前', '當前')}差${AnYi.wgULS('异', '異')}版本的${AnYi.wgULS('维', '維')}基${AnYi.wgULS('语', '語')}法`, link);
 			};
 			buildLink(oldId);
 			oldId && fetch(`/w/api.php?action=compare&format=json&fromrev=${diffId}&prop=ids&torelative=prev`).then(data => data.json()).then(data => diffId === AnYi.getConf('wgDiffNewId') && data.compare?.fromrevid === AnYi.getConf('wgDiffOldId') && buildLink(false));
 		} else if ([document.getElementById('contentSub').querySelectorAll('#mw-revision-nav').length, document.querySelectorAll('main#content>.pre-content #mw-revision-nav').length].includes(1) && revisionId) {
-			doIns(`${AnYi.wgUVS('当', '當')}前修${AnYi.wgUVS('订链接', '訂連結')}`, `${AnYi.wgUVS('复制链接', '複製連結')}到${AnYi.wgUVS('当', '當')}前修${AnYi.wgUVS('订', '訂')}版本的${AnYi.wgUVS('维', '維')}基${AnYi.wgUVS('语', '語')}法`, `Special:PermaLink/${revisionId}`, true);
+			doIns(`${AnYi.wgULS('当', '當')}前修${AnYi.wgULS('订链接', '訂連結')}`, `${AnYi.wgULS('复制链接', '複製連結')}到${AnYi.wgULS('当', '當')}前修${AnYi.wgULS('订', '訂')}版本的${AnYi.wgULS('维', '維')}基${AnYi.wgULS('语', '語')}法`, `Special:PermaLink/${revisionId}`, true);
 		}
 	};
 	AnYi.disableAnonEdit = () => {
@@ -600,7 +600,6 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 		return ret[wg] ?? zh ?? hans ?? hant ?? cn ?? tw ?? hk ?? sg ?? mo ?? my ?? '';
 	};
 	AnYi.wgULS = (hans, hant, cn, tw, hk, sg, zh, mo, my) => AnYi.wgUXS(AnYi.getConf('wgUserLanguage'), hans, hant, cn, tw, hk, sg, zh, mo, my);
-	AnYi.wgUVS = (hans, hant, cn, tw, hk, sg, zh, mo, my) => AnYi.wgUXS(AnYi.getConf('wgUserVariant'), hans, hant, cn, tw, hk, sg, zh, mo, my);
 	AnYi.localStorage = (name, value) => {
 		const check = (s => {
 			try {
