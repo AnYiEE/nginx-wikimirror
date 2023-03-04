@@ -90,7 +90,7 @@ server {
 }
 
 server {
-    server_name  ~^(?<subdomain>(analytics|annual|bugzilla|config-master|cxserver|dbtree|design|developer|doc|grafana|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency))\.example\.org$;
+    server_name  ~^(?<subdomain>(analytics|annual|bugzilla|config-master|cxserver|dbtree|design|developer|doc|grafana|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|planet|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency))\.example\.org$;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
     set          $hostdomain wikimedia;
 
@@ -338,23 +338,6 @@ server {
         proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
     }
     include  /path/to/wikimirror/conf/wiki-location-static.conf;
-}
-
-server {
-    server_name  planet.example.org;
-    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
-    set          $hostdomain wikimedia;
-    set          $subdomain  planet;
-
-    location / {
-        include           /path/to/wikimirror/conf/wiki-sub.conf;
-        include           /path/to/wikimirror/conf/wiki.conf;
-        proxy_pass        https://wiki-IPAddress;
-        proxy_set_header  Host $subdomain.$hostdomain.org;
-        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
-    }
-    include  /path/to/wikimirror/conf/wiki-location-static.conf;
-    proxy_hide_header  Upgrade;
 }
 
 server {
