@@ -119,7 +119,6 @@ server {
     set          $subdomain  blog;
 
     location / {
-        include           /path/to/wikimirror/conf/wiki-sub.conf;
         include           /path/to/wikimirror/conf/wiki.conf;
         proxy_pass        https://blog.wikimedia.org;
         proxy_set_header  Host $subdomain.$hostdomain.org;
@@ -299,7 +298,6 @@ server {
             set    $arg_domain $1$2.org;
             return 301 https://$host$uri?lang=$arg_lang&domain=$arg_domain&title=$arg_title&groups=$arg_groups;
         }
-        include           /path/to/wikimirror/conf/wiki-sub.conf;
         include           /path/to/wikimirror/conf/wiki.conf;
         proxy_pass        https://upload-IPAddress/img;
         proxy_set_header  Host $subdomain.$hostdomain.org;
@@ -424,24 +422,6 @@ server {
 }
 
 server {
-    server_name  wma.wmmirror.live;
-    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
-    set          $hostdomain wmcloud;
-    set          $subdomain  wma;
-
-    location / {
-        include           /path/to/wikimirror/conf/wiki-sub.conf;
-        include           /path/to/wikimirror/conf/wiki.conf;
-        proxy_pass        https://wma.wmcloud.org;
-        proxy_set_header  Accept-Encoding "";
-        proxy_set_header  Host $subdomain.$hostdomain.org;
-        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
-    }
-    include  /path/to/wikimirror/conf/wiki-location-static.conf;
-    proxy_hide_header  Upgrade;
-}
-
-server {
     server_name  intake-analytics.example.org intake-logging.example.org piwik.example.org;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
@@ -536,6 +516,7 @@ server {
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
     location / {
+        include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://recommend.wmflabs.org;
         proxy_hide_header  set-cookie;
@@ -570,6 +551,24 @@ server {
 }
 
 server {
+    server_name  wma.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wmcloud;
+    set          $subdomain  wma;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://wma.wmcloud.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain.$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
     server_name  xtools-api.example.org;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
@@ -584,6 +583,7 @@ server {
         proxy_hide_header       set-cookie;
         proxy_hide_header       x-clacks-overhead;
         proxy_intercept_errors  on;
+        proxy_set_header        Accept-Encoding "";
         proxy_set_header        Host xtools.wmflabs.org;
         proxy_set_header        Referer https://xtools.wmflabs.org$request_uri;
     }
