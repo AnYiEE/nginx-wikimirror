@@ -829,6 +829,11 @@ AnYiMirrorPrivateMain = (time = 0) => {
 					getObj.host = location.host;
 					break;
 				}
++				for (const regex of [/^([^.]+(?:\.m)?\.planet)\.wikimedia\.org$/, /^([^.]+(?:\.m)?\.(?:wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki))\.org$/, /^(advisors(?:\.m)?|advisory(?:\.m)?|affcom|am(?:\.m)?|analytics|annual|api(?:\.m)?|ar(?:\.m)?|auditcom|bd(?:\.m)?|be(?:\.m)?|blog|board|boardgovcom|br(?:\.m)?|bugzilla|ca(?:\.m)?|chair|checkuser(?:\.m)?|cn(?:\.m)?|co(?:\.m)?|collab|(?:test-)?commons(?:\.m)?|config-master|cxserver|dbtree|design|developer|diff|dk(?:\.m)?|doc|ec(?:\.m)?|ee(?:\.m)?|electcom(?:\.m)?|etherpad|exec(?:\.m)?|fdc(?:\.m)?|fi(?:\.m)?|foundation(?:\.m)?|ge(?:\.m)?|gerrit|gitlab|gr(?:\.m)?|grafana|grants(?:\.m)?|graphite|hi(?:\.m)?|horizon|id(?:\.m)?|id-internal(?:\.m)?|idp|iegcom(?:\.m)?|il|incubator(?:\.m)?|intake-(?:analytics|logging)|integration|internal|labtestwikitech|legalteam(?:\.m)?|lists|login(?:\.m)?|logstash|mai(?:\.m)?|maps|meta(?:\.m)?|mk(?:\.m)?|movementroles|mx(?:\.m)?|ng(?:\.m)?|nl(?:\.m)?|no(?:\.m)?|noboard-chapters|noc|nyc(?:\.m)?|nz(?:\.m)?|office(?:\.m)?|ombuds(?:\.m)?|ombudsmen|ores|otrs-wiki(?:\.m)?|outreach(?:\.m)?|pa-us(?:\.m)?|people|pl(?:\.m)?|performance|phabricator|planet|policy|pt(?:\.m)?|projectcom|punjabi(?:\.m)?|quality(?:\.m)?|research|romd(?:\.m)?|rs(?:\.m)?|rt|ru(?:\.m)?|se(?:\.m)?|searchcom|schema|secure|spcom|species(?:\.m)?|static-bugzilla|steward(?:\.m)?|strategy(?:\.m)?|stream|svn|techblog|techconduct|ticket|tr(?:\.m)?|transitionteam(?:\.m)?|toolsadmin|transparency|ua(?:\.m)?|upload|usability|vote(?:\.m)?|vrt-wiki(?:\.m)?|wb(?:\.m)?|wikimania(?:200[5-9]|201[0-8]|wikitech-static|team)?(?:\.m)?|wikitech)\.wikimedia\.org$/]) {
++					regex.test(getObj.host) && (getObj.host = getObj.host.replace(regex, `$1.${BaseMirrorDomain}`));
++				}
++				getObj.host === 'recommend.wmflabs.org' && (getObj.host = `recommend.${BaseMirrorDomain}`);
++				getObj.host === 'wma.wmcloud.org' && (getObj.host = `wma.${BaseMirrorDomain}`);
 				const XtoolsApi = 'xtools.wmflabs.org/api/';
 				if (`${getObj.host}${getObj.pathname}`.includes(XtoolsApi)) {
 					const path = AnYiMirror.getRealText(getObj.pathname);
@@ -964,9 +969,9 @@ AnYiMirrorPrivateMain = (time = 0) => {
 		if (['[object Object]', '[object String]', '[object URL]'].includes(Object.prototype.toString.call(url))) {
 			typeof url === 'object' && (url = url.toString());
 			const urlObj = new URL(url, location.origin);
-			urlObj.search !== '' && (url = AnYiMirror.ahCallback_Request({
+			url = AnYiMirror.ahCallback_Request({
 				url: urlObj.toString(),
-			}).url);
+			}).url;
 		}
 		options?.body && ['[object FormData]', '[object String]', '[object URLSearchParams]'].includes(Object.prototype.toString.call(options.body)) && (options.body = AnYiMirror.ahCallback_Request(options).body);
 		let isError = false;
