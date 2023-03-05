@@ -532,6 +532,23 @@ server {
 }
 
 server {
+    server_name  recommend.example.org;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+
+    location / {
+        include            /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass         https://recommend.wmflabs.org;
+        proxy_hide_header  set-cookie;
+        proxy_hide_header  x-clacks-overhead;
+        proxy_set_header   Accept-Encoding "";
+        proxy_set_header   Host recommend.wmflabs.org;
+        proxy_set_header   Referer https://recommend.wmflabs.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
     server_name  upload.example.org;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
     set          $hostdomain wikimedia;
