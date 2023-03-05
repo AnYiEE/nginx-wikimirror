@@ -925,8 +925,9 @@ AnYiMirrorPrivateMain = (time = 0) => {
 				response.response = `${xmlObj.dec}${xmlObj.dtd}${xmlObj.dom.outerHTML}`;
 			} else if (url.includes('/w/index.php')) {
 				if (url.includes('action=render')) {
-					const htmlDom = domParse(responseText).dom;
-					response.response = AnYiMirror.getRealText(htmlDom.querySelector('.mw-parser-output').outerHTML);
+					const htmlDom = domParse(responseText).dom,
+					dom = htmlDom.querySelector('.mw-parser-output');
+					dom && (response.response = AnYiMirror.getRealText(dom.outerHTML));
 				} else if (/json|text/.test(contentType) && !/css|html|(?:ecma|java)script/.test(contentType)) {
 					response.response = AnYiMirror.getRealText(responseText);
 				}
