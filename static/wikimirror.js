@@ -821,8 +821,8 @@ AnYiMirrorPrivateMain = (time = 0) => {
 					postParams.set('content', getDeflateRaw(postParams.get('content')));
 					break;
 				case 'logout':
-					for (const CookiePrefix of ['lastLogin', 'lastLoginWikitech']) {
-						document.cookie.includes(`${CookiePrefix}Password`) && (document.cookie = `${CookiePrefix}Password=deleted;domain=.${BaseMirrorDomain};path=/;Secure;expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+					for (const cookiePrefix of ['lastLogin', 'lastLoginWikitech']) {
+						document.cookie.includes(`${cookiePrefix}Password`) && (document.cookie = `${cookiePrefix}Password=deleted;domain=.${BaseMirrorDomain};path=/;Secure;expires=Thu, 01 Jan 1970 00:00:00 GMT`);
 					}
 					break;
 				case 'shortenurl':
@@ -920,28 +920,28 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			responseObj[0]?.url && (responseObj[0].url = AnYiMirror.getRealText(responseObj[0].url));
 			response.response = JSON.stringify(responseObj);
 		} catch (e) {
-			const [headers, responseText, url] = [response.origResponse?.headers || response.headers, response.response, response.config.url];
-			const contentType = typeof headers.get === 'function' ? headers.get('content-type') : headers['content-type'];
-			if (contentType.includes('xml')) {
+			const [responseHeaders, responseText, responseUrl] = [response.origResponse?.headers || response.headers, response.response, response.config.url];
+			const contentType = typeof responseHeaders.get === 'function' ? responseHeaders.get('content-type') || responseHeaders.get('Content-Type') : responseHeaders['content-type'] || responseHeaders['Content-Type'];
+			if (/xml/i.test(contentType)) {
 				const xmlObj = domParse(responseText || response.config.xhr?.responseXML, contentType);
 				for (const dom of xmlObj.dom.querySelectorAll('a,rev,text')) {
 					dom.innerHTML = AnYiMirror.getRealText(dom.innerHTML);
 				}
 				response.response = `${xmlObj.dec}${xmlObj.dtd}${xmlObj.dom.outerHTML}`;
-			} else if (url.includes('/w/index.php')) {
-				if (url.includes('action=render')) {
+			} else if (responseUrl.includes('/w/index.php')) {
+				if (responseUrl.includes('action=render')) {
 					const htmlDom = domParse(responseText).dom,
 					dom = htmlDom.querySelector('.mw-parser-output');
 					dom && (response.response = AnYiMirror.getRealText(dom.outerHTML));
-				} else if (/json|text/.test(contentType) && !/css|html|(?:ecma|java)script/.test(contentType)) {
+				} else if (/json|text/i.test(contentType) && !/css|html|(?:ecma|java)script/i.test(contentType)) {
 					response.response = AnYiMirror.getRealText(responseText);
 				}
-			} else if ((url.includes('/api/rest_v1/page/html') || url.includes('/api/rest_v1/transform/wikitext/to/html') || url.includes('/api/rest_v1/transform/wikitext/to/mobile-html'))) {
+			} else if ((responseUrl.includes('/api/rest_v1/page/html') || responseUrl.includes('/api/rest_v1/transform/wikitext/to/html') || responseUrl.includes('/api/rest_v1/transform/wikitext/to/mobile-html'))) {
 				const htmlObj = domParse(responseText);
 				response.response = `${htmlObj.dtd}${AnYiMirror.getRealText(htmlObj.dom.outerHTML)}`;
-			} else if (url.includes('/api/rest_v1/transform/html/to/wikitext')) {
+			} else if (responseUrl.includes('/api/rest_v1/transform/html/to/wikitext')) {
 				response.response = AnYiMirror.getRealText(responseText);
-			} else if (url.includes(`xtools-api.${BaseMirrorDomain}`) && /format=html/.test(url)) {
+			} else if (responseUrl.includes(`xtools-api.${BaseMirrorDomain}`) && responseUrl.includes('format=html')) {
 				response.response = responseText.replace(/\/\/([a-z-]+(?:\.m)?)\.wikimedia\.org/g, `//$1.${BaseMirrorDomain}`).replace(/\/\/([a-z-]+)?(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.org/g, `//$1$2.${BaseMirrorDomain}`);
 			}
 		}
@@ -959,38 +959,33 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			handler.next(config);
 		},
 		onResponse: (response, handler) => {
-			const contentType = response.headers['content-type'];
-			/json|text|xml/.test(contentType) && !/css|(?:ecma|java)script/.test(contentType) && (response = AnYiMirror.ahCallback_Response(response));
+			const contentType = response.headers['content-type'] || response.headers['Content-Type'];
+			/json|text|xml/i.test(contentType) && !/css|(?:ecma|java)script/i.test(contentType) && (response = AnYiMirror.ahCallback_Response(response));
 			handler.next(response);
 		},
 	});
 	const {fetch: origFetch} = window;
 	window.fetch = async(url, options) => {
 		if (['[object Object]', '[object String]', '[object URL]'].includes(Object.prototype.toString.call(url))) {
-			typeof url === 'object' && (url = url.toString());
-			const urlObj = new URL(url, location.origin);
 			url = AnYiMirror.ahCallback_Request({
-				url: urlObj.toString(),
+				url: typeof url === 'object' ? url.toString() : url,
 			}).url;
 		}
 		options?.body && ['[object FormData]', '[object String]', '[object URLSearchParams]'].includes(Object.prototype.toString.call(options.body)) && (options.body = AnYiMirror.ahCallback_Request(options).body);
 		let isError = false;
-		const response = await origFetch(url, options).catch(err => {
+		const response = await origFetch(url, options).catch(e => {
 			isError = true;
 			console.log({err: e, options, url});
 		});
 		if (isError) return;
-		const contentType = response.headers.get('content-type');
-		if (/css|(?:ecma|java)script/.test(contentType) || !/json|text|xml/.test(contentType)) return response;
+		const contentType = response.headers.get('content-type') || response.headers.get('Content-Type');
+		if (/css|(?:ecma|java)script/i.test(contentType) || !/json|text|xml/i.test(contentType)) return response;
 		let responseOptions = {};
 		for (const item of ['headers', 'status', 'statusText']) {
 			responseOptions[item] = response[item];
 		}
 		return new Response((AnYiMirror.ahCallback_Response({
-			config: {
-				url,
-				options,
-			},
+			config: {url, options},
 			origResponse: response,
 			response: await response.text(),
 		})).response, responseOptions);
