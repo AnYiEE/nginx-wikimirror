@@ -154,7 +154,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 	AnYi.showRedirect = id => {
 		if (document.getElementById(id)) return;
 		const [Text, Title] = [`${AnYi.wgULS('访问', '造訪')}官方${AnYi.wgULS('页面', '頁')}`, `${AnYi.wgULS('将当', '將當')}前${AnYi.wgULS('镜', '鏡')}像${AnYi.wgULS('站', '')}${AnYi.wgULS('页面', '頁')}重${AnYi.wgULS('定', '新導')}向至官方相${AnYi.wgULS('应页面', '應頁')}`],
-		[Redirect, RedirectMinerva] = [`<li id="${id}"><a href="${AnYi.getLocate('originUrl')}" target="_blank" title="${Title}">${Text}</a></li>`, `<li id="${id}"><a class="mw-ui-icon mw-ui-icon-before mw-ui-icon-minerva-logOut" href="${AnYi.getLocate('originUrl')}" target="_blank" title="${Title}"><span>${Text}</span></a></li>`];
+		[Redirect, RedirectMinerva] = [`<li id="${id}"><a href="${AnYi.getLocate('originUrl')}" target="_blank" title="${Title}">${Text}</a></li>`, `<li id="${id}"><a href="${AnYi.getLocate('originUrl')}" target="_blank" title="${Title}"><span class="mw-ui-icon mw-ui-icon-minerva-logOut"></span><span>${Text}</span></a></li>`];
 		AnYi.hasClass('skin-apioutput') && document.querySelector('.apihelp-flags>ul') ? document.querySelector('.apihelp-flags>ul').insertAdjacentHTML('beforeEnd', Redirect)
 		 : AnYi.hasClass('skin-cologneblue') && document.getElementById('titlelinks') ? document.getElementById('titlelinks').insertAdjacentHTML('beforeEnd', Redirect.replace('<li', '<span').replace('li>', 'span>'))
 		 : AnYi.hasClass('skin-contenttranslation') && document.getElementById('p-tb') ? document.getElementById('p-tb').insertAdjacentHTML('beforeEnd', Redirect)
