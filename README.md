@@ -91,3 +91,5 @@
 **Tips**
 
 * MediaWiki有时会响应其特殊的mime-type类型`text/x-wiki`，如果你使用Brotil或Gzip压缩，可以酌情调整`brotli_types`或`gzip_types`配置项。
+
+<div align="center"><img src="https://api.star-history.com/svg?repos=AnYiEE/nginx-wikimirror&type=Date" alt="Star History Chart" style="width:50%"></div>
