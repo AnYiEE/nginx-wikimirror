@@ -16,7 +16,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 		if (typeof RLCONF === 'object' && RLCONF[key] !== void 0) return RLCONF[key];
 		return null;
 	};
-	AnYi.getCookie = name => `; ${AnYi.decodeURIComponent(document.cookie)}`.split(`; ${name}=`).pop().split(';').shift();
+	AnYi.getCookie = name => `; ${AnYi.decodeURIComponent(document.cookie)}`.split(`; ${name}=`).pop()?.split(';').shift();
 	AnYi.getLocate = method => {
 		const [originHash, originHost, originUrl] = [AnYi.getRealText(location.hash), AnYi.getRealText(location.host), AnYi.getRealText(location.href)];
 		switch (method) {
@@ -43,15 +43,17 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 				}
 			}
 			for (const node of nodeArr) {
-				let text = node.nodeValue;
+				let text = node.nodeValue ?? '';
 				(text.match(reg1) || text.match(reg4)) && (text = AnYi.getRealText(text));
 				text.match(reg5) && AnYi.hasClass('action-view') && (text = text.replace(reg5, `background$1:url($2$3${u}`));
 				node.nodeValue !== text && (node.nodeValue = text);
 				if (text.match(emojiRegex) && !(AnYi.hasClass('action-edit') || AnYi.hasClass('action-submit')) && (typeof AnYiMirror === 'object' && (typeof AnYiMirror.getRealText === 'function' && (typeof AnYiMirror.getRealText.initCount === 'number' && AnYiMirror.getRealText.initCount < 1 || typeof AnYiMirror.getRealText.initCount === 'undefined') || typeof AnYiMirror.getRealText === 'undefined') || typeof AnYiMirror === 'undefined')) {
 					const el = document.createElement('anyi-emoji-line');
 					el.innerHTML = node.nodeValue.replace(emojiRegex, '<anyi-emoji class="mw-no-invert">$&</anyi-emoji>');
-					node.parentNode.insertBefore(el, node.nextSibling);
-					node.remove();
+					if (node.parentNode) {
+						node.parentNode.insertBefore(el, node.nextSibling);
+						node.remove();
+					}
 				}
 			}
 			for (const dom of [...document.querySelectorAll('a[href*="//archive."]'), ...document.querySelectorAll('a[href*="//pageviews."]'), ...document.querySelectorAll('a[href*="//xtools."]')]) {
@@ -64,22 +66,24 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 				const text = dom.value;
 				reg1.test(text) && (dom.value = AnYi.getRealText(text));
 			}
-			const dom = document.querySelector('#ca-fileExporter a'),
-			url = dom?.href.match(/clientUrl=(\S+?)&/)?.[1] || '';
-			dom && (dom.href = dom.href.replace(url, AnYi.getRealText(url)));
+			const dom = document.querySelector('#ca-fileExporter a');
+			if (dom) {
+				const url = dom.href.match(/clientUrl=(\S+?)&/)?.[1] ?? '';
+				dom.href = dom.href.replace(url, AnYi.getRealText(url));
+			}
 		};
-		if (method === 'emoji') return value.match(emojiRegex) ? value.replace(emojiRegex, '<anyi-emoji class="mw-no-invert">$&</anyi-emoji>') : value;
-		if (['wiki', 'wikiless'].includes(method)) {
+		if (method === 'emoji' && typeof value === 'string') return value.match(emojiRegex) ? value.replace(emojiRegex, '<anyi-emoji class="mw-no-invert">$&</anyi-emoji>') : value;
+		if (['wiki', 'wikiless'].includes(method ?? '')) {
 			wTex();
 			if (wBox && method === 'wiki') {
-				typeof wikEd === 'object' && wikEd.useWikEd && wikEd.UpdateTextarea();
+				wikEd?.useWikEd && wikEd.UpdateTextarea();
 				typeof jQuery === 'function' ? value = jQuery('#wpTextbox1').val() : value = wBox.value;
 			}
 		}
 		if (value !== null && value !== void 0) Object.prototype.toString.call(value) === '[object String]' ? value = value.replace(new RegExp(`phab\\.${BaseMirrorDomainRegex}`, 'gi'), 'phab.wmfusercontent.org').replace(new RegExp(`xtools-api\\.${BaseMirrorDomain}\\/`, 'gi'), 'xtools.wmflabs.org/api/').replace(new RegExp(`wma\\.${BaseMirrorDomainRegex}`, 'gi'), 'wma.wmcloud.org').replace(new RegExp(`recommend\\.${BaseMirrorDomainRegex}`, 'gi'), 'recommend.wmflabs.org').replace(reg3, 'wikimedia.org/api/rest_v1/media/math/render/$1').replace(reg2, '$1.org').replace(reg1, 'wikimedia.org').replace(reg4, '\\.wikipedia\\.org').replace(/r-e-p-l-a-c-e\.org/g, BaseMirrorDomain) : (Object.prototype.toString.call(value) === '[object Boolean]' || Object.prototype.toString.call(value) === '[object BigInt]' || Object.prototype.toString.call(value) === '[object Number]') ? void 0 : value = Object.prototype.toString.call(value);
 		if (value && value !== true && wBox && method === 'wiki') {
 			typeof jQuery === 'function' ? jQuery('#wpTextbox1').val(value) : wBox.value = value;
-			typeof wikEd === 'object' && wikEd.useWikEd && wikEd.UpdateFrame();
+			wikEd?.useWikEd && wikEd.UpdateFrame();
 		}
 		return value;
 	};
@@ -155,14 +159,14 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 		if (document.getElementById(id)) return;
 		const [Text, Title] = [`${AnYi.wgULS('访问', '造訪')}官方${AnYi.wgULS('页面', '頁')}`, `${AnYi.wgULS('将当', '將當')}前${AnYi.wgULS('镜', '鏡')}像${AnYi.wgULS('站', '')}${AnYi.wgULS('页面', '頁')}重${AnYi.wgULS('定', '新導')}向至官方相${AnYi.wgULS('应页面', '應頁')}`],
 		[Redirect, RedirectMinerva] = [`<li id="${id}"><a href="${AnYi.getLocate('originUrl')}" target="_blank" title="${Title}">${Text}</a></li>`, `<li id="${id}"><a href="${AnYi.getLocate('originUrl')}" target="_blank" title="${Title}"><span class="mw-ui-icon mw-ui-icon-minerva-logOut"></span><span>${Text}</span></a></li>`];
-		AnYi.hasClass('skin-apioutput') && document.querySelector('.apihelp-flags>ul') ? document.querySelector('.apihelp-flags>ul').insertAdjacentHTML('beforeEnd', Redirect)
-		 : AnYi.hasClass('skin-cologneblue') && document.getElementById('titlelinks') ? document.getElementById('titlelinks').insertAdjacentHTML('beforeEnd', Redirect.replace('<li', '<span').replace('li>', 'span>'))
-		 : AnYi.hasClass('skin-contenttranslation') && document.getElementById('p-tb') ? document.getElementById('p-tb').insertAdjacentHTML('beforeEnd', Redirect)
-		 : AnYi.hasClass('skin-minerva') && document.getElementById('p-donation') ? document.getElementById('p-donation').insertAdjacentHTML('beforeEnd', RedirectMinerva)
-		 : AnYi.hasClass('skin-modern') && document.getElementById('footer-info') ? document.getElementById('footer-info').insertAdjacentHTML('beforeEnd', Redirect)
-		 : AnYi.hasClass('skin-monobook') && document.getElementById('f-list') ? document.getElementById('f-list').insertAdjacentHTML('beforeEnd', Redirect)
+		AnYi.hasClass('skin-apioutput') && document.querySelector('.apihelp-flags>ul') ? document.querySelector('.apihelp-flags>ul').insertAdjacentHTML('beforeend', Redirect)
+		 : AnYi.hasClass('skin-cologneblue') && document.getElementById('titlelinks') ? document.getElementById('titlelinks').insertAdjacentHTML('beforeend', Redirect.replace('<li', '<span').replace('li>', 'span>'))
+		 : AnYi.hasClass('skin-contenttranslation') && document.getElementById('p-tb') ? document.getElementById('p-tb').insertAdjacentHTML('beforeend', Redirect)
+		 : AnYi.hasClass('skin-minerva') && document.getElementById('p-donation') ? document.getElementById('p-donation').insertAdjacentHTML('beforeend', RedirectMinerva)
+		 : AnYi.hasClass('skin-modern') && document.getElementById('footer-info') ? document.getElementById('footer-info').insertAdjacentHTML('beforeend', Redirect)
+		 : AnYi.hasClass('skin-monobook') && document.getElementById('f-list') ? document.getElementById('f-list').insertAdjacentHTML('beforeend', Redirect)
 		 : AnYi.hasClass('skin-nostalgia') && document.getElementById('searchform') ? document.getElementById('searchform').insertAdjacentHTML('beforebegin', Redirect.replace('<li', '<span').replace('li>', 'span>'))
-		 : (AnYi.hasClass('skin-timeless') || AnYi.hasClass('skin-vector')) && document.getElementById('footer-places') ? document.getElementById('footer-places').insertAdjacentHTML('beforeEnd', Redirect) : void 0;
+		 : (AnYi.hasClass('skin-timeless') || AnYi.hasClass('skin-vector')) && document.getElementById('footer-places') ? document.getElementById('footer-places').insertAdjacentHTML('beforeend', Redirect) : void 0;
 	};
 	AnYi.ajaxLogin = async(method, {username, password} = {}) => {
 		if (new RegExp(`^\\S+?\\.m\\.${BaseMirrorDomainRegex}`).test(location.host)) return; // API BUG <https://phabricator.wikimedia.org/T328397>
@@ -366,7 +370,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			size: 'small',
 		});
 	};
-	AnYi.collapsibleSidebar = () => AnYi.hasClass('ltr') && AnYi.hasClass('skin-vector-legacy') && !RLPAGEMODULES?.includes('ext.gadget.CollapsibleSidebar') && !['bo', 'dz'].includes(AnYi.getConf('wgContentLanguage')) && mw.loader.using('mediawiki.storage').then(() => AnYi.setJs(`//zh.wikipedia.${BaseMirrorDomain}/wiki/MediaWiki:Gadget-CollapsibleSidebar.js?action=raw&ctype=text/javascript&debug=1`, 'defer').then(() => console.log('AnYiMirror collapsibleSidebar.js load succeeded.')).catch(() => console.log('AnYiMirror collapsibleSidebar.js load failed.')));
+	AnYi.collapsibleSidebar = () => AnYi.hasClass('ltr') && AnYi.hasClass('skin-vector-legacy') && !RLPAGEMODULES?.includes('ext.gadget.CollapsibleSidebar') && !['bo', 'dz'].includes(AnYi.getConf('wgContentLanguage') ?? '') && mw.loader.using('mediawiki.storage').then(() => AnYi.setJs(`//zh.wikipedia.${BaseMirrorDomain}/wiki/MediaWiki:Gadget-CollapsibleSidebar.js?action=raw&ctype=text/javascript&debug=1`, 'defer').then(() => console.log('AnYiMirror collapsibleSidebar.js load succeeded.')).catch(() => console.log('AnYiMirror collapsibleSidebar.js load failed.')));
 	AnYi.confirmLogout = () => {
 		const dom = document.querySelector('#ca-cb-logout>a') || document.querySelector('.menu__item--logout') || document.querySelector('#topbar>a[href*="UserLogout"]') || document.querySelector('#pt-logout>a') || document.querySelector('.vector-user-menu-logout');
 		if (!dom || !AnYi.getConf('wgUserName') || RLPAGEMODULES?.includes('ext.gadget.confirm-logout')) return;
@@ -521,8 +525,8 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			}),
 			[pos, set, unset] = [document.getElementById('pt-preferences') || document.getElementById('p-personal'), AnYi.localStorage(Name) === '1', AnYi.localStorage(Name) === '0'];
 			if (pos && AnYi.hasClass('skin-minerva')) {
-				set && pos.insertAdjacentHTML('beforeEnd', `${ComHead}${LightTip}${ComAnd}${Light}${ComFoot}`);
-				unset && pos.insertAdjacentHTML('beforeEnd', `${ComHead}${DarkTip}${ComAnd}${Dark}${ComFoot}`);
+				set && pos.insertAdjacentHTML('beforeend', `${ComHead}${LightTip}${ComAnd}${Light}${ComFoot}`);
+				unset && pos.insertAdjacentHTML('beforeend', `${ComHead}${DarkTip}${ComAnd}${Dark}${ComFoot}`);
 				doClick();
 			} else if (document.getElementById('p-tb') || AnYi.hasClass('skin-apioutput') || AnYi.hasClass('skin-nostalgia')) {
 				const pos = (AnYi.hasClass('skin-apioutput') || AnYi.hasClass('skin-nostalgia')) ? 'mw-content-text' : 'p-tb';
@@ -561,7 +565,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			};
 			buildLink(oldId);
 			oldId && fetch(`/w/api.php?action=compare&format=json&fromrev=${diffId}&prop=ids&torelative=prev`).then(data => data.json()).then(data => diffId === AnYi.getConf('wgDiffNewId') && data.compare?.fromrevid === AnYi.getConf('wgDiffOldId') && buildLink(false));
-		} else if ([document.getElementById('contentSub').querySelectorAll('#mw-revision-nav').length, document.querySelectorAll('main#content>.pre-content #mw-revision-nav').length].includes(1) && revisionId) {
+		} else if ([document.getElementById('contentSub')?.querySelectorAll('#mw-revision-nav').length, document.querySelectorAll('main#content>.pre-content #mw-revision-nav').length].includes(1) && revisionId) {
 			doIns(`${AnYi.wgULS('当', '當')}前修${AnYi.wgULS('订链接', '訂連結')}`, `${AnYi.wgULS('复制链接', '複製連結')}到${AnYi.wgULS('当', '當')}前修${AnYi.wgULS('订', '訂')}版本的${AnYi.wgULS('维', '維')}基${AnYi.wgULS('语', '語')}法`, `Special:PermaLink/${revisionId}`, true);
 		}
 	};
@@ -644,15 +648,11 @@ AnYiMirrorPrivateLoader = () => {
 		AnYiMirrorPrivateMethod.confirmLogout();
 		AnYiMirrorPrivateMethod.scrollUpButton();
 		document.addEventListener('copy', e => {
-			let value = getSelection(0).toString();
+			let value = getSelection(0).toString() ?? '';
 			if (new RegExp(BaseMirrorDomainRegex, 'gi').test(value)) {
 				e.preventDefault();
 				value = AnYiMirrorPrivateMethod.getRealText(value);
-				if (e.clipboardData) {
-					e.clipboardData.setData('text/plain', value);
-				} else if (clipboardData) {
-					clipboardData.setData('text/plain', value);
-				}
+				e.clipboardData?.setData('text/plain', value);
 			}
 		});
 		AnYiMirror.getRealText.initCount = 0;
@@ -663,7 +663,7 @@ AnYiMirrorPrivateLoader = () => {
 			document.getElementById('wpSave')?.addEventListener('click', () => editor.setValue(AnYiMirrorPrivateMethod.getRealText(editor.getValue())));
 		});
 		mw.hook('wikipage.content').add(item => {
-			if (!item[0] || !['mw-content-text', 'mw-watchlist-options'].includes(item?.[0].id)) return;
+			if (!item[0] || !['mw-content-text', 'mw-watchlist-options'].includes(item?.[0].id ?? '')) return;
 			AnYiMirror.getRealText.initCount > 0 && AnYiMirrorPrivateMethod.getRealText(void 0, 'wiki');
 			AnYiMirror.getRealText.initCount++;
 			AnYiMirrorPrivateMethod.diffLink('anyi-difflink', AnYiMirrorPrivateMethod.getConf('wgDiffNewId'), AnYiMirrorPrivateMethod.getConf('wgDiffOldId'), AnYiMirrorPrivateMethod.getConf('wgRevisionId'));
