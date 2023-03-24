@@ -72,16 +72,17 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 				dom.href = dom.href.replace(url, AnYi.getRealText(url));
 			}
 		};
-		if (method === 'emoji' && typeof value === 'string') return value.match(emojiRegex) ? value.replace(emojiRegex, '<anyi-emoji class="mw-no-invert">$&</anyi-emoji>') : value;
 		if (['wiki', 'wikiless'].includes(method ?? '')) {
 			wTex();
-			if (wBox && method === 'wiki') {
+			if (method === 'wiki' && wBox) {
 				wikEd?.useWikEd && wikEd.UpdateTextarea();
 				typeof jQuery === 'function' ? value = jQuery('#wpTextbox1').val() : value = wBox.value;
 			}
 		}
-		if (value !== null && value !== void 0) Object.prototype.toString.call(value) === '[object String]' ? value = value.replace(new RegExp(`phab\\.${BaseMirrorDomainRegex}`, 'gi'), 'phab.wmfusercontent.org').replace(new RegExp(`xtools-api\\.${BaseMirrorDomain}\\/`, 'gi'), 'xtools.wmflabs.org/api/').replace(new RegExp(`wma\\.${BaseMirrorDomainRegex}`, 'gi'), 'wma.wmcloud.org').replace(new RegExp(`recommend\\.${BaseMirrorDomainRegex}`, 'gi'), 'recommend.wmflabs.org').replace(reg3, 'wikimedia.org/api/rest_v1/media/math/render/$1').replace(reg2, '$1.org').replace(reg1, 'wikimedia.org').replace(reg4, '\\.wikipedia\\.org').replace(/r-e-p-l-a-c-e\.org/g, BaseMirrorDomain) : (Object.prototype.toString.call(value) === '[object Boolean]' || Object.prototype.toString.call(value) === '[object BigInt]' || Object.prototype.toString.call(value) === '[object Number]') ? void 0 : value = Object.prototype.toString.call(value);
-		if (value && value !== true && wBox && method === 'wiki') {
+		if (typeof value === 'string' && value.trim() === '' || typeof value !== 'string') return value;
+		if (method === 'emoji') return value.match(emojiRegex) ? value.replace(emojiRegex, '<anyi-emoji class="mw-no-invert">$&</anyi-emoji>') : value;
+		value = value.replace(new RegExp(`phab\\.${BaseMirrorDomainRegex}`, 'gi'), 'phab.wmfusercontent.org').replace(new RegExp(`xtools-api\\.${BaseMirrorDomain}\\/`, 'gi'), 'xtools.wmflabs.org/api/').replace(new RegExp(`wma\\.${BaseMirrorDomainRegex}`, 'gi'), 'wma.wmcloud.org').replace(new RegExp(`recommend\\.${BaseMirrorDomainRegex}`, 'gi'), 'recommend.wmflabs.org').replace(reg3, 'wikimedia.org/api/rest_v1/media/math/render/$1').replace(reg6, 'wikipedia.org').replace(reg2, '$1.org').replace(reg1, 'wikimedia.org').replace(reg4, '\\.wikipedia\\.org').replace(/r-e-p-l-a-c-e\.org/g, BaseMirrorDomain);
+		if (method === 'wiki' && wBox) {
 			typeof jQuery === 'function' ? jQuery('#wpTextbox1').val(value) : wBox.value = value;
 			wikEd?.useWikEd && wikEd.UpdateFrame();
 		}
@@ -153,7 +154,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 	AnYi.notify = (msg, opt) => mw.loader.using('mediawiki.notification').then(() => mw.notification.notify(msg, opt));
 	AnYi.showNotice = (value, {autoHide = false, tag} = {}) => {
 		const [ComHead, ComFoot, O] = ['<div class="AnYiNotice">', '</div>', '<button>了解</button>'];
-		value && autoHide ? AnYi.notify([`${ComHead}${value}${O}${ComFoot}`], {tag}) : AnYi.notify([`${ComHead}${value}${O}${ComFoot}`], {autoHide: false, tag});
+		value && autoHide ? AnYi.notify(jQuery(`${ComHead}${value}${O}${ComFoot}`), {tag}) : AnYi.notify(jQuery(`${ComHead}${value}${O}${ComFoot}`), {autoHide: false, tag});
 	};
 	AnYi.showRedirect = id => {
 		if (document.getElementById(id)) return;
@@ -179,7 +180,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 				AnYi.ajaxLogin();
 			});
 			const [username, password] = [AnYi.getCookie(`${CookiePrefix}UserName`), AnYi.getCookie(`${CookiePrefix}Password`)];
-			if (username && !['', 'deleted'].includes(password) && !AnYi.getConf('wgUserName')) {
+			if (username && password && password !== 'deleted' && !AnYi.getConf('wgUserName')) {
 				AnYi.showNotice(`<span>${AnYi.wgULS('开', '開')}始${Auto}${Login}</span>`, {
 					autoHide: true,
 					tag: 'login',
@@ -755,28 +756,18 @@ AnYiMirrorPrivateMain = (time = 0) => {
 	},
 	uint8arrayToBase64 = value => {
 		const chunk = 0x8000;
-		let [index, result, slice] = [0, ''];
+		let [index, result, slice] = [0, '', new Uint8Array()];
 		while (index < value.length) {
 			slice = value.subarray(index, Math.min(index + chunk, value.length));
-			result += String.fromCharCode.apply(null, slice);
+			result += String.fromCharCode.apply(null, Array.from(slice));
 			index += chunk;
 		}
 		return btoa(result);
 	};
 	function AnYiMirrorPublicMethod() {console.log(this)}
 	AnYiMirrorPublicMethod.prototype.getRealText = AnYiMirrorPrivateMethod.getRealText;
-	AnYiMirrorPublicMethod.prototype.deflateRaw = (value, prefix = 'rawdeflate,') => {
-		return prefix + uint8arrayToBase64(pako.deflateRaw(value, {
-			to: 'string',
-			level: 5,
-		}));
-	};
-	AnYiMirrorPublicMethod.prototype.inflateRaw = (value, prefix = 'rawdeflate,') => {
-		return pako.inflateRaw(base64ToUint8Array(value.replace(prefix, '')), {
-			to: 'string',
-			level: 5,
-		});
-	};
+	AnYiMirrorPublicMethod.prototype.deflateRaw = (value, prefix = 'rawdeflate,') => `${prefix}${uint8arrayToBase64(pako.deflateRaw(value, {level: 5}))}`;
+	AnYiMirrorPublicMethod.prototype.inflateRaw = (value, prefix = 'rawdeflate,') => pako.inflateRaw(base64ToUint8Array(value.replace(prefix, '')), {to: 'string'});
 	AnYiMirrorPublicMethod.prototype.ahCallback_Request = config => {
 		const [textArr, getObj, postObj] = [['apfrom', 'appendtext', 'apprefix', 'claim', 'content', 'ehcontent', 'epcontent', 'etcontent', 'etssummary', 'fromtext', 'fromtext-main', 'html', 'ntcontent', 'nttopic', 'prependtext', 'repcontent', 'search', 'summary', 'text', 'titles', 'totext', 'totext-main', 'url', 'wikitext'], new URL(config.url, location.origin), new URL(`${location.origin}/w/api.php?${config.body}`)];
 		try {
