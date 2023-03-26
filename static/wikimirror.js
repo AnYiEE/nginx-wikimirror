@@ -69,7 +69,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			const dom = document.querySelector('#ca-fileExporter a');
 			if (dom) {
 				const url = dom.href.match(/clientUrl=(\S+?)&/)?.[1] ?? '';
-				dom.href = dom.href.replace(url, AnYi.getRealText(url));
+				url !== '' && (dom.href = dom.href.replace(url, AnYi.getRealText(url)));
 			}
 		};
 		if (['wiki', 'wikiless'].includes(method ?? '')) {
@@ -831,7 +831,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 				if (`${getObj.host}${getObj.pathname}`.includes(XtoolsApi)) {
 					const path = AnYiMirror.getRealText(getObj.pathname);
 					getObj.host = `xtools-api.${BaseMirrorDomain}`;
-					getObj.path = path.replace('/api/', '/');
+					getObj.pathname = path.replace('/api/', '/');
 				}
 				config.body && (config.body = postObj.toString().replace(`${location.origin}/w/api.php?`, ''));
 				config.url && (config.url = getObj.toString());
@@ -914,7 +914,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			response.response = JSON.stringify(responseObj);
 		} catch (e) {
 			const [responseHeaders, responseText, responseUrl] = [response.origResponse?.headers || response.headers, response.response, response.config.url];
-			const contentType = typeof responseHeaders.get === 'function' ? responseHeaders.get('content-type') || responseHeaders.get('Content-Type') : responseHeaders['content-type'] || responseHeaders['Content-Type'];
+			const contentType = (typeof responseHeaders.get === 'function' ? responseHeaders.get('content-type') ?? responseHeaders.get('Content-Type') : responseHeaders['content-type'] ?? responseHeaders['Content-Type']) ?? '';
 			if (/xml/i.test(contentType)) {
 				const xmlObj = domParse(responseText || response.config.xhr?.responseXML, contentType);
 				for (const dom of xmlObj.dom.querySelectorAll('a,rev,text')) {
@@ -944,16 +944,16 @@ AnYiMirrorPrivateMain = (time = 0) => {
 	Object.seal(AnYiMirror);
 	ah.proxy({
 		onError: (err, handler) => {
-			err.type === 'error' && console.log(err);
+			err.type === 'error' && console.log('AnYiMirror xhr error:', err);
 			handler.next(err);
 		},
 		onRequest: (config, handler) => {
-			!/^%5Bobject\+(?:ArrayBuffer|Blob|DataView|Document)%5D=$/.test(config.body) && (config = AnYiMirror.ahCallback_Request(config));
+			config.body && !/^%5Bobject\+(?:ArrayBuffer|Blob|DataView|Document)%5D=$/.test(config.body) && (config = AnYiMirror.ahCallback_Request(config));
 			handler.next(config);
 		},
 		onResponse: (response, handler) => {
-			const contentType = response.headers['content-type'] || response.headers['Content-Type'];
-			/json|text|xml/i.test(contentType) && !/css|(?:ecma|java)script/i.test(contentType) && (response = AnYiMirror.ahCallback_Response(response));
+			const contentType = response.headers['content-type'] ?? response.headers['Content-Type'];
+			contentType && /json|text|xml/i.test(contentType) && !/css|(?:ecma|java)script/i.test(contentType) && (response = AnYiMirror.ahCallback_Response(response));
 			handler.next(response);
 		},
 	});
@@ -968,11 +968,11 @@ AnYiMirrorPrivateMain = (time = 0) => {
 		let isError = false;
 		const response = await origFetch(url, options).catch(e => {
 			isError = true;
-			console.log({err: e, options, url});
+			console.log('AnYiMirror fetch error:', {err: e, options, url});
 		});
 		if (isError) return;
-		const contentType = response.headers.get('content-type') || response.headers.get('Content-Type');
-		if (/css|(?:ecma|java)script/i.test(contentType) || !/json|text|xml/i.test(contentType)) return response;
+		const contentType = response.headers.get('content-type') ?? response.headers.get('Content-Type');
+		if (!contentType || contentType && (/css|(?:ecma|java)script/i.test(contentType) || !/json|text|xml/i.test(contentType))) return response;
 		let responseOptions = {};
 		for (const item of ['headers', 'status', 'statusText']) {
 			responseOptions[item] = response[item];
@@ -985,6 +985,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 	};
 	const {sendBeacon: origSendBeacon} = navigator;
 	navigator.sendBeacon = (url, data) => {
+		typeof url === 'object' && (url = url.toString());
 		if (/intake-(?:analytics|logging)/.test(url)) return true;
 		return origSendBeacon(url, data);
 	};
