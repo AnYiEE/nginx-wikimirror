@@ -948,7 +948,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			handler.next(err);
 		},
 		onRequest: (config, handler) => {
-			config.body && !/^%5Bobject\+(?:ArrayBuffer|Blob|DataView|Document)%5D=$/.test(config.body) && (config = AnYiMirror.ahCallback_Request(config));
+			!/^%5Bobject\+(?:ArrayBuffer|Blob|DataView|Document)%5D=$/.test(config.body ?? '') && (config = AnYiMirror.ahCallback_Request(config));
 			handler.next(config);
 		},
 		onResponse: (response, handler) => {
