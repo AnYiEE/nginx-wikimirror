@@ -865,7 +865,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 				}
 			}
 			return {
-				dec: domStr.match(/^\s*?(<\?xml.+?\?>)/)?.[0] || '',
+				dec: domStr.match(/^\s*?(<\?xml.+?\?>)/)?.[0] ?? '',
 				dom,
 				dtd: doc.doctype ? `${new XMLSerializer().serializeToString(doc.doctype)}\n` : '',
 			};
@@ -913,10 +913,10 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			responseObj[0]?.url && (responseObj[0].url = AnYiMirror.getRealText(responseObj[0].url));
 			response.response = JSON.stringify(responseObj);
 		} catch (e) {
-			const [responseHeaders, responseText, responseUrl] = [response.origResponse?.headers || response.headers, response.response, response.config.url];
+			const [responseHeaders, responseText, responseUrl] = [response.origResponse?.headers ?? response.headers ?? {}, response.response, response.config.url];
 			const contentType = (typeof responseHeaders.get === 'function' ? responseHeaders.get('content-type') ?? responseHeaders.get('Content-Type') : responseHeaders['content-type'] ?? responseHeaders['Content-Type']) ?? '';
 			if (/xml/i.test(contentType)) {
-				const xmlObj = domParse(responseText || response.config.xhr?.responseXML, contentType);
+				const xmlObj = domParse(responseText ?? response.config.xhr?.responseXML, contentType);
 				for (const dom of xmlObj.dom.querySelectorAll('a,rev,text')) {
 					dom.innerHTML = AnYiMirror.getRealText(dom.innerHTML);
 				}
