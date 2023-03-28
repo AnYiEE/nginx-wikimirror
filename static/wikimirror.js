@@ -321,7 +321,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 					doLogin({loginContinue: true});
 					break;
 				case 'resetpass-temp-emailed':
-					AnYi.showNotice(`<span>需要${AnYi.wgULS('设', '設')}置新${Password}`, {
+					AnYi.showNotice(`<span>需要${AnYi.wgULS('设', '設')}置新${Password}</span>`, {
 						autoHide: true,
 						tag: 'login',
 					});
