@@ -58,13 +58,13 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			}
 			for (const dom of [...document.querySelectorAll('a[href*="//archive."]'), ...document.querySelectorAll('a[href*="//pageviews."]'), ...document.querySelectorAll('a[href*="//xtools."]')]) {
 				const href = dom.href;
-				reg1.test(href) && (dom.href = AnYi.getRealText(href));
+				href.match(reg1) && (dom.href = AnYi.getRealText(href));
 				const XtoolsApi = 'xtools.wmflabs.org/api/';
 				href.includes(XtoolsApi) && (dom.href = href.replace(XtoolsApi, `xtools-api.${BaseMirrorDomain}/`));
 			}
 			for (const dom of document.querySelectorAll('input[name="clientUrl"],input[name="intendedWikitext"]')) {
 				const text = dom.value;
-				reg1.test(text) && (dom.value = AnYi.getRealText(text));
+				text.match(reg1) && (dom.value = AnYi.getRealText(text));
 			}
 			const dom = document.querySelector('#ca-fileExporter a');
 			if (dom) {
@@ -651,7 +651,7 @@ AnYiMirrorPrivateLoader = () => {
 		AnYiMirrorPrivateMethod.confirmLogout();
 		AnYiMirrorPrivateMethod.scrollUpButton();
 		document.addEventListener('copy', e => {
-			let value = getSelection(0).toString() ?? '';
+			let value = getSelection().toString() ?? '';
 			if (new RegExp(BaseMirrorDomainRegex, 'gi').test(value)) {
 				e.preventDefault();
 				value = AnYiMirrorPrivateMethod.getRealText(value);
