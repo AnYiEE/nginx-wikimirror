@@ -192,7 +192,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			}
 			return;
 		}
-		await mw.loader.using(['mediawiki.api', 'mediawiki.widgets', 'oojs-ui-core', 'oojs-ui-windows', 'oojs-ui.styles.icons-interactions', 'oojs-ui.styles.icons-user']);
+		await mw.loader.using(['mediawiki.api', 'oojs-ui-core', 'oojs-ui-windows', 'oojs-ui.styles.icons-interactions', 'oojs-ui.styles.icons-user']);
 		const [messageDialog, windowManager] = [new OO.ui.MessageDialog(), new OO.ui.WindowManager()];
 		const nameInput = new OO.ui.TextInputWidget({
 			icon: 'userAvatar',
@@ -249,7 +249,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			password = params.password;
 			keepLoginCheckbox.isSelected() && (params.rememberMe = '1');
 			if (loginContinue || retypePassword) {
-				windowManager.clearWindows();
+				await windowManager.clearWindows();
 				delete params.loginreturnurl;
 				delete params.username;
 				delete params.password;
@@ -332,7 +332,7 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 						autoHide: true,
 						tag: 'login',
 					});
-					windowManager.clearWindows();
+					await windowManager.clearWindows();
 					AnYi.ajaxLogin();
 					break;
 				default:
@@ -340,7 +340,10 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 				}
 			}
 		};
-		if (username && password) return doLogin({autoLogin: true});
+		if (username && password) {
+			doLogin({autoLogin: true});
+			return;
+		}
 		const isValid = () => {
 			const valid = ![nameInput.value, pwdInput.value].includes('');
 			!valid && AnYi.showNotice(`<span>${User}${Name}或${Password}不能${AnYi.wgULS('为', '爲')}空</span>`, {
@@ -440,8 +443,8 @@ AnYiMirrorPrivateMethod = new function AnYiMirrorPrivateMethod() {
 			if (AnYi.localStorage(Name) === '1') return true;
 			break;
 		case 'init':
-			matchMedia('(prefers-color-scheme:dark)').addListener(modeObserver.dark);
-			matchMedia('(prefers-color-scheme:light)').addListener(modeObserver.light);
+			matchMedia('(prefers-color-scheme:dark)').addEventListener('change', modeObserver.dark);
+			matchMedia('(prefers-color-scheme:light)').addEventListener('change', modeObserver.light);
 			window.addEventListener('storage', e => e.key === Name && AnYi.darkMode('insert'));
 			const dc = () => {
 				/^(?!zh\.)\S+?(?:\.m)?\.wikipedia/.test(location.host) && (AnYi.hasClass('skin-monobook') || AnYi.hasClass('skin-vector-legacy')) && document.getElementById('p-logo') && (document.getElementById('p-logo').style.transition = 'background-size,height .5s ease-in-out');
@@ -823,7 +826,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 					break;
 				}
 				for (const regex of [/^([^.]+(?:\.m)?\.planet)\.wikimedia\.org$/, /^([^.]+(?:\.m)?\.(?:wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki))\.org$/, /^(advisors(?:\.m)?|advisory(?:\.m)?|affcom|am(?:\.m)?|analytics|annual|api(?:\.m)?|ar(?:\.m)?|auditcom|bd(?:\.m)?|be(?:\.m)?|blog|board|boardgovcom|br(?:\.m)?|bugzilla|ca(?:\.m)?|chair|checkuser(?:\.m)?|cn(?:\.m)?|co(?:\.m)?|collab|(?:test-)?commons(?:\.m)?|config-master|cxserver|dbtree|design|developer|diff|dk(?:\.m)?|doc|ec(?:\.m)?|ee(?:\.m)?|electcom(?:\.m)?|etherpad|exec(?:\.m)?|fdc(?:\.m)?|fi(?:\.m)?|foundation(?:\.m)?|ge(?:\.m)?|gerrit|gitlab|gr(?:\.m)?|grafana|grants(?:\.m)?|graphite|hi(?:\.m)?|horizon|id(?:\.m)?|id-internal(?:\.m)?|idp|iegcom(?:\.m)?|il|incubator(?:\.m)?|intake-(?:analytics|logging)|integration|internal|labtestwikitech|legalteam(?:\.m)?|lists|login(?:\.m)?|logstash|mai(?:\.m)?|maps|meta(?:\.m)?|mk(?:\.m)?|movementroles|mx(?:\.m)?|ng(?:\.m)?|nl(?:\.m)?|no(?:\.m)?|noboard-chapters|noc|nyc(?:\.m)?|nz(?:\.m)?|office(?:\.m)?|ombuds(?:\.m)?|ombudsmen|ores|otrs-wiki(?:\.m)?|outreach(?:\.m)?|pa-us(?:\.m)?|people|pl(?:\.m)?|performance|phabricator|planet|policy|pt(?:\.m)?|projectcom|punjabi(?:\.m)?|quality(?:\.m)?|research|romd(?:\.m)?|rs(?:\.m)?|rt|ru(?:\.m)?|se(?:\.m)?|searchcom|schema|secure|spcom|species(?:\.m)?|static-bugzilla|steward(?:\.m)?|strategy(?:\.m)?|stream|svn|techblog|techconduct|ticket|tr(?:\.m)?|transitionteam(?:\.m)?|toolsadmin|transparency|ua(?:\.m)?|upload|usability|vote(?:\.m)?|vrt-wiki(?:\.m)?|wb(?:\.m)?|wikimania(?:200[5-9]|201[0-8]|wikitech-static|team)?(?:\.m)?|wikitech)\.wikimedia\.org$/]) {
-					regex.test(getObj.host) && (getObj.host = getObj.host.replace(regex, `$1.${BaseMirrorDomain}`));
+					getObj.host.match(regex) && (getObj.host = getObj.host.replace(regex, `$1.${BaseMirrorDomain}`));
 				}
 				getObj.host === 'recommend.wmflabs.org' && (getObj.host = `recommend.${BaseMirrorDomain}`);
 				getObj.host === 'wma.wmcloud.org' && (getObj.host = `wma.${BaseMirrorDomain}`);
@@ -898,7 +901,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			}
 			if (responseObj.parse?.parsedsummary || responseObj.parse?.text || responseObj.parse?.wikitext) {
 				recursiveObj(responseObj.parse, (obj, key, preKey) => {
-					if (['parsedsummary', 'text'].includes(preKey)) {
+					if (['parsedsummary', 'text'].includes(preKey ?? '')) {
 						const htmlDom = domParse(obj[key]).dom;
 						obj[key] = AnYiMirror.getRealText(htmlDom.querySelector('.mw-parser-output').outerHTML);
 					} else if (preKey === 'wikitext') {
@@ -970,7 +973,7 @@ AnYiMirrorPrivateMain = (time = 0) => {
 			isError = true;
 			console.log('AnYiMirror fetch error:', {err: e, options, url});
 		});
-		if (isError) return;
+		if (isError || !response) return;
 		const contentType = response.headers.get('content-type') ?? response.headers.get('Content-Type');
 		if (!contentType || contentType && (/css|(?:ecma|java)script/i.test(contentType) || !/json|text|xml/i.test(contentType))) return response;
 		let responseOptions = {};
