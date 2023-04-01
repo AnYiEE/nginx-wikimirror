@@ -561,10 +561,15 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		const keepLoginCheckbox = new OO.ui.CheckboxInputWidget();
 		const keepLoginLayout = new OO.ui.FieldLayout(keepLoginCheckbox, {
 			align: 'inline',
+			help: `${this.hanAssist().localize({
+				en: `If selected, the ${Login} status will be kept for 1 year. If not selected, it will be kept for 1 month.`,
+				hans: `勾选则保持${Login}状态1年，不勾选则保持1个月。`,
+				hant: `勾選则保持${Login}狀態1年，不勾選則保持1個月。`,
+			})}`,
 			label: `${this.hanAssist().localize({
-				en: `Keep ${Login} status for 1 year (otherwise 1 month)`,
-				hans: `保持${Login}状态1年（不勾选则1个月）`,
-				hant: `保持${Login}狀態1年（不勾選則1個月）`,
+				en: 'Keep me logged in',
+				hans: `记住我的${Login}状态`,
+				hant: `記住我的${Login}狀態`,
 			})}`,
 		});
 		const $label = jQuery('<label>')
@@ -590,7 +595,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			.css({display: 'block', 'font-size': 'inherit', padding: '6px 0'})
 			.append(nameInput.$element.css('margin-bottom', '6px'))
 			.append(pwdInput.$element);
-		const $rememberMe = $label.clone().append(keepLoginLayout.$element);
+		const $rememberMe = $label.clone().append(keepLoginLayout.$element.css('margin-top', '6px'));
 		let loginToken = '';
 		const doLogin = async ({autoLogin = false, loginContinue = false, retypePassword = false} = {}) => {
 			const api = new mw.Api();
