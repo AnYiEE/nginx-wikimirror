@@ -1359,7 +1359,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 	}
 	showNotice(value, {autoHide = false, tag} = {}) {
 		const [ComHead, ComFoot, O] = [
-			'<div class="AnYiNotice">',
+			'<div class="WikiMirrorNotice">',
 			'</div>',
 			`<button>${this.hanAssist().localize({
 				en: 'OK',

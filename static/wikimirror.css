@@ -6,7 +6,7 @@
  *
  * This source code is licensed under the GPL v3 license.
  */
-.AnYiNotice {
+.WikiMirrorNotice {
 	background: #ffffff;
 	border: 0.1rem solid #0645ad;
 	cursor: default;
@@ -19,13 +19,13 @@
 	user-select: none;
 }
 
-.skin-minerva .AnYiNotice {
+.skin-minerva .WikiMirrorNotice {
 	background: transparent;
 	border: 0.1rem solid #ffffff;
 	color: inherit;
 }
 
-.AnYiNotice > *:first-child {
+.WikiMirrorNotice > *:first-child {
 	border-right: 0.1rem dotted #0645ad;
 	font-size: 0.8em;
 	font-weight: 500;
@@ -39,11 +39,11 @@
 	word-break: break-word;
 }
 
-.skin-minerva .AnYiNotice > *:first-child {
+.skin-minerva .WikiMirrorNotice > *:first-child {
 	border-right: 0.1em dotted #ffffff;
 }
 
-.AnYiNotice button {
+.WikiMirrorNotice button {
 	background: #ffffff;
 	border: none;
 	color: inherit;
@@ -54,25 +54,29 @@
 	width: 3rem;
 }
 
-.AnYiNotice button:active, .AnYiNotice button:focus, .AnYiNotice button:hover {
+.WikiMirrorNotice button:active,
+.WikiMirrorNotice button:focus,
+.WikiMirrorNotice button:hover {
 	background: #f7f7f7;
 	color: #0645ad;
 }
 
-.skin-minerva .AnYiNotice button {
+.skin-minerva .WikiMirrorNotice button {
 	background: transparent;
 	color: inherit;
 }
 
-.skin-minerva .AnYiNotice button:active, .skin-minerva .AnYiNotice button:focus, .skin-minerva .AnYiNotice button:hover {
+.skin-minerva .WikiMirrorNotice button:active,
+.skin-minerva .WikiMirrorNotice button:focus,
+.skin-minerva .WikiMirrorNotice button:hover {
 	background: rgba(255, 255, 255, 0.2);
 }
 
-.skin-minerva .AnYiTip {
+.skin-minerva .WikiMirrorTip {
 	border: 0.1rem solid #0645ad;
 }
 
-.AnYiTip > *:first-child {
+.WikiMirrorTip > *:first-child {
 	font-size: 0.7em;
 	border-right: none;
 }
@@ -85,7 +89,8 @@
 	overflow: unset;
 }
 
-.skin-minerva ul.mw-contributions-list .comment, .skin-minerva ul.special .comment {
+.skin-minerva ul.mw-contributions-list .comment,
+.skin-minerva ul.special .comment {
 	word-break: break-word;
 }
 
@@ -101,11 +106,13 @@
 	display: none;
 }
 
-.skin-timeless .content-table-left, .skin-timeless .content-table-right {
+.skin-timeless .content-table-left,
+.skin-timeless .content-table-right {
 	height: auto !important;
 }
 
-.skin-timeless .infobox caption, .skin-timeless .wikitable > caption {
+.skin-timeless .infobox caption,
+.skin-timeless .wikitable > caption {
 	width: auto !important;
 }
 
@@ -140,13 +147,15 @@
 	border-left: 0;
 }
 
-.mw-parser-output a.external, sup.reference {
+.mw-parser-output a.external,
+sup.reference {
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	user-select: none;
 }
 
-.mw-parser-output a.external.free, .mw-parser-output a.external.text {
+.mw-parser-output a.external.free,
+.mw-parser-output a.external.text {
 	-webkit-user-select: unset;
 	-moz-user-select: unset;
 	user-select: unset;
@@ -157,15 +166,16 @@
 	backdrop-filter: blur(5px);
 }
 
-.skin-minerva #anyi-darkmode a:before {
+.skin-minerva #wikimirror-darkmode a:before {
 	background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20fill%3D%22%2354595d%22%20d%3D%22M5%201a2%202%200%200%200-2%202v14a2%202%200%200%200%202%202h10a2%202%200%200%200%202-2V3a2%202%200%200%200-2-2zm0%203h5v1H5zm0%202h5v1H5zm0%202h5v1H5zm10%207H5v-1h10zm0-2H5v-1h10zm0-2H5v-1h10zm0-2h-4V4h4z%22%2F%3E%3C%2Fsvg%3E);
 }
 
-.mw-ui-icon-portletlink-anyi-difflink:before, .mw-ui-icon-portletlink-anyi-shorturl:before {
+.mw-ui-icon-portletlink-wikimirror-difflink:before {
 	background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cg%20fill%3D%22%2354595d%22%3E%3Cpath%20d%3D%22M4.83%2015h2.91a4.88%204.88%200%2001-1.55-2H5a3%203%200%20110-6h3a3%203%200%20012.82%204h2.1a4.82%204.82%200%2000.08-.83v-.34A4.83%204.83%200%20008.17%205H4.83A4.83%204.83%200%20000%209.83v.34A4.83%204.83%200%20004.83%2015z%22%2F%3E%3Cpath%20d%3D%22M15.17%205h-2.91a4.88%204.88%200%20011.55%202H15a3%203%200%20110%206h-3a3%203%200%2001-2.82-4h-2.1a4.82%204.82%200%2000-.08.83v.34A4.83%204.83%200%200011.83%2015h3.34A4.83%204.83%200%200020%2010.17v-.34A4.83%204.83%200%200015.17%205z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E);
 }
 
-#frbanner, #frbanner2 {
+#frbanner,
+#frbanner2 {
 	display: none !important;
 }
 
@@ -178,7 +188,12 @@ html {
 	tab-size: 4;
 }
 
-pre, .mw-code, .mw-highlight, .ve-init-mw-desktopArticleTarget .CodeMirror-code, .ve-init-mw-desktopArticleTarget .CodeMirror-code *, .ve-init-mw-desktopArticleTarget .ve-ui-mwWikitextSurface .ve-ce-paragraphNode {
+pre,
+.mw-code,
+.mw-highlight,
+.ve-init-mw-desktopArticleTarget .CodeMirror-code,
+.ve-init-mw-desktopArticleTarget .CodeMirror-code *,
+.ve-init-mw-desktopArticleTarget .ve-ui-mwWikitextSurface .ve-ce-paragraphNode {
 	line-break: anywhere !important;
 	white-space: pre-wrap !important;
 	word-break: break-all !important;
@@ -186,212 +201,212 @@ pre, .mw-code, .mw-highlight, .ve-init-mw-desktopArticleTarget .CodeMirror-code,
 }
 
 @media only screen {
-	html.anyi-darkmode,
-	.anyi-darkmode iframe,
-	.anyi-darkmode img,
-	.anyi-darkmode ogvjs,
-	.anyi-darkmode svg,
-	.anyi-darkmode video,
-	.anyi-darkmode .cx-slitem__image:not(.oo-ui-icon-article),
-	.anyi-darkmode .ext-related-articles-card-thumb:not(.ext-related-articles-card-thumb-placeholder),
-	.anyi-darkmode .frb-image,
-	.anyi-darkmode .image-carousel,
-	.anyi-darkmode .k-player.fullscreen,
-	.anyi-darkmode .k-player .ttmlStyled,
-	.anyi-darkmode .leaflet-tile,
-	.anyi-darkmode .list-thumb:not(.list-thumb-none),
-	.anyi-darkmode .mw-mmv-main.jq-fullscreened,
-	.anyi-darkmode .mw-mmv-pre-image,
-	.anyi-darkmode .mw-no-invert,
-	.anyi-darkmode .mw-tmh-play-icon,
-	.anyi-darkmode .mwe-math-element,
-	.anyi-darkmode .vjs-fullscreen,
-	.anyi-darkmode .vjs-text-track-display,
-	.anyi-darkmode .wvui-typeahead-suggestion__thumbnail,
-	.anyi-darkmode #mp-2012-banner-logo {
+	html.wikimirror-darkmode,
+	.wikimirror-darkmode iframe,
+	.wikimirror-darkmode img,
+	.wikimirror-darkmode ogvjs,
+	.wikimirror-darkmode svg,
+	.wikimirror-darkmode video,
+	.wikimirror-darkmode .cx-slitem__image:not(.oo-ui-icon-article),
+	.wikimirror-darkmode .ext-related-articles-card-thumb:not(.ext-related-articles-card-thumb-placeholder),
+	.wikimirror-darkmode .frb-image,
+	.wikimirror-darkmode .image-carousel,
+	.wikimirror-darkmode .k-player.fullscreen,
+	.wikimirror-darkmode .k-player .ttmlStyled,
+	.wikimirror-darkmode .leaflet-tile,
+	.wikimirror-darkmode .list-thumb:not(.list-thumb-none),
+	.wikimirror-darkmode .mw-mmv-main.jq-fullscreened,
+	.wikimirror-darkmode .mw-mmv-pre-image,
+	.wikimirror-darkmode .mw-no-invert,
+	.wikimirror-darkmode .mw-tmh-play-icon,
+	.wikimirror-darkmode .mwe-math-element,
+	.wikimirror-darkmode .vjs-fullscreen,
+	.wikimirror-darkmode .vjs-text-track-display,
+	.wikimirror-darkmode .wvui-typeahead-suggestion__thumbnail,
+	.wikimirror-darkmode #mp-2012-banner-logo {
 		filter: invert(0.95) hue-rotate(0.5turn);
 	}
-	.anyi-darkmode .mw-mmv-image img.blurred {
+	.wikimirror-darkmode .mw-mmv-image img.blurred {
 		filter: blur(3px) invert(0.95) hue-rotate(0.5turn) !important;
 	}
-	.anyi-darkmode img,
-	.anyi-darkmode .mw-ui-icon:before,
-	.anyi-darkmode .mw-wiki-logo,
-	.anyi-darkmode #mp-2012-banner,
-	.anyi-darkmode #mp-2012-banner-logo {
+	.wikimirror-darkmode img,
+	.wikimirror-darkmode .mw-ui-icon:before,
+	.wikimirror-darkmode .mw-wiki-logo,
+	.wikimirror-darkmode #mp-2012-banner,
+	.wikimirror-darkmode #mp-2012-banner-logo {
 		opacity: 0.8;
 		transition: opacity 0.5s ease-in-out;
 	}
-	.anyi-darkmode img:hover {
+	.wikimirror-darkmode img:hover {
 		opacity: 1;
 	}
-	.anyi-darkmode .branding-box img:hover,
-	.anyi-darkmode .minerva-footer img:hover,
-	.anyi-darkmode .mw-logo-container img:hover,
-	.anyi-darkmode .mw-logo-icon:hover,
-	.anyi-darkmode .mw-wiki-logo.timeless-logo img:hover,
-	.anyi-darkmode #p-banner img:hover,
-	.anyi-darkmode #sidebarCollapse:hover {
+	.wikimirror-darkmode .branding-box img:hover,
+	.wikimirror-darkmode .minerva-footer img:hover,
+	.wikimirror-darkmode .mw-logo-container img:hover,
+	.wikimirror-darkmode .mw-logo-icon:hover,
+	.wikimirror-darkmode .mw-wiki-logo.timeless-logo img:hover,
+	.wikimirror-darkmode #p-banner img:hover,
+	.wikimirror-darkmode #sidebarCollapse:hover {
 		opacity: 0.8;
 	}
-	.anyi-darkmode .filehistory img,
-	.anyi-darkmode .mw-ext-score img,
-	.anyi-darkmode .mw-mmv-image *,
-	.anyi-darkmode .mwe-math-element *,
-	.anyi-darkmode #file img,
-	.anyi-darkmode #gallerypreview img {
+	.wikimirror-darkmode .filehistory img,
+	.wikimirror-darkmode .mw-ext-score img,
+	.wikimirror-darkmode .mw-mmv-image *,
+	.wikimirror-darkmode .mwe-math-element *,
+	.wikimirror-darkmode #file img,
+	.wikimirror-darkmode #gallerypreview img {
 		opacity: 1;
 	}
-	.anyi-darkmode img[alt*='-at-'],
-	.anyi-darkmode img[alt*='- at -'],
-	.anyi-darkmode img[alt*='Lightblue'],
-	.anyi-darkmode img[alt*='Wikimedia-logo black'],
-	.anyi-darkmode img[alt='詩詞賞析'],
-	.anyi-darkmode img[src*='Blue-bg'],
-	.anyi-darkmode img[src*='Bluebg'],
-	.anyi-darkmode img[src*='Black_x'],
-	.anyi-darkmode img[src*='China_char'],
-	.anyi-darkmode img[src*='CWLA'],
-	.anyi-darkmode img[src*='CWMoA'],
-	.anyi-darkmode img[src*='CWS'],
-	.anyi-darkmode img[src*='Inkscape_Logo'],
-	.anyi-darkmode img[src*='Qiuwen'],
-	.anyi-darkmode img[src*='_Shadow.'],
-	.anyi-darkmode img[src*='Weiji.svg'],
-	.anyi-darkmode img[src*='Wikimedia-logo_black'],
-	.anyi-darkmode img[src*='Wikipedia%27s_W'],
-	.anyi-darkmode img[src*='wikipedia-wordmark'],
-	.anyi-darkmode img[src*='Wikipedia_wordmark'],
-	.anyi-darkmode img[src*='Wikipedian_Journal_Title'],
-	.anyi-darkmode .branding-box img,
-	.anyi-darkmode .mainpage_box h3 .header_icon img,
-	.anyi-darkmode .minerva-footer img,
-	.anyi-darkmode .mw-logo-container img,
-	.anyi-darkmode .mw-ext-score img,
-	.anyi-darkmode .wd-mp-headerimage,
-	.anyi-darkmode .wikipedia-ko.main-box .main-shortcut-item img,
-	.anyi-darkmode .wvui-icon svg,
-	.anyi-darkmode #mf-wel img,
-	.anyi-darkmode #p-banner img,
-	.anyi-darkmode #portal img,
-	.anyi-darkmode #topics-list img {
+	.wikimirror-darkmode img[alt*='-at-'],
+	.wikimirror-darkmode img[alt*='- at -'],
+	.wikimirror-darkmode img[alt*='Lightblue'],
+	.wikimirror-darkmode img[alt*='Wikimedia-logo black'],
+	.wikimirror-darkmode img[alt='詩詞賞析'],
+	.wikimirror-darkmode img[src*='Blue-bg'],
+	.wikimirror-darkmode img[src*='Bluebg'],
+	.wikimirror-darkmode img[src*='Black_x'],
+	.wikimirror-darkmode img[src*='China_char'],
+	.wikimirror-darkmode img[src*='CWLA'],
+	.wikimirror-darkmode img[src*='CWMoA'],
+	.wikimirror-darkmode img[src*='CWS'],
+	.wikimirror-darkmode img[src*='Inkscape_Logo'],
+	.wikimirror-darkmode img[src*='Qiuwen'],
+	.wikimirror-darkmode img[src*='_Shadow.'],
+	.wikimirror-darkmode img[src*='Weiji.svg'],
+	.wikimirror-darkmode img[src*='Wikimedia-logo_black'],
+	.wikimirror-darkmode img[src*='Wikipedia%27s_W'],
+	.wikimirror-darkmode img[src*='wikipedia-wordmark'],
+	.wikimirror-darkmode img[src*='Wikipedia_wordmark'],
+	.wikimirror-darkmode img[src*='Wikipedian_Journal_Title'],
+	.wikimirror-darkmode .branding-box img,
+	.wikimirror-darkmode .mainpage_box h3 .header_icon img,
+	.wikimirror-darkmode .minerva-footer img,
+	.wikimirror-darkmode .mw-logo-container img,
+	.wikimirror-darkmode .mw-ext-score img,
+	.wikimirror-darkmode .wd-mp-headerimage,
+	.wikimirror-darkmode .wikipedia-ko.main-box .main-shortcut-item img,
+	.wikimirror-darkmode .wvui-icon svg,
+	.wikimirror-darkmode #mf-wel img,
+	.wikimirror-darkmode #p-banner img,
+	.wikimirror-darkmode #portal img,
+	.wikimirror-darkmode #topics-list img {
 		filter: invert(0);
 	}
-	.anyi-darkmode body.skin-timeless,
-	.anyi-darkmode .drawer-container__mask,
-	.anyi-darkmode .main-menu-mask,
-	.anyi-darkmode .mw-mmv-image,
-	.anyi-darkmode .mw-mmv-overlay,
-	.anyi-darkmode .mw-tmh-media-dialog .oo-ui-dialog-content > .oo-ui-window-body .oo-ui-layout,
-	.anyi-darkmode .overlay.media-viewer,
-	.anyi-darkmode .video-js,
-	.anyi-darkmode .vjs-poster,
-	.anyi-darkmode #menus-cover {
+	.wikimirror-darkmode body.skin-timeless,
+	.wikimirror-darkmode .drawer-container__mask,
+	.wikimirror-darkmode .main-menu-mask,
+	.wikimirror-darkmode .mw-mmv-image,
+	.wikimirror-darkmode .mw-mmv-overlay,
+	.wikimirror-darkmode .mw-tmh-media-dialog .oo-ui-dialog-content > .oo-ui-window-body .oo-ui-layout,
+	.wikimirror-darkmode .overlay.media-viewer,
+	.wikimirror-darkmode .video-js,
+	.wikimirror-darkmode .vjs-poster,
+	.wikimirror-darkmode #menus-cover {
 		background-color: #f7f7f7 !important;
 	}
-	.anyi-darkmode .diff-addedline .diffchange {
+	.wikimirror-darkmode .diff-addedline .diffchange {
 		background: #7fd7c4;
 	}
-	.anyi-darkmode .diff-deletedline .diffchange {
+	.wikimirror-darkmode .diff-deletedline .diffchange {
 		background: #e88e89;
 	}
-	.anyi-darkmode .mw-kartographer-mapDialog-map {
+	.wikimirror-darkmode .mw-kartographer-mapDialog-map {
 		background-color: #000000;
 	}
-	.anyi-darkmode .mwe-popups {
+	.wikimirror-darkmode .mwe-popups {
 		border: 10px solid #c8ccd1;
 		border-radius: 10px;
 		box-shadow: none;
 	}
-	.anyi-darkmode #mw-footer-container a,
-	.anyi-darkmode .skin-modern .mw-editsection *,
-	.anyi-darkmode .skin-modern .Wikiplus-Edit-SectionBtn {
+	.wikimirror-darkmode #mw-footer-container a,
+	.wikimirror-darkmode .skin-modern .mw-editsection *,
+	.wikimirror-darkmode .skin-modern .Wikiplus-Edit-SectionBtn {
 		color: #3366cc;
 	}
-	.anyi-darkmode .locmap .pr {
+	.wikimirror-darkmode .locmap .pr {
 		color: #ffffff;
 	}
-	.anyi-darkmode .skin-minerva .main-menu-mask {
+	.wikimirror-darkmode .skin-minerva .main-menu-mask {
 		background: rgba(0, 0, 0, 0.2);
 	}
-	.anyi-darkmode .skin-timeless h1.firstHeading,
-	.anyi-darkmode .skin-timeless .mw-footer-container,
-	.anyi-darkmode .skin-timeless #mw-content-container,
-	.anyi-darkmode .skin-timeless #mw-header-hack,
-	.anyi-darkmode .skin-timeless #mw-header-nav-hack {
+	.wikimirror-darkmode .skin-timeless h1.firstHeading,
+	.wikimirror-darkmode .skin-timeless .mw-footer-container,
+	.wikimirror-darkmode .skin-timeless #mw-content-container,
+	.wikimirror-darkmode .skin-timeless #mw-header-hack,
+	.wikimirror-darkmode .skin-timeless #mw-header-nav-hack {
 		box-shadow: none;
 	}
-	.anyi-darkmode .skin-timeless h1.firstHeading,
-	.anyi-darkmode .skin-timeless #mw-content-container {
+	.wikimirror-darkmode .skin-timeless h1.firstHeading,
+	.wikimirror-darkmode .skin-timeless #mw-content-container {
 		border-bottom: solid 4px #c8ccd1;
 	}
-	.anyi-darkmode .skin-timeless .mw-footer-container {
+	.wikimirror-darkmode .skin-timeless .mw-footer-container {
 		border-top: none;
 	}
-	.anyi-darkmode .skin-timeless #mw-header-hack .color-left,
-	.anyi-darkmode .skin-timeless #mw-header-hack .color-middle,
-	.anyi-darkmode .skin-timeless #mw-header-hack .color-right,
-	.anyi-darkmode .skin-timeless #mw-header-nav-hack .color-left,
-	.anyi-darkmode .skin-timeless #mw-header-nav-hack .color-middle,
-	.anyi-darkmode .skin-timeless #mw-header-nav-hack .color-right {
+	.wikimirror-darkmode .skin-timeless #mw-header-hack .color-left,
+	.wikimirror-darkmode .skin-timeless #mw-header-hack .color-middle,
+	.wikimirror-darkmode .skin-timeless #mw-header-hack .color-right,
+	.wikimirror-darkmode .skin-timeless #mw-header-nav-hack .color-left,
+	.wikimirror-darkmode .skin-timeless #mw-header-nav-hack .color-middle,
+	.wikimirror-darkmode .skin-timeless #mw-header-nav-hack .color-right {
 		background: #c8ccd1;
 	}
-	.anyi-darkmode #scrollDownButton,
-	.anyi-darkmode #scrollDownButton-zhwiki,
-	.anyi-darkmode #scrollUpButton,
-	.anyi-darkmode #scrollUpButton-zhwiki {
+	.wikimirror-darkmode #scrollDownButton,
+	.wikimirror-darkmode #scrollDownButton-zhwiki,
+	.wikimirror-darkmode #scrollUpButton,
+	.wikimirror-darkmode #scrollUpButton-zhwiki {
 		transition: unset;
 	}
-	.anyi-darkmode input,
-	.anyi-darkmode textarea,
-	.anyi-darkmode .in-page-edit .CodeMirror {
+	.wikimirror-darkmode input,
+	.wikimirror-darkmode textarea,
+	.wikimirror-darkmode .in-page-edit .CodeMirror {
 		background: #eaecf0 !important;
 	}
-	.anyi-darkmode input,
-	.anyi-darkmode textarea,
-	.anyi-darkmode .mw-mmv-image .error-box,
-	.anyi-darkmode .skin-timeless .mw-footer-container,
-	.anyi-darkmode .in-page-edit .CodeMirror {
+	.wikimirror-darkmode input,
+	.wikimirror-darkmode textarea,
+	.wikimirror-darkmode .mw-mmv-image .error-box,
+	.wikimirror-darkmode .skin-timeless .mw-footer-container,
+	.wikimirror-darkmode .in-page-edit .CodeMirror {
 		color: #000000 !important;
 	}
 	/* cxserver */
-	.anyi-darkmode .swagger-ui .topbar {
+	.wikimirror-darkmode .swagger-ui .topbar {
 		background-color: #e3e3e3;
 	}
 	/* diff */
-	.anyi-darkmode .site-footer#colophon {
+	.wikimirror-darkmode .site-footer#colophon {
 		filter: invert(0.95) hue-rotate(0.5turn);
 	}
 	/* gitlab */
-	.anyi-darkmode body.ui-gray .navbar-gitlab {
+	.wikimirror-darkmode body.ui-gray .navbar-gitlab {
 		background-color: #ffffff;
 	}
 	/* phabricator */
-	.anyi-darkmode .phui-comment-image,
-	.anyi-darkmode .phui-curtain-object-ref-view-image-cell,
-	.anyi-darkmode .phui-icon-view,
-	.anyi-darkmode .phui-oi-image,
-	.anyi-darkmode .phui-timeline-image,
-	.anyi-darkmode .phabricator-main-menu-eye,
-	.anyi-darkmode .phabricator-wordmark {
+	.wikimirror-darkmode .phui-comment-image,
+	.wikimirror-darkmode .phui-curtain-object-ref-view-image-cell,
+	.wikimirror-darkmode .phui-icon-view,
+	.wikimirror-darkmode .phui-oi-image,
+	.wikimirror-darkmode .phui-timeline-image,
+	.wikimirror-darkmode .phabricator-main-menu-eye,
+	.wikimirror-darkmode .phabricator-wordmark {
 		filter: invert(0.95) hue-rotate(0.5turn);
 	}
-	.anyi-darkmode .phui-theme-blue .phabricator-main-menu-background {
+	.wikimirror-darkmode .phui-theme-blue .phabricator-main-menu-background {
 		background: #ffffff;
 	}
 	/* project portal */
-	.anyi-darkmode body[id*="www"] [data-el-section="other projects"] .app-badges .sprite,
-	.anyi-darkmode body[id*="www"] [data-el-section="other projects"] .other-project-icon {
+	.wikimirror-darkmode body[id*='www'] [data-el-section='other projects'] .app-badges .sprite,
+	.wikimirror-darkmode body[id*='www'] [data-el-section='other projects'] .other-project-icon {
 		filter: invert(0.95) hue-rotate(0.5turn);
 	}
-	.anyi-darkmode body[id*="www"] [data-jsl10n="portal.slogan"] {
+	.wikimirror-darkmode body[id*='www'] [data-jsl10n='portal.slogan'] {
 		color: #000000;
 	}
 	/* stream */
-	.anyi-darkmode #eventstreams-ui-app .nav-bar {
+	.wikimirror-darkmode #eventstreams-ui-app .nav-bar {
 		background-color: #ffffff;
 	}
-	.anyi-darkmode #eventstreams-ui-app .nav-bar a {
+	.wikimirror-darkmode #eventstreams-ui-app .nav-bar a {
 		color: #000000 !important;
 	}
 }
