@@ -586,7 +586,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					hant: `重新設定${Password}`,
 				})}">${this.hanAssist().localize({
 					en: `Forgot ${Password}?`,
-					hans: `忘記${Password}？`,
+					hans: `忘记${Password}？`,
 					hant: `忘記${Password}？`,
 				})}</a>`
 			);
