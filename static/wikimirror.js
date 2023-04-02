@@ -1222,10 +1222,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		}
 	}
 	async diffLink(ids) {
-		if (!ids) return;
 		const ID = 'wikimirror-difflink';
 		if (
-			document.getElementById(ID) ||
+			!ids ||
 			!(
 				document.getElementById('p-cactions') ||
 				document.getElementById('p-tb') ||
