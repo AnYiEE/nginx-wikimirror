@@ -283,8 +283,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		}
 		if (method === 'emoji') {
 			return value.match(REGEX_EMOJI)
-			? value.replace(REGEX_EMOJI, '<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>')
-			: value;
+				? value.replace(REGEX_EMOJI, '<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>')
+				: value;
 		}
 		value = value
 			.replace(new RegExp(`phab\\.${this.MIRROR_DOMAIN}`, 'gi'), 'phab.wmfusercontent.org')
@@ -1222,20 +1222,6 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			document.getElementById('footer-places')
 		) {
 			document.getElementById('footer-places').insertAdjacentHTML('beforeend', Redirect);
-		}
-	}
-	async registerServiceWorker() {
-		if (!('serviceWorker' in navigator)) return;
-		const base = 'WikiMirror service worker';
-		const registration = await navigator.serviceWorker
-			.register('/sw.js')
-			.catch((e) => console.log(`${base} register error:`, e));
-		if (registration?.installing) {
-			console.log(`${base} is installing.`);
-		} else if (registration?.waiting) {
-			console.log(`${base} is waiting.`);
-		} else if (registration?.active) {
-			console.log(`${base} actived.`);
 		}
 	}
 	bodyReady() {
