@@ -153,6 +153,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		this.MIRROR_DOMAIN_SPLIT = domain.split('.');
 		this.modules = modules;
 		this.regexps = regexps;
+		this.messages = this.initMessages();
 	}
 	getRealText(value, method) {
 		const [RegexUrlRoot, RegexUrlSub, RegexUrlLatex] = [
@@ -282,8 +283,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		}
 		if (method === 'emoji') {
 			return value.match(REGEX_EMOJI)
-				? value.replace(REGEX_EMOJI, '<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>')
-				: value;
+			? value.replace(REGEX_EMOJI, '<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>')
+			: value;
 		}
 		value = value
 			.replace(new RegExp(`phab\\.${this.MIRROR_DOMAIN}`, 'gi'), 'phab.wmfusercontent.org')
@@ -387,6 +388,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			this.mwReady()
 				.then(async () => {
 					console.log('WikiMirror dependencies load succeeded.');
+					this.messages = this.initMessages();
 					moduleLoader(this.modules.mw);
 					document.addEventListener('copy', (e) => {
 						let value = getSelection()?.toString() ?? '';
@@ -471,22 +473,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		if (new RegExp(`^\\S+?\\.m\\.${this.MIRROR_DOMAIN_REGEX}`).test(location.host)) {
 			return; // API BUG <https://phabricator.wikimedia.org/T328397>
 		}
-		const [Account, Auto, Get, Error, Login, Name, Token, User, Password, Recaptcha] = [
-			this.hanAssist().localize({en: 'account', hans: '账号', hant: '帳戶'}),
-			this.hanAssist().localize({en: 'automatic', hans: '自动', hant: '自動'}),
-			this.hanAssist().localize({en: 'get', hans: '获取', hant: '獲取'}),
-			this.hanAssist().localize({en: 'error', hans: '错误', hant: '錯誤'}),
-			this.hanAssist().localize({en: 'login', hans: '登录', hant: '登入'}),
-			this.hanAssist().localize({en: 'name', hans: '名', hant: '名稱'}),
-			this.hanAssist().localize({en: 'token', hans: '令牌', hant: '權杖'}),
-			this.hanAssist().localize({en: 'user', cn: '用户', hk: '用戶', tw: '使用者'}),
-			this.hanAssist().localize({en: 'password', hans: '密码', hant: '密碼'}),
-			this.hanAssist().localize({en: '2FA verification code', hans: '2FA验证码', hant: '2FA驗證碼'}),
-		];
+		const t = (key) => this.messages.ajaxLogin[key] || key;
 		const CookiePrefix = location.host.includes('wikitech') ? 'lastLoginWikitech' : 'lastLogin';
-		const firstUpperCase = ([first, ...rest]) => {
-			return first?.toUpperCase() + rest.join('');
-		};
 		if (method === 'init') {
 			const dom =
 				document.getElementById('ca-cb-login') ||
@@ -504,16 +492,10 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				this.getCookie(`${CookiePrefix}Password`),
 			];
 			if (username && password && password !== 'deleted' && !this.getConf('wgUserName')) {
-				this.showNotice(
-					`<span>${this.hanAssist().localize({
-						en: `Starting ${Auto} ${Login}`,
-						zh: `开始${Auto}${Login}`,
-					})}</span>`,
-					{
-						autoHide: true,
-						tag: 'login',
-					}
-				);
+				this.showNotice(`<span>${t('Starting automatic login')}</span>`, {
+					autoHide: true,
+					tag: 'login',
+				});
 				this.ajaxLogin(undefined, {
 					username,
 					password: this.inflateRaw(password),
@@ -531,19 +513,13 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		const [messageDialog, windowManager] = [new OO.ui.MessageDialog(), new OO.ui.WindowManager()];
 		const nameInput = new OO.ui.TextInputWidget({
 			icon: 'userAvatar',
-			placeholder: this.hanAssist().localize({
-				en: firstUpperCase(`${User}${Name}`),
-				zh: `${User}${Name}`,
-			}),
+			placeholder: t('Username'),
 			validate: 'non-empty',
 			value: this.getCookie(`${CookiePrefix}UserName`) ?? '',
 		});
 		const pwdInput = new OO.ui.TextInputWidget({
 			icon: 'key',
-			placeholder: this.hanAssist().localize({
-				en: firstUpperCase(Password),
-				zh: Password,
-			}),
+			placeholder: t('Password'),
 			type: 'password',
 			validate: 'non-empty',
 		});
@@ -552,25 +528,15 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		});
 		const autoLoginLayout = new OO.ui.FieldLayout(autoLoginCheckbox, {
 			align: 'inline',
-			label: `${this.hanAssist().localize({
-				en: `Cross wiki ${Auto} ${Login}`,
-				hans: `跨维基${Auto}${Login}`,
-				hant: `跨維基${Auto}${Login}`,
-			})}`,
+			label: t('Cross wiki automatic login'),
 		});
 		const keepLoginCheckbox = new OO.ui.CheckboxInputWidget();
 		const keepLoginLayout = new OO.ui.FieldLayout(keepLoginCheckbox, {
 			align: 'inline',
-			help: `${this.hanAssist().localize({
-				en: `If selected, the ${Login} status will be kept for 1 year. If not selected, it will be kept for 1 month.`,
-				hans: `勾选则保持${Login}状态1年，不勾选则保持1个月。`,
-				hant: `勾選则保持${Login}狀態1年，不勾選則保持1個月。`,
-			})}`,
-			label: `${this.hanAssist().localize({
-				en: 'Keep me logged in',
-				hans: `记住我的${Login}状态`,
-				hant: `記住我的${Login}狀態`,
-			})}`,
+			help: t(
+				'If selected, the login status will be kept for 1 year. If not selected, it will be kept for 1 month.'
+			),
+			label: t('Keep me logged in'),
 		});
 		const $label = jQuery('<label>')
 			.addClass('oo-ui-labelWidget oo-ui-labelElement-label')
@@ -580,15 +546,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			.clone()
 			.css('float', 'right')
 			.html(
-				`<a href="/wiki/Special:PasswordReset" title="${this.hanAssist().localize({
-					en: `Reset ${Password}`,
-					hans: `重置${Password}`,
-					hant: `重新設定${Password}`,
-				})}">${this.hanAssist().localize({
-					en: `Forgot ${Password}?`,
-					hans: `忘记${Password}？`,
-					hant: `忘記${Password}？`,
-				})}</a>`
+				`<a href="/wiki/Special:PasswordReset" title="${t('Reset password')}">${t('Forgot password?')}</a>`
 			);
 		const $inputBox = $label
 			.clone()
@@ -601,27 +559,15 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			const api = new mw.Api();
 			try {
 				if (!loginContinue) {
-					this.showNotice(
-						`<span>${this.hanAssist().localize({
-							en: firstUpperCase(`${Get}ting ${Login} ${Token}`),
-							zh: `正在${Get}${Login}${Token}`,
-						})}</span>`,
-						{
-							autoHide: false,
-							tag: 'token',
-						}
-					);
+					this.showNotice(`<span>${t('Getting login token')}</span>`, {
+						autoHide: false,
+						tag: 'token',
+					});
 					loginToken = await api.getToken('login');
-					this.showNotice(
-						`<span>${this.hanAssist().localize({
-							en: firstUpperCase(`${Login} ${Token} ${Get}ted`),
-							zh: `${Get}${Login}${Token}成功`,
-						})}</span>`,
-						{
-							autoHide: true,
-							tag: 'token',
-						}
-					);
+					this.showNotice(`<span>${t('Login token getted')}</span>`, {
+						autoHide: true,
+						tag: 'token',
+					});
 				}
 				const params = {
 					action: 'clientlogin',
@@ -645,62 +591,29 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					const value = await OO.ui.prompt(
 						jQuery(
 							`<b class="oo-ui-messageDialog-title oo-ui-window-head">${
-								retypePassword
-									? this.hanAssist().localize({
-											en: `Enter ${Password}`,
-											hans: `请输入${Password}`,
-											hant: `請輸入${Password}`,
-									  })
-									: this.hanAssist().localize({
-											en: `Enter ${Recaptcha}`,
-											hans: `请输入${Recaptcha}`,
-											hant: `請輸入${Recaptcha}`,
-									  })
+								retypePassword ? t('Enter password') : t('Enter 2FA verification code')
 							}</b>`
 						),
 						{
 							textInput: {
 								icon: 'key',
-								placeholder: retypePassword
-									? this.hanAssist().localize({
-											en: `New ${Password}`,
-											zh: `新${Password}`,
-									  })
-									: this.hanAssist().localize({
-											en: '6-digit number',
-											hans: '6位数字',
-											hant: '6位數字',
-									  }),
+								placeholder: retypePassword ? t('New password') : t('6-digit number'),
 								validate: 'integer',
 							},
 						}
 					);
 					if (value === null) {
-						this.showNotice(
-							`<span>${this.hanAssist().localize({
-								en: firstUpperCase(`${Login} cancelled`),
-								zh: `${Login}取消`,
-							})}</span>`,
-							{
-								autoHide: true,
-								tag: 'login',
-							}
-						);
+						this.showNotice(`<span>${t('Login cancelled')}</span>`, {
+							autoHide: true,
+							tag: 'login',
+						});
 						return;
 					} else if (value === '') {
 						this.showNotice(
 							`<span>${
 								retypePassword
-									? this.hanAssist().localize({
-											en: `The ${Password} cannot be empty`,
-											hans: `${Password}不能为空`,
-											hant: `${Password}不能爲空`,
-									  })
-									: this.hanAssist().localize({
-											en: `The ${Recaptcha} cannot be empty`,
-											hans: `${Recaptcha}不能为空`,
-											hant: `${Recaptcha}不能爲空`,
-									  })
+									? t('The password cannot be empty')
+									: t('The 2FA verification code cannot be empty')
 							}</span>`,
 							{
 								autoHide: true,
@@ -722,29 +635,17 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 						params.OATHToken = value;
 					}
 				}
-				this.showNotice(
-					`<span>${this.hanAssist().localize({
-						en: 'Logging in',
-						zh: `正在${Login}`,
-					})}</span>`,
-					{
-						autoHide: false,
-						tag: 'login',
-					}
-				);
+				this.showNotice(`<span>${t('Logging in')}</span>`, {
+					autoHide: false,
+					tag: 'login',
+				});
 				const response = await api.post(params);
 				if (response['clientlogin']?.status === 'PASS') {
 					const hour = params.rememberMe ? 8760 : 720;
-					this.showNotice(
-						`<span>${this.hanAssist().localize({
-							en: firstUpperCase(`${Login} succeed`),
-							zh: `${Login}成功`,
-						})}</span>`,
-						{
-							autoHide: false,
-							tag: 'login',
-						}
-					);
+					this.showNotice(`<span>${t('Login succeed')}</span>`, {
+						autoHide: false,
+						tag: 'login',
+					});
 					this.setCookie({
 						name: `${CookiePrefix}UserName`,
 						value: response['clientlogin'].username,
@@ -768,86 +669,45 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					}
 					switch (response['clientlogin'].messagecode) {
 						case 'authmanager-authn-autocreate-failed':
-							this.showNotice(
-								`<span>${this.hanAssist().localize({
-									en: firstUpperCase(`${Auto} ${Account} creation failed`),
-									hans: `${Auto}创建${Account}失败`,
-									hant: `${Auto}創建${Account}失敗`,
-								})}</span>`
-							);
+							this.showNotice(`<span>${t('Automatic account creation failed')}</span>`);
 							windowManager.clearWindows();
 							break;
 						case 'centralauth-login-error-locked':
-							this.showNotice(
-								`<span>${this.hanAssist().localize({
-									en: `The ${User} has been globally locked`,
-									hans: `${User}已被全域锁定`,
-									hant: `${User}已被全域封鎖`,
-								})}</span>`
-							);
+							this.showNotice(`<span>${t('The user has been globally locked')}</span>`);
 							windowManager.clearWindows();
 							break;
 						case 'login-throttled':
-							this.showNotice(
-								`<span>${this.hanAssist().localize({
-									en: `The ${User} ${Login} is too frequent, please try again in five minutes`,
-									hans: `${User}${Login}过于频繁，请五分钟后再试`,
-									hant: `${User}${Login}過於頻繁，請五分鐘後再試`,
-								})}</span>`
-							);
+							this.showNotice(`<span>${t(
+								'The user login is too frequent, please try again in five minutes'
+							)}</span>`);
 							break;
 						case 'oathauth-auth-ui':
 							doLogin({loginContinue: true});
 							break;
 						case 'oathauth-login-failed':
-							this.showNotice(
-								`<span>${this.hanAssist().localize({
-									en: `Wrong ${Recaptcha}`,
-									zh: `${Recaptcha}${Error}`,
-								})}</span>`,
-								{
-									autoHide: true,
-									tag: 'login',
-								}
-							);
+							this.showNotice(`<span>${t('Invalid 2FA verification code')}</span>`, {
+								autoHide: true,
+								tag: 'login',
+							});
 							doLogin({loginContinue: true});
 							break;
 						case 'resetpass-temp-emailed':
-							this.showNotice(
-								`<span>${this.hanAssist().localize({
-									en: `New ${Password} is required`,
-									hans: `需要设置新${Password}`,
-									hant: `需要設置新${Password}`,
-								})}</span>`,
-								{
-									autoHide: true,
-									tag: 'login',
-								}
-							);
+							this.showNotice(`<span>${t('New password is required')}</span>`, {
+								autoHide: true,
+								tag: 'login',
+							});
 							doLogin({retypePassword: true});
 							break;
 						case 'wrongpassword':
-							this.showNotice(
-								`<span>${this.hanAssist().localize({
-									en: `Wrong ${User}${Name} or ${Password}`,
-									zh: `${User}${Name}或${Password}${Error}`,
-								})}</span>`,
-								{
-									autoHide: true,
-									tag: 'login',
-								}
-							);
+							this.showNotice(`<span>${t('Invalid useruame or password')}</span>`, {
+								autoHide: true,
+								tag: 'login',
+							});
 							await windowManager.clearWindows();
 							this.ajaxLogin();
 							break;
 						default:
-							this.showNotice(
-								`<span>${this.hanAssist().localize({
-									en: `Unknown API ${Error}`,
-									hans: `未定义的API${Error}`,
-									hant: `未定義的API${Error}`,
-								})}</span>`
-							);
+							this.showNotice(`<span>${t('Unknown API error')}</span>`);
 					}
 				}
 			} catch (e) {
@@ -861,17 +721,10 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		const isValid = () => {
 			const valid = ![nameInput.value, pwdInput.value].includes('');
 			if (!valid) {
-				this.showNotice(
-					`<span>${this.hanAssist().localize({
-						en: `The ${User}${Name} or ${Password} cannot be empty`,
-						hans: `${User}${Name}或${Password}不能为空`,
-						hant: `${User}${Name}或${Password}不能爲空`,
-					})}</span>`,
-					{
-						autoHide: true,
-						tag: 'login',
-					}
-				);
+				this.showNotice(`<span>${t('The username or password cannot be empty')}</span>`, {
+					autoHide: true,
+					tag: 'login',
+				});
 			}
 			return valid;
 		};
@@ -896,32 +749,17 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				{
 					action: 'login',
 					flags: 'primary',
-					label: jQuery(
-						`<b style="color:#36c">${this.hanAssist().localize({
-							en: firstUpperCase(Login),
-							zh: Login,
-						})}</b>`
-					),
+					label: jQuery(`<b style="color:#36c">${t('Login')}</b>`),
 				},
 				{
 					action: 'cancle',
-					label: jQuery(
-						`<b style="color:#d33">${this.hanAssist().localize({
-							en: `Cancel`,
-							zh: `取消`,
-						})}</b>`
-					),
+					label: jQuery(`<b style="color:#d33">${t('Cancel')}</b>`),
 				},
 			],
 			message: jQuery('<div>')
 				.addClass('oo-ui-window-foot')
 				.append($inputBox, $forgotPassword, $rememberMe, $autoLogin),
-			title: jQuery(
-				`<b class="oo-ui-window-head">${this.hanAssist().localize({
-					en: firstUpperCase(Login),
-					zh: Login,
-				})}</b>`
-			),
+			title: jQuery(`<b class="oo-ui-window-head">${t('Login')}</b>`),
 			size: 'small',
 		});
 	}
@@ -940,6 +778,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		) {
 			return;
 		}
+		const t = (key) => this.messages.confirmLogout[key] || key;
 		const newDom = document.createElement('a');
 		dom.className && (newDom.className = dom.className);
 		newDom.href = dom.href;
@@ -952,23 +791,13 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			await mw.loader.using('oojs-ui-windows');
 			const confirmed = await OO.ui.confirm(
 				jQuery(
-					`<div class="WikiMirrorNotice WikiMirrorTip"><span style="font-size:1.2rem">${this.hanAssist().localize(
-						{
-							en: 'Confirm logout?',
-							hans: '您确定要退出吗？',
-							hant: '您確定要登出嗎？',
-						}
+					`<div class="WikiMirrorNotice WikiMirrorTip"><span style="font-size:1.2rem">${t(
+						'Confirm logout?'
 					)}</span></div>`
 				)
 			);
 			if (!confirmed) return;
-			this.showNotice(
-				`<span>${this.hanAssist().localize({
-					en: 'Getting API token',
-					hans: '正在获取API令牌',
-					hant: '正在獲取API權杖',
-				})}</span>`
-			);
+			this.showNotice(`<span>${t('Getting API token')}</span>`);
 			try {
 				const response = await (
 					await fetch('/w/api.php?action=query&format=json&meta=tokens&type=csrf')
@@ -993,32 +822,17 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 	darkMode(method, item, value) {
 		if (!this.localStorage()) return;
 		const ID = 'wikimirror-darkmode';
+		const t = (key) => this.messages.darkMode[key] || key;
 		const [ComHead, ComAnd, ComFoot] = [
 			`<li id="${ID}"><a class="mw-ui-icon mw-ui-icon-before" title="`,
 			'"><span>',
 			'</span></a></li>',
 		];
 		const [Dark, DarkTip, Light, LightTip] = [
-			this.hanAssist().localize({
-				en: 'Dark mode',
-				hans: '深色主题',
-				hant: '深色主題',
-			}),
-			this.hanAssist().localize({
-				en: 'Switch to dark mode',
-				hans: '将镜像站的主题色切换至深色',
-				hant: '將鏡像站的主題色切換至深色',
-			}),
-			this.hanAssist().localize({
-				en: 'Light mode',
-				hans: '浅色主题',
-				hant: '淺色主題',
-			}),
-			this.hanAssist().localize({
-				en: 'Switch to light mode',
-				hans: '将镜像站的主题色切换至浅色',
-				hant: '將鏡像站的主題色切換至淺色',
-			}),
+			t('Dark mode'),
+			t('Switch to dark mode'),
+			t('Light mode'),
+			t('Switch to light mode'),
 		];
 		const isDarkMode = matchMedia('(prefers-color-scheme:dark)').matches;
 		const modeObserver = {
@@ -1223,6 +1037,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 	}
 	async diffLink(ids) {
 		const ID = 'wikimirror-difflink';
+		const t = (key) => this.messages.diffLink[key] || key;
 		if (
 			!ids ||
 			!(
@@ -1279,16 +1094,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				oldId && (link += `${oldId}/`);
 				link += diffId;
 				doIns({
-					dec: `${this.hanAssist().localize({
-						en: 'Copy the link to the diff version (wiki syntax)',
-						hans: '复制链接到当前差异版本的维基语法',
-						hant: '複製連結到當前差異版本的維基語法',
-					})}`,
-					tex: `${this.hanAssist().localize({
-						en: 'Diff link',
-						hans: '当前差异链接',
-						hant: '當前差異連結',
-					})}`,
+					dec: t('Copy the link to the diff version (wiki syntax)'),
+					tex: t('Diff link'),
 					link,
 				});
 			};
@@ -1318,16 +1125,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			].includes(1)
 		) {
 			doIns({
-				dec: `${this.hanAssist().localize({
-					en: 'Copy the permanent link to the current version (wiki syntax)',
-					hans: '复制链接到当前修订版本的维基语法',
-					hant: '複製連結到當前修訂版本的維基語法',
-				})}`,
-				tex: `${this.hanAssist().localize({
-					en: 'Permanent link',
-					hans: '当前修订链接',
-					hant: '當前修訂連結',
-				})}`,
+				dec: t('Copy the permanent link to the current version (wiki syntax)'),
+				tex: t('Permanent link'),
 				link: `Special:PermaLink/${revisionId}`,
 				prema: true,
 			});
@@ -1357,13 +1156,11 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		}
 	}
 	showNotice(value, {autoHide = false, tag} = {}) {
+		const t = (key) => this.messages.showNotice[key] || key;
 		const [ComHead, ComFoot, O] = [
 			'<div class="WikiMirrorNotice">',
 			'</div>',
-			`<button>${this.hanAssist().localize({
-				en: 'OK',
-				zh: '了解',
-			})}</button>`,
+			`<button>${t('OK')}</button>`,
 		];
 		if (value && autoHide) {
 			typeof bldkDingExposedInterface === 'function'
@@ -1376,28 +1173,16 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		}
 	}
 	showNetworkErrorNotice() {
-		this.showNotice(
-			`<span>${this.hanAssist().localize({
-				en: 'Network error',
-				hans: '网络异常',
-				hant: '網路異常',
-			})}</span>`
-		);
+		const t = (key) => this.messages.showNetworkErrorNotice[key] || key;
+		this.showNotice(`<span>${t('Network error')}</span>`);
 	}
 	showRedirect() {
 		const ID = 'wikimirror-redirect';
 		if (document.getElementById(ID)) return;
+		const t = (key) => this.messages.showRedirect[key] || key;
 		const [Text, Title] = [
-			this.hanAssist().localize({
-				en: 'Official site',
-				hans: '访问官方页面',
-				hant: '造訪官方頁',
-			}),
-			this.hanAssist().localize({
-				en: 'Redirect the current mirror page to its corresponding official page',
-				hans: '将当前镜像站页面重定向至官方相应页面',
-				hant: '將當前鏡像頁重新導向至官方相應頁',
-			}),
+			t('Official site'),
+			t('Redirect the current mirror page to its corresponding official page'),
 		];
 		const [Redirect, RedirectMinerva] = [
 			`<li id="${ID}"><a href="${this.getLocate(
@@ -1437,6 +1222,20 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			document.getElementById('footer-places')
 		) {
 			document.getElementById('footer-places').insertAdjacentHTML('beforeend', Redirect);
+		}
+	}
+	async registerServiceWorker() {
+		if (!('serviceWorker' in navigator)) return;
+		const base = 'WikiMirror service worker';
+		const registration = await navigator.serviceWorker
+			.register('/sw.js')
+			.catch((e) => console.log(`${base} register error:`, e));
+		if (registration?.installing) {
+			console.log(`${base} is installing.`);
+		} else if (registration?.waiting) {
+			console.log(`${base} is waiting.`);
+		} else if (registration?.active) {
+			console.log(`${base} actived.`);
 		}
 	}
 	bodyReady() {
@@ -1538,8 +1337,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			.replace(/%5B/g, '[')
 			.replace(/%5D/g, ']');
 	}
-	hanAssist() {
-		const DefaultFallback = ['en', 'zh', 'hans', 'hant', 'cn', 'tw', 'hk', 'sg', 'mo', 'my'];
+	hanAssist(language) {
+		const DefaultFallback = [language, 'en'];
 		const FallbackTable = {
 			zh: ['zh', 'hans', 'hant', 'cn', 'tw', 'hk', 'sg', 'mo', 'my', 'en'],
 			'zh-hans': ['hans', 'cn', 'sg', 'my', 'zh', 'hant', 'tw', 'hk', 'mo', 'en'],
@@ -1554,17 +1353,17 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		const elect = (candidates, locale) => {
 			for (const key of FallbackTable[locale] ?? DefaultFallback) {
 				if (key in candidates) {
-					return candidates[key] ?? '';
+					return candidates[key];
 				}
 			}
 			return '';
 		};
 		return {
 			localize: (candidates) => {
-				return elect(candidates, this.getConf('wgUserLanguage') ?? '');
+				return elect(candidates, this.getConf('wgUserLanguage') ?? this.getConf('wgContentLanguage') ?? '');
 			},
 			vary: (candidates) => {
-				return elect(candidates, this.getConf('wgUserVariant') ?? '');
+				return elect(candidates, this.getConf('wgUserVariant') ?? this.getConf('wgContentLanguage') ?? '');
 			},
 		};
 	}
@@ -1888,11 +1687,11 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			}
 			if (responseObj.parse?.parsedsummary || responseObj.parse?.text || responseObj.parse?.wikitext) {
 				recursiveObj(responseObj.parse, (obj, key, preKey) => {
-						if (['parsedsummary', 'text'].includes(preKey ?? '')) {
-							const htmlDom = domParse(obj[key]).dom;
-							obj[key] = this.getRealText(htmlDom.querySelector('.mw-parser-output').outerHTML);
-						} else if (preKey === 'wikitext') {
-							obj[key] = this.getRealText(obj[key]);
+					if (['parsedsummary', 'text'].includes(preKey ?? '')) {
+						const htmlDom = domParse(obj[key]).dom;
+						obj[key] = this.getRealText(htmlDom.querySelector('.mw-parser-output').outerHTML);
+					} else if (preKey === 'wikitext') {
+						obj[key] = this.getRealText(obj[key]);
 					}
 				});
 			}
@@ -1965,9 +1764,206 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				return `${c}#p-logo{height:100px}#p-logo a{height:125px}`;
 			case 'wikimirror-css-darkmode-logo-zhwiki':
 				return `.mw-wiki-logo{background-image:url(${u}.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${u}-hans.png)}@media(-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(min-resolution:1.5dppx),(min-resolution:144dpi){.mw-wiki-logo{background-image:url(${u}-1.5x.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${u}-hans-1.5x.png)}}@media(-webkit-min-device-pixel-ratio:2),(min--moz-device-pixel-ratio:2),(min-resolution:2dppx),(min-resolution:192dpi){.mw-wiki-logo{background-image:url(${u}-2x.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${u}-hans-2x.png)}}`;
-			default:
-				return;
 		}
+	}
+	initMessages() {
+		const hanAssist = this.hanAssist.call(
+			this,
+			document.documentElement.lang ?? navigator.language.split('-')[0] ?? 'en'
+		);
+		return {
+			ajaxLogin: {
+				'6-digit number': hanAssist.localize({
+					hans: '6位数字',
+					hant: '6位數字',
+				}),
+				'Automatic account creation failed': hanAssist.localize({
+					hans: '自动创建账号失败',
+					hant: '自動創建帳戶失敗',
+				}),
+				Cancel: hanAssist.localize({
+					zh: '取消',
+				}),
+				'Cross wiki automatic login': hanAssist.localize({
+					hans: '跨维基自动登录',
+					hant: '跨维基自動登入',
+				}),
+				'Enter password': hanAssist.localize({
+					hans: '请输入密码',
+					hant: '請輸入密碼',
+				}),
+				'Enter 2FA verification code': hanAssist.localize({
+					hans: '请输入2FA验证码',
+					hant: '請輸入2FA驗證碼',
+				}),
+				'Forgot password?': hanAssist.localize({
+					hans: '忘记密码？',
+					hant: '忘記密碼？',
+				}),
+				'Getting login token': hanAssist.localize({
+					hans: '正在获取登录令牌',
+					hant: '正在獲取登入權杖',
+				}),
+				'If selected, the login status will be kept for 1 year. If not selected, it will be kept for 1 month.':
+					hanAssist.localize({
+						hans: '勾选则保持登录状态1年，不勾选则保持1个月。',
+						hant: '勾選则保持登入狀態1年，不勾選則保持1個月。',
+					}),
+				'Keep me logged in': hanAssist.localize({
+					hans: '记住我的登录状态',
+					hant: '記住我的登入狀態',
+				}),
+				'Logging in': hanAssist.localize({
+					hans: '正在登录',
+					hant: '正在登入',
+				}),
+				Login: hanAssist.localize({
+					hans: '登录',
+					hant: '登入',
+				}),
+				'Login cancelled': hanAssist.localize({
+					hans: '登录取消',
+					hant: '登入取消',
+				}),
+				'Login succeed': hanAssist.localize({
+					hans: '登录成功',
+					hant: '登入成功',
+				}),
+				'Login token getted': hanAssist.localize({
+					hans: '获取登录令牌成功',
+					hant: '獲取登入權杖成功',
+				}),
+				'New password': hanAssist.localize({
+					hans: '新密码',
+					hant: '新密碼',
+				}),
+				'New password is required': hanAssist.localize({
+					hans: '需要设置新密码',
+					hant: '需要設置新密碼',
+				}),
+				Password: hanAssist.localize({
+					hans: '密码',
+					hant: '密碼',
+				}),
+				'Reset password': hanAssist.localize({
+					hans: '重置密码',
+					hant: '重新設定密碼',
+				}),
+				'Starting automatic login': hanAssist.localize({
+					hans: '开始自动登录',
+					hant: '开始自動登入',
+				}),
+				'The 2FA verification code cannot be empty': hanAssist.localize({
+					hans: '2FA验证码不能为空',
+					hant: '2FA驗證碼不能爲空',
+				}),
+				'The password cannot be empty': hanAssist.localize({
+					hans: '密码不能为空',
+					hant: '密碼不能爲空',
+				}),
+				'The username or password cannot be empty': hanAssist.localize({
+					cn: '用户名或密码不能为空',
+					hk: '用戶名稱或密碼不能爲空',
+					tw: '使用者名稱或密碼不能爲空',
+				}),
+				'The user has been globally locked': hanAssist.localize({
+					cn: '用户已被全域锁定',
+					hk: '用戶已被全域封鎖',
+					tw: '使用者已被全域封鎖',
+				}),
+				'The user login is too frequent, please try again in five minutes':
+					hanAssist.localize({
+						cn: '用户登录过于频繁，请五分钟后再试',
+						hk: '用戶登入過於頻繁，請五分鐘後再試',
+						tw: '使用者登入过于频繁，请五分钟后再试',
+					}),
+				'Unknown API error': hanAssist.localize({
+					hans: '未定义的API错误',
+					hant: '未定義的API錯誤',
+				}),
+				Username: hanAssist.localize({
+					cn: '用户名',
+					hk: '用戶名稱',
+					tw: '使用者名稱',
+				}),
+				'Invalid 2FA verification code': hanAssist.localize({
+					hans: '2FA验证码错误',
+					hant: '2FA驗證碼錯誤',
+				}),
+				'Invalid useruame or password': hanAssist.localize({
+					cn: '用户名或密码错误',
+					hk: '用戶名稱或密碼錯誤',
+					tw: '使用者名稱或密碼錯誤',
+				}),
+			},
+			confirmLogout: {
+				'Confirm logout?': hanAssist.localize({
+					hans: '您确定要退出吗？',
+					hant: '您確定要登出嗎？',
+				}),
+				'Getting API token': hanAssist.localize({
+					hans: '正在获取API令牌',
+					hant: '正在獲取API權杖',
+				}),
+			},
+			darkMode: {
+				'Dark mode': hanAssist.localize({
+					hans: '深色主题',
+					hant: '深色主題',
+				}),
+				'Light mode': hanAssist.localize({
+					hans: '浅色主题',
+					hant: '淺色主題',
+				}),
+				'Switch to dark mode': hanAssist.localize({
+					hans: '将镜像站的主题色切换至深色',
+					hant: '將鏡像站的主題色切換至深色',
+				}),
+				'Switch to light mode': hanAssist.localize({
+					hans: '将镜像站的主题色切换至浅色',
+					hant: '將鏡像站的主題色切換至淺色',
+				}),
+			},
+			diffLink: {
+				'Copy the link to the diff version (wiki syntax)': hanAssist.localize({
+					hans: '复制链接到当前差异版本的维基语法',
+					hant: '複製連結到當前差異版本的維基語法',
+				}),
+				'Copy the permanent link to the current version (wiki syntax)': hanAssist.localize({
+					hans: '复制链接到当前修订版本的维基语法',
+					hant: '複製連結到當前修訂版本的維基語法',
+				}),
+				'Diff link': hanAssist.localize({
+					hans: '当前差异链接',
+					hant: '當前差異連結',
+				}),
+				'Permanent link': hanAssist.localize({
+					hans: '当前修订链接',
+					hant: '當前修訂連結',
+				}),
+			},
+			showNotice: {
+				OK: hanAssist.localize({
+					zh: '了解',
+				}),
+			},
+			showNetworkErrorNotice: {
+				'Network error': hanAssist.localize({
+					hans: '网络异常',
+					hant: '網路異常',
+				}),
+			},
+			showRedirect: {
+				'Official site': hanAssist.localize({
+					hans: '访问官方页面',
+					hant: '造訪官方頁',
+				}),
+				'Redirect the current mirror page to its corresponding official page': hanAssist.localize({
+					hans: '将当前镜像站页面重定向至官方相应页面',
+					hant: '將當前鏡像頁重新導向至官方相應頁',
+				}),
+			},
+		};
 	}
 };
 WikiMirrorStartup();
