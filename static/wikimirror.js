@@ -1760,123 +1760,152 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		return {
 			ajaxLogin: {
 				'6-digit number': hanAssist.localize({
+					ja: '6桁の数字',
 					hans: '6位数字',
 					hant: '6位數字',
 				}),
 				'Automatic account creation failed': hanAssist.localize({
+					ja: 'アカウントの自動作成に失敗しました',
 					hans: '自动创建账号失败',
 					hant: '自動創建帳戶失敗',
 				}),
 				Cancel: hanAssist.localize({
+					ja: 'キャンセル',
 					zh: '取消',
 				}),
 				'Cross wiki automatic login': hanAssist.localize({
+					ja: '跨ウィキ自動ログイン',
 					hans: '跨维基自动登录',
 					hant: '跨维基自動登入',
 				}),
 				'Enter password': hanAssist.localize({
+					ja: 'パスワード',
 					hans: '请输入密码',
 					hant: '請輸入密碼',
 				}),
 				'Enter 2FA verification code': hanAssist.localize({
+					ja: '2FA認証コード',
 					hans: '请输入2FA验证码',
 					hant: '請輸入2FA驗證碼',
 				}),
 				'Forgot password?': hanAssist.localize({
+					ja: 'パスワードをお忘れですか？',
 					hans: '忘记密码？',
 					hant: '忘記密碼？',
 				}),
 				'Getting login token': hanAssist.localize({
+					ja: 'ログイントークンを取得しています',
 					hans: '正在获取登录令牌',
 					hant: '正在獲取登入權杖',
 				}),
 				'If selected, the login status will be kept for 1 year. If not selected, it will be kept for 1 month.':
 					hanAssist.localize({
+						ja: 'チェックを入れるとログイン状態が1年間保持され、入れない場合は1ヶ月間保持されます。',
 						hans: '勾选则保持登录状态1年，不勾选则保持1个月。',
 						hant: '勾選则保持登入狀態1年，不勾選則保持1個月。',
 					}),
 				'Keep me logged in': hanAssist.localize({
+					ja: 'ログイン状態を保持',
 					hans: '记住我的登录状态',
 					hant: '記住我的登入狀態',
 				}),
 				'Logging in': hanAssist.localize({
+					ja: 'ログインしています',
 					hans: '正在登录',
 					hant: '正在登入',
 				}),
 				Login: hanAssist.localize({
+					ja: 'ログイン',
 					hans: '登录',
 					hant: '登入',
 				}),
 				'Login cancelled': hanAssist.localize({
+					ja: 'ログインキャンセル',
 					hans: '登录取消',
 					hant: '登入取消',
 				}),
 				'Login succeed': hanAssist.localize({
+					ja: 'ログインに成功しました',
 					hans: '登录成功',
 					hant: '登入成功',
 				}),
 				'Login token getted': hanAssist.localize({
+					ja: 'ログイントークンの取得に成功しました',
 					hans: '获取登录令牌成功',
 					hant: '獲取登入權杖成功',
 				}),
 				'New password': hanAssist.localize({
+					ja: '新しいパスワード',
 					hans: '新密码',
 					hant: '新密碼',
 				}),
 				'New password is required': hanAssist.localize({
+					ja: '新しいパスワードを設定してください',
 					hans: '需要设置新密码',
 					hant: '需要設置新密碼',
 				}),
 				Password: hanAssist.localize({
+					ja: 'パスワード',
 					hans: '密码',
 					hant: '密碼',
 				}),
 				'Reset password': hanAssist.localize({
+					ja: 'パスワードをリセット',
 					hans: '重置密码',
 					hant: '重新設定密碼',
 				}),
 				'Starting automatic login': hanAssist.localize({
+					ja: '自動ログインが開始されました',
 					hans: '开始自动登录',
 					hant: '开始自動登入',
 				}),
 				'The 2FA verification code cannot be empty': hanAssist.localize({
+					ja: '2FA認証コードが入力されていません',
 					hans: '2FA验证码不能为空',
 					hant: '2FA驗證碼不能爲空',
 				}),
 				'The password cannot be empty': hanAssist.localize({
+					ja: 'パスワードが入力されていません',
 					hans: '密码不能为空',
 					hant: '密碼不能爲空',
 				}),
 				'The username or password cannot be empty': hanAssist.localize({
+					ja: '利用者名またはパスワードが入力されていません',
 					cn: '用户名或密码不能为空',
 					hk: '用戶名稱或密碼不能爲空',
 					tw: '使用者名稱或密碼不能爲空',
 				}),
 				'The user has been globally locked': hanAssist.localize({
+					ja: '利用者はグローバルにロックされています',
 					cn: '用户已被全域锁定',
 					hk: '用戶已被全域封鎖',
 					tw: '使用者已被全域封鎖',
 				}),
 				'The user login is too frequent, please try again in five minutes':
 					hanAssist.localize({
+						ja: '利用者が頻繁すぎるため、5分後に再試行してください',
 						cn: '用户登录过于频繁，请五分钟后再试',
 						hk: '用戶登入過於頻繁，請五分鐘後再試',
 						tw: '使用者登入过于频繁，请五分钟后再试',
 					}),
 				'Unknown API error': hanAssist.localize({
+					ja: '未定義のAPIエラー',
 					hans: '未定义的API错误',
 					hant: '未定義的API錯誤',
 				}),
 				Username: hanAssist.localize({
+					ja: '利用者名',
 					cn: '用户名',
 					hk: '用戶名稱',
 					tw: '使用者名稱',
 				}),
 				'Invalid 2FA verification code': hanAssist.localize({
+					ja: '2FA認証コードが間違っています',
 					hans: '2FA验证码错误',
 					hant: '2FA驗證碼錯誤',
 				}),
 				'Invalid useruame or password': hanAssist.localize({
+					ja: '利用者名またはパスワードが間違っています',
 					cn: '用户名或密码错误',
 					hk: '用戶名稱或密碼錯誤',
 					tw: '使用者名稱或密碼錯誤',
@@ -1884,67 +1913,81 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			},
 			confirmLogout: {
 				'Confirm logout?': hanAssist.localize({
+					ja: 'ログアウトしますか？',
 					hans: '您确定要退出吗？',
 					hant: '您確定要登出嗎？',
 				}),
 				'Getting API token': hanAssist.localize({
+					ja: 'ログアウトトークンを取得しています',
 					hans: '正在获取API令牌',
 					hant: '正在獲取API權杖',
 				}),
 			},
 			darkMode: {
 				'Dark mode': hanAssist.localize({
+					ja: 'ダークモード',
 					hans: '深色主题',
 					hant: '深色主題',
 				}),
 				'Light mode': hanAssist.localize({
+					ja: '通常モード',
 					hans: '浅色主题',
 					hant: '淺色主題',
 				}),
 				'Switch to dark mode': hanAssist.localize({
+					ja: 'ダークモードに切り替えています',
 					hans: '将镜像站的主题色切换至深色',
 					hant: '將鏡像站的主題色切換至深色',
 				}),
 				'Switch to light mode': hanAssist.localize({
+					ja: '通常モードに切り替えています',
 					hans: '将镜像站的主题色切换至浅色',
 					hant: '將鏡像站的主題色切換至淺色',
 				}),
 			},
 			diffLink: {
 				'Copy the link to the diff version (wiki syntax)': hanAssist.localize({
+					ja: '現在の版間の差分リンクをコピーします（ウィキ記法）',
 					hans: '复制链接到当前差异版本的维基语法',
 					hant: '複製連結到當前差異版本的維基語法',
 				}),
 				'Copy the permanent link to the current version (wiki syntax)': hanAssist.localize({
+					ja: 'このページのこの版への固定リンクをコピーします（ウィキ記法）',
 					hans: '复制链接到当前修订版本的维基语法',
 					hant: '複製連結到當前修訂版本的維基語法',
 				}),
 				'Diff link': hanAssist.localize({
+					ja: '現在の版間の差分リンク',
 					hans: '当前差异链接',
 					hant: '當前差異連結',
 				}),
 				'Permanent link': hanAssist.localize({
+					ja: 'この版への固定リンク',
 					hans: '当前修订链接',
 					hant: '當前修訂連結',
 				}),
 			},
 			showNotice: {
 				OK: hanAssist.localize({
+					ja: '了解',
 					zh: '了解',
 				}),
 			},
 			showNetworkErrorNotice: {
 				'Network error': hanAssist.localize({
+					ja: 'ネットワークエラー',
 					hans: '网络异常',
 					hant: '網路異常',
 				}),
 			},
 			showRedirect: {
 				'Official site': hanAssist.localize({
+					ja: '公式サイト',
 					hans: '访问官方页面',
 					hant: '造訪官方頁',
 				}),
 				'Redirect the current mirror page to its corresponding official page': hanAssist.localize({
+					ja: '現在のミラーページを公式の対応ページにリダイレクトします',
 					hans: '将当前镜像站页面重定向至官方相应页面',
 					hant: '將當前鏡像頁重新導向至官方相應頁',
 				}),
