@@ -693,7 +693,6 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 							break;
 						case 'resetpass-temp-emailed':
 							this.showNotice(`<span>${t('New password is required')}</span>`, {
-								autoHide: true,
 								tag: 'login',
 							});
 							doLogin({retypePassword: true});
@@ -1795,6 +1794,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					hant: '請輸入密碼',
 				}),
 				'Enter 2FA verification code': hanAssist.localize({
+					en: '2FA verification code',
 					ja: '2FA認証コード',
 					hans: '请输入2FA验证码',
 					hant: '請輸入2FA驗證碼',
