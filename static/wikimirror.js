@@ -560,7 +560,6 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			try {
 				if (!loginContinue) {
 					this.showNotice(`<span>${t('Getting login token')}</span>`, {
-						autoHide: false,
 						tag: 'token',
 					});
 					loginToken = await api.getToken('login');
@@ -623,10 +622,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 						if (retypePassword) {
 							doLogin({retypePassword: true});
 							return;
-						} else {
-							doLogin({loginContinue: true});
-							return;
 						}
+						doLogin({loginContinue: true});
+						return;
 					}
 					if (retypePassword) {
 						params.password = value;
@@ -636,14 +634,12 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					}
 				}
 				this.showNotice(`<span>${t('Logging in')}</span>`, {
-					autoHide: false,
 					tag: 'login',
 				});
 				const response = await api.post(params);
 				if (response['clientlogin']?.status === 'PASS') {
 					const hour = params.rememberMe ? 8760 : 720;
 					this.showNotice(`<span>${t('Login succeed')}</span>`, {
-						autoHide: false,
 						tag: 'login',
 					});
 					this.setCookie({
@@ -736,11 +732,10 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				return new OO.ui.Process(() => {
 					if (isValid()) doLogin();
 				});
-			} else {
-				return new OO.ui.Process(() => {
-					windowManager.clearWindows();
-				});
 			}
+			return new OO.ui.Process(() => {
+				windowManager.clearWindows();
+			});
 		};
 		windowManager.addWindows([messageDialog]);
 		windowManager.openWindow(messageDialog, {
@@ -881,9 +876,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				}
 				if (this.localStorage(ID) === '1') {
 					return true;
-				} else {
-					return false;
 				}
+				return false;
 			case 'init':
 				matchMedia('(prefers-color-scheme:dark)').addEventListener('change', modeObserver.dark);
 				matchMedia('(prefers-color-scheme:light)').addEventListener('change', modeObserver.light);
@@ -908,12 +902,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 							document.documentElement.style.height = 'auto';
 							document.documentElement.style.height = `${document.documentElement.scrollHeight}px`;
 						};
-						if (timer) {
-							clearTimeout(timer);
-							timer = setTimeout(callback, ms);
-						} else {
-							timer = setTimeout(callback, ms);
-						}
+						if (timer) clearTimeout(timer);
+						timer = setTimeout(callback, ms);
 					};
 					const mo = new MutationObserver(() => {
 						debounce(500);
