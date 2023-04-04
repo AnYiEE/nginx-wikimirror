@@ -1578,11 +1578,22 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				if (getObj.host === 'wma.wmcloud.org') {
 					getObj.host = `wma.${this.MIRROR_DOMAIN}`;
 				}
+				const urlWithPath = `${getObj.host}${getObj.pathname}`;
 				const XTOOLS_API = 'xtools.wmflabs.org/api/';
-				if (`${getObj.host}${getObj.pathname}`.includes(XTOOLS_API)) {
+				if (urlWithPath.includes(XTOOLS_API)) {
 					const path = this.getRealText(getObj.pathname);
 					getObj.host = `xtools-api.${this.MIRROR_DOMAIN}`;
 					getObj.pathname = path.replace('/api/', '/');
+				}
+				if (urlWithPath.includes('wikimedia.org/api/rest_v1/media/math/render/')) {
+					const regExpMatchArray = urlWithPath.match(
+						/^wikimedia\.org\/api\/rest_v1\/media\/math\/render\/(png|svg)\/(\S+?)$/
+					);
+					if (regExpMatchArray) {
+						const [p1, p2] = [regExpMatchArray[1], regExpMatchArray[2]];
+						getObj.host = `latex-${p1}.${this.MIRROR_DOMAIN}`;
+						getObj.pathname = `/${p2}`;
+					}
 				}
 				if (config.body) {
 					config.body = postObj.toString().replace(`${location.origin}/w/api.php?`, '');
@@ -1604,7 +1615,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			}
 		};
 		const domParse = (domStr = '', mimeType = 'text/html') => {
-			const doc = new DOMParser().parseFromString(domStr, mimeType.match(/^([a-z-/]+?)(?:;|$)/)[1]);
+			const doc = new DOMParser().parseFromString(domStr, mimeType.match(/^([a-z-+/]+?)(?:;|$)/)[1]);
 			const dom = doc.documentElement;
 			dom.querySelector('parsererror')?.remove();
 			for (const el of dom.querySelectorAll('span[data-mw-variant]')) {
