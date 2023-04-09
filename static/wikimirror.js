@@ -1046,10 +1046,10 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		} else {
 			pos = 'p-cactions';
 		}
-		await mw.loader.using(['mediawiki.util', 'mediawiki.widgets', 'oojs-ui-windows']);
-		const doIns = ({dec, tex, link, prema}) => {
+		const doIns = async ({dec, tex, link, prema}) => {
 			let dom = document.getElementById(ID);
 			if (dom === null) {
+				await mw.loader.using('mediawiki.util');
 				dom = mw.util.addPortletLink(pos, '#', tex, ID, dec);
 				if (pos === 'mw-mf-diffarea') {
 					this.setCss(
@@ -1060,8 +1060,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				}
 			}
 			const el = pos !== 'mw-mf-diffarea' && this.hasClass('skin-minerva') ? dom : dom.firstElementChild;
-			el.onclick = (e) => {
+			el.onclick = async (e) => {
 				e.preventDefault();
+				await mw.loader.using(['mediawiki.widgets', 'oojs-ui-windows']);
 				const $dom = jQuery('<div>');
 				[link, `[[${link}${prema ? this.decodeURIComponent(this.getLocate('originHash')) : ''}]]`].forEach(
 					(value) => {
