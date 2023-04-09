@@ -797,22 +797,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				)
 			);
 			if (!confirmed) return;
-			this.showNotice(`<span>${t('Getting API token')}</span>`);
+			await mw.loader.using('mediawiki.api');
 			try {
-				const response = await (
-					await fetch('/w/api.php?action=query&format=json&meta=tokens&type=csrf')
-				).json();
-				let token = '';
-				if (response.query?.tokens) {
-					token = response.query.tokens.csrftoken.replace('+', '%2B');
-				}
-				if (!token) throw new ReferenceError();
-				this.showNotice(`<span>${mw.message('logging-out-notify')}</span>`);
-				await fetch('/w/api.php', {
-					body: `action=logout&format=json&token=${token}`,
-					headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-					method: 'POST',
-				});
+				await new mw.Api().postWithEditToken({action: 'logout'});
 				location.reload();
 			} catch (e) {
 				this.showNetworkErrorNotice();
@@ -1926,11 +1913,6 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					ja: 'ログアウトしますか？',
 					hans: '您确定要退出吗？',
 					hant: '您確定要登出嗎？',
-				}),
-				'Getting API token': hanAssist.localize({
-					ja: 'ログアウトトークンを取得しています',
-					hans: '正在获取API令牌',
-					hant: '正在獲取API權杖',
 				}),
 			},
 			darkMode: {
