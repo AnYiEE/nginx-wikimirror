@@ -72,6 +72,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 	};
 	window.WikiMirror = new WikiMirrorPublicMethod();
 	Object.seal(WikiMirror);
+	const apiUserAgent = `WikiMirror/unofficial (${config.domain}; opensource@wikimirror.org)`;
 	ah.proxy({
 		onError: (err, handler) => {
 			if (err.type === 'error') {
@@ -83,6 +84,13 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			if (!/^%5Bobject\+(?:ArrayBuffer|Blob|DataView|Document)%5D=$/.test(config.body)) {
 				config = privateMethod.ahCallback_Request(config);
 			}
+			const origApiUserAgent = config.headers['api-user-agent'] ?? config.headers['Api-User-Agent'];
+			let _apiUserAgent = apiUserAgent;
+			if (origApiUserAgent) {
+				_apiUserAgent = `${apiUserAgent} ${origApiUserAgent}`;
+			}
+			delete config.headers['Api-User-Agent'];
+			config.headers['api-user-agent'] = _apiUserAgent;
 			handler.next(config);
 		},
 		onResponse: (response, handler) => {
@@ -99,6 +107,16 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 	});
 	const {fetch: origFetch} = window;
 	window.fetch = async (url, options) => {
+		options = options ?? {};
+		const headers = options.headers ? new Headers(options.headers) : new Headers();
+		const origApiUserAgent = headers.get('api-user-agent') ?? headers.get('Api-User-Agent');
+		let _apiUserAgent = apiUserAgent;
+		if (origApiUserAgent) {
+			_apiUserAgent = `${apiUserAgent} ${origApiUserAgent}`;
+		}
+		headers.delete('Api-User-Agent');
+		headers.set('api-user-agent', _apiUserAgent);
+		options.headers = headers;
 		if (['[object Object]', '[object String]', '[object URL]'].includes(Object.prototype.toString.call(url))) {
 			url = privateMethod.ahCallback_Request({
 				url: typeof url === 'object' ? url.toString() : url,

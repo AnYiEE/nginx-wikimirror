@@ -76,7 +76,7 @@ server {
     ssl_certificate_key      /path/to/key;
     ssl_trusted_certificate  /path/to/fullchain.crt;
 
-    add_header  Strict-Transport-Security "max-age=31536000; includeSubdomains; preload" always;
+    more_set_headers  "Strict-Transport-Security: max-age=31536000; includeSubdomains; preload";
 
     return 301 https://www.$host;
 }
@@ -90,7 +90,7 @@ server {
 }
 
 server {
-    server_name  ~^(?<subdomain>(analytics|annual|bugzilla|config-master|cxserver|dbtree|design|developer|doc|grafana|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|planet|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency))\.example\.org$;
+    server_name  ~^(?<subdomain>(analytics|annual|bugzilla|config-master|cxserver|dbtree|design|developer|doc|grafana|graphite|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|planet|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency))\.example\.org$;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
     set          $hostdomain wikimedia;
 
@@ -183,10 +183,11 @@ server {
 
     location / {
         rewrite ^\/r\/plugins\/gitiles\/wikipedia\/gadgets\/ProveIt\/\+\/master\/i18n\/zh-cn\.json(.*?)$ /r/plugins/gitiles/wikipedia/gadgets/ProveIt/+/master/i18n/zh-hans.json$1 break;
-        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://gerrit.wikimedia.org;
+        proxy_hide_header  access-control-allow-headers;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $subdomain.$hostdomain.org;
@@ -212,34 +213,6 @@ server {
     }
     include  /path/to/wikimirror/conf/wiki-location-static.conf;
     proxy_hide_header  Upgrade;
-}
-
-server {
-    server_name  graphite.example.org;
-    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
-    set          $hostdomain wikimedia;
-    set          $subdomain  graphite;
-
-    location / {
-        include            /path/to/wikimirror/conf/wiki-sub.conf;
-        include            /path/to/wikimirror/conf/wiki.conf;
-        proxy_pass         https://wiki-IPAddress;
-        proxy_hide_header  Upgrade;
-        proxy_set_header   Accept-Encoding "";
-        proxy_set_header   Host $subdomain.$hostdomain.org;
-        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
-    }
-    location /render {
-        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
-        include            /path/to/wikimirror/conf/wiki-sub.conf;
-        include            /path/to/wikimirror/conf/wiki.conf;
-        proxy_pass         https://wiki-IPAddress/render;
-        proxy_hide_header  access-control-allow-origin;
-        proxy_set_header   Accept-Encoding "";
-        proxy_set_header   Host $subdomain.$hostdomain.org;
-        proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
-    }
-    include  /path/to/wikimirror/conf/wiki-location-static.conf;
 }
 
 server {
@@ -295,7 +268,7 @@ server {
     }
     location /img {
         if ($arg_domain ~* (.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org) {
-            set    $arg_domain $1$2.org;
+            set  $arg_domain $1$2.org;
             return 301 https://$host$uri?lang=$arg_lang&domain=$arg_domain&title=$arg_title&groups=$arg_groups;
         }
         include           /path/to/wikimirror/conf/wiki.conf;
@@ -431,8 +404,9 @@ server {
 server {
     server_name  latex-png.example.org;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
-    add_header   Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; img-src 'self'";
     set          $hostdomain wikimedia;
+
+    add_header  Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; img-src 'self'";
 
     location / {
         include            /path/to/wikimirror/conf/wiki.conf;
@@ -468,13 +442,15 @@ server {
     set          $hostdomain wikimedia;
 
     location / {
+        more_set_headers  "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Origin: $http_origin";
         if ($request_uri ~* ^\/.*?(?:\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/.*?$) {
-            more_set_headers  "Access-Control-Allow-Origin: $http_origin";
             rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
         }
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  access-control-allow-headers;
+        proxy_hide_header  access-control-allow-origin;
         proxy_hide_header  set-cookie;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $hostdomain.org;
@@ -516,9 +492,12 @@ server {
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
     location / {
+        more_set_headers   "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://recommend.wmflabs.org;
+        proxy_hide_header  access-control-allow-headers;
+        proxy_hide_header  access-control-allow-origin;
         proxy_hide_header  set-cookie;
         proxy_hide_header  x-clacks-overhead;
         proxy_set_header   Accept-Encoding "";
@@ -573,13 +552,15 @@ server {
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
     location / {
+        more_set_headers  "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Origin: $http_origin";
         if ($request_uri ~* ^\/.*?(?:\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/.*?$) {
-            more_set_headers  "Access-Control-Allow-Origin: $http_origin";
             rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
         }
         error_page              404 = @errors;
         include                 /path/to/wikimirror/conf/wiki.conf;
         proxy_pass              https://xtools.wmflabs.org/api/;
+        proxy_hide_header       access-control-allow-headers;
+        proxy_hide_header       access-control-allow-origin;
         proxy_hide_header       set-cookie;
         proxy_hide_header       x-clacks-overhead;
         proxy_intercept_errors  on;
@@ -618,38 +599,42 @@ server {
         return 204;
     }
     location /api/rest_v1 {
-        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  access-control-allow-headers;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $subdomain$hostdomain.org;
         proxy_set_header   Referer https://$subdomain$hostdomain.org$request_uri;
     }
     location /api/rest_v1/page/pdf {
-        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress;
+        proxy_hide_header  access-control-allow-headers;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Host $subdomain.$hostdomain.org;
         proxy_set_header   Referer https://$subdomain.$hostdomain.org$request_uri;
     }
     location /w/api.php {
-        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress/w/api.php;
+        proxy_hide_header  access-control-allow-headers;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $subdomain$hostdomain.org;
         proxy_set_header   Referer https://$subdomain$hostdomain.org$request_uri;
     }
     location /w/index.php {
-        more_set_headers   "Access-Control-Allow-Origin: $http_origin";
+        more_set_headers   "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Origin: $http_origin";
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
         proxy_pass         https://wiki-IPAddress/w/index.php;
+        proxy_hide_header  access-control-allow-headers;
         proxy_hide_header  access-control-allow-origin;
         proxy_set_header   Accept-Encoding "";
         proxy_set_header   Host $subdomain$hostdomain.org;
@@ -688,7 +673,7 @@ server {
     server_name  www.example.org;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
     set          $hostdomain wikimedia;
-    set          $subdomain www;
+    set          $subdomain  www;
 
     location / {
         return 302 https://www.wikipedia.example.org;
