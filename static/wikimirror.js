@@ -80,18 +80,20 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			}
 			handler.next(err);
 		},
-		onRequest: (config, handler) => {
-			if (!/^%5Bobject\+(?:ArrayBuffer|Blob|DataView|Document)%5D=$/.test(config.body)) {
-				config = privateMethod.ahCallback_Request(config);
+		onRequest: (_config, handler) => {
+			if (!/^%5Bobject\+(?:ArrayBuffer|Blob|DataView|Document)%5D=$/.test(_config.body)) {
+				_config = privateMethod.ahCallback_Request(_config);
 			}
-			const origApiUserAgent = config.headers['api-user-agent'] ?? config.headers['Api-User-Agent'];
-			let _apiUserAgent = apiUserAgent;
-			if (origApiUserAgent) {
-				_apiUserAgent = `${apiUserAgent} ${origApiUserAgent}`;
+			if (new URL(_config.url, location.origin).host.includes(config.domain)) {
+				const origApiUserAgent = _config.headers['api-user-agent'] ?? _config.headers['Api-User-Agent'];
+				let _apiUserAgent = apiUserAgent;
+				if (origApiUserAgent) {
+					_apiUserAgent = `${apiUserAgent} ${origApiUserAgent}`;
+				}
+				delete _config.headers['Api-User-Agent'];
+				_config.headers['api-user-agent'] = _apiUserAgent;
 			}
-			delete config.headers['Api-User-Agent'];
-			config.headers['api-user-agent'] = _apiUserAgent;
-			handler.next(config);
+			handler.next(_config);
 		},
 		onResponse: (response, handler) => {
 			const contentType = response.headers['content-type'] ?? response.headers['Content-Type'];
@@ -108,22 +110,25 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 	const {fetch: origFetch} = window;
 	window.fetch = async (url, options) => {
 		options = options ?? {};
-		const headers = options.headers ? new Headers(options.headers) : new Headers();
-		const origApiUserAgent = headers.get('api-user-agent') ?? headers.get('Api-User-Agent');
-		let _apiUserAgent = apiUserAgent;
-		if (origApiUserAgent) {
-			_apiUserAgent = `${apiUserAgent} ${origApiUserAgent}`;
-		}
-		headers.delete('Api-User-Agent');
-		headers.set('api-user-agent', _apiUserAgent);
-		options.headers = headers;
 		if (['[object Object]', '[object String]', '[object URL]'].includes(Object.prototype.toString.call(url))) {
 			url = privateMethod.ahCallback_Request({
 				url: typeof url === 'object' ? url.toString() : url,
 			}).url;
+			const host = new URL(url, location.origin).host;
+			if (host.includes(config.domain)) {
+				const headers = options.headers ? new Headers(options.headers) : new Headers();
+				const origApiUserAgent = headers.get('api-user-agent') ?? headers.get('Api-User-Agent');
+				let _apiUserAgent = apiUserAgent;
+				if (origApiUserAgent) {
+					_apiUserAgent = `${apiUserAgent} ${origApiUserAgent}`;
+				}
+				headers.delete('Api-User-Agent');
+				headers.set('api-user-agent', _apiUserAgent);
+				options.headers = headers;
+			}
 		}
 		if (
-			options?.body &&
+			options.body &&
 			['[object FormData]', '[object String]', '[object URLSearchParams]'].includes(
 				Object.prototype.toString.call(options.body)
 			)
