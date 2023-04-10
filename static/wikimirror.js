@@ -1499,6 +1499,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			'totext-main',
 			'url',
 			'wikitext',
+			'siteUrl', // InPageEdit analytics
 		];
 		const [getObj, postObj] = [
 			new URL(config.url, location.origin),
