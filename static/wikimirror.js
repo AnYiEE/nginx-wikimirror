@@ -1604,7 +1604,13 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			}
 			config.body = JSON.stringify(bodyObj);
 		} catch (e) {
+			const setTag = (request) => {
+				if (['zhwiki'].includes(this.getConf('wgDBname') ?? '')) {
+					request.set('tags', request.has('tags') ? `WikiMirror|${request.get('tags')}` : 'WikiMirror');
+				}
+			};
 			if (config.body && /^\?(?:\[object%20FormData\]|null)$/.test(postObj.search)) {
+				setTag(config.body);
 				config.body.delete('md5');
 				if (config.body.get('action') === 'visualeditoredit') {
 					if (config.body.has('html')) {
@@ -1633,6 +1639,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					getObj.searchParams,
 					postObj.searchParams,
 				];
+				setTag(postParams);
 				postParams.delete('md5');
 				for (const text of textArr) {
 					if (getParams.has(text)) {
