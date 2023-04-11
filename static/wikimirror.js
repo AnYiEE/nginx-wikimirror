@@ -57,7 +57,9 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 	const privateMethod = new WikiMirrorPrivateMethod(config);
 	const {isMediaWiki, status} = await privateMethod.init();
 	console.log('WikiMirror modules status:', status);
-	if (!isMediaWiki) return;
+	if (!isMediaWiki) {
+		return;
+	}
 	/*! ajax-hook 2.1.3 https://github.com/wendux/ajax-hook/pull/103 @license MIT */
 	!function(e,t){for(var n in t)e[n]=t[n]}(window,function(e){function t(r){if(n[r])return n[r].exports;var o=n[r]={i:r,l:!1,exports:{}};return e[r].call(o.exports,o,o.exports,t),o.l=!0,o.exports}var n={};return t.m=e,t.c=n,t.i=function(e){return e},t.d=function(e,n,r){t.o(e,n)||Object.defineProperty(e,n,{configurable:!1,enumerable:!0,get:r})},t.n=function(e){var n=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(n,"a",n),n},t.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},t.p="",t(t.s=3)}([function(e,t,n){"use strict";function r(e,t){var n={};for(var r in e)n[r]=e[r];return n.target=n.currentTarget=t,n}function o(e,t){function n(t){return function(){var n=this.hasOwnProperty(t+"_")?this[t+"_"]:this.xhr[t],r=(e[t]||{}).getter;return r&&r(n,this)||n}}function o(t){return function(n){var o=this.xhr,s=this,i=e[t];if("on"===t.substring(0,2))s[t+"_"]=n,o[t]=function(i){i=r(i,s),e[t]&&e[t].call(s,o,i)||n.call(s,i)};else{var u=(i||{}).setter;n=u&&u(n,s)||n,this[t+"_"]=n;try{o[t]=n}catch(e){}}}}function s(t){return function(){var n=[].slice.call(arguments);if(e[t]){var r=e[t].call(this,n,this.xhr);if(r)return r}return this.xhr[t].apply(this.xhr,n)}}return t=t||window,t[u]=t[u]||t.XMLHttpRequest,t.XMLHttpRequest=function(){for(var e=new t[u],r=0;r<a.length;++r){var c="on"+a[r];void 0===e[c]&&(e[c]=null)}for(var f in e){var h="";try{h=i(e[f])}catch(e){}"function"===h?this[f]=s(f):Object.defineProperty(this,f,{get:n(f),set:o(f),enumerable:!0})}var d=this;e.getProxy=function(){return d},this.xhr=e},Object.assign(t.XMLHttpRequest,{UNSENT:0,OPENED:1,HEADERS_RECEIVED:2,LOADING:3,DONE:4}),t[u]}function s(e){e=e||window,e[u]&&(e.XMLHttpRequest=e[u]),e[u]=void 0}Object.defineProperty(t,"__esModule",{value:!0});var i="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e};t.configEvent=r,t.hook=o,t.unHook=s;var u="__xhr",a=t.events=["load","loadend","timeout","error","readystatechange","abort"]},function(e,t,n){"use strict";function r(e,t){if(t=t||window,t.__xhr)throw"Ajax is already hooked.";return h(e,t)}function o(e){(0,d.unHook)(e)}function s(e){return e.replace(/^\s+|\s+$/g,"")}function i(e){return e.watcher||(e.watcher=document.createElement("a"))}function u(e,t){var n=e.getProxy(),r="on"+t+"_",o=(0,d.configEvent)({type:t},n);n[r]&&n[r](o);var s;"function"==typeof Event?s=new Event(t,{bubbles:!1}):(s=document.createEvent("Event"),s.initEvent(t,!1,!0)),i(e).dispatchEvent(s)}function a(e){this.xhr=e,this.xhrProxy=e.getProxy()}function c(e){function t(e){a.call(this,e)}return t[b]=Object.create(a[b]),t[b].next=e,t}function f(e){return null!=e.response||""!==e.responseType&&"text"!==e.responseType?e.response:e.responseText}function h(e,t){function n(e,t){var n=new E(e),r={response:f(t),status:t.status,statusText:t.statusText,config:e.config,headers:e.resHeader||e.getAllResponseHeaders().split("\r\n").reduce(function(e,t){if(""===t)return e;var n=t.split(":");return e[n.shift()]=s(n.join(":")),e},{})};if(!v)return n.resolve(r);v(r,n)}function r(e,t,n,r){var o=new m(e);n={config:e.config,error:n,type:r},l?l(n,o):o.next(n)}function o(){return!0}function a(e){return function(t,n){return r(t,this,n,e),!0}}function c(e,t){return 4===e.readyState&&0!==e.status?n(e,t):4!==e.readyState&&u(e,x),!0}var h=e.onRequest,v=e.onResponse,l=e.onError;return(0,d.hook)({onload:o,onloadend:o,onerror:a(y),ontimeout:a(p),onabort:a(g),onreadystatechange:function(e){return c(e,this)},open:function(e,t){var n=this,r=t.config={headers:{}};r.method=e[0],r.url=e[1],r.async=e[2],r.user=e[3],r.password=e[4],r.xhr=t;var o="on"+x;if(t[o]||(t[o]=function(){return c(t,n)}),h)return!0},send:function(e,t){var n=t.config;if(n.withCredentials=t.withCredentials,n.body=e[0],h){var r=function(){h(n,new w(t))};return!1===n.async?r():setTimeout(r),!0}},setRequestHeader:function(e,t){if(t.config.headers[e[0].toLowerCase()]=e[1],h)return!0},addEventListener:function(e,t){var n=this;if(-1!==d.events.indexOf(e[0])){var r=e[1];return i(t).addEventListener(e[0],function(t){var o=(0,d.configEvent)(t,n);o.type=e[0],o.isTrusted=!0,r.call(n,o)}),!0}},getAllResponseHeaders:function(e,t){var n=t.resHeader;if(n){var r="";for(var o in n)r+=o+": "+n[o]+"\r\n";return r}},getResponseHeader:function(e,t){var n=t.resHeader;if(n)return n[(e[0]||"").toLowerCase()]}},t)}Object.defineProperty(t,"__esModule",{value:!0}),t.proxy=r,t.unProxy=o;var d=n(0),v=d.events[0],l=d.events[1],p=d.events[2],y=d.events[3],x=d.events[4],g=d.events[5],b="prototype";a[b]=Object.create({resolve:function(e){var t=this.xhrProxy,n=this.xhr;t.readyState=4,n.resHeader=e.headers,t.response=t.responseText=e.response,t.statusText=e.statusText,t.status=e.status,u(n,x),u(n,v),u(n,l)},reject:function(e){this.xhrProxy.status=0,u(this.xhr,e.type),u(this.xhr,l)}});var w=c(function(e){var t=this.xhr;e=e||t.config,t.withCredentials=e.withCredentials,t.open(e.method,e.url,!1!==e.async,e.user,e.password);for(var n in e.headers)t.setRequestHeader(n,e.headers[n]);t.send(e.body)}),E=c(function(e){this.resolve(e)}),m=c(function(e){this.reject(e)})},,function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.ah=void 0;var r=n(0),o=n(1);t.ah={proxy:o.proxy,unProxy:o.unProxy,hook:r.hook,unHook:r.unHook}}]));
 	/*! pako 2.1.0 https://github.com/nodeca/pako @license (MIT AND Zlib) */
@@ -75,7 +77,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 	const apiUserAgent = `WikiMirror/unofficial (${config.domain}; opensource@wikimirror.org)`;
 	ah.proxy({
 		onError: (err, handler) => {
-			if (err.type === 'error') {
+			if (['error', 'timeout'].includes(err.type)) {
 				console.log('WikiMirror xhr error:', err);
 			}
 			handler.next(err);
@@ -86,12 +88,10 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			}
 			if (new URL(_config.url, location.origin).host.includes(config.domain)) {
 				const origApiUserAgent = _config.headers['api-user-agent'] ?? _config.headers['Api-User-Agent'];
-				let _apiUserAgent = apiUserAgent;
-				if (origApiUserAgent) {
-					_apiUserAgent = `${apiUserAgent} ${origApiUserAgent}`;
-				}
 				delete _config.headers['Api-User-Agent'];
-				_config.headers['api-user-agent'] = _apiUserAgent;
+				_config.headers['api-user-agent'] = origApiUserAgent
+					? `${apiUserAgent} ${origApiUserAgent}`
+					: apiUserAgent;
 			}
 			handler.next(_config);
 		},
@@ -118,12 +118,11 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			if (host.includes(config.domain)) {
 				const headers = options.headers ? new Headers(options.headers) : new Headers();
 				const origApiUserAgent = headers.get('api-user-agent') ?? headers.get('Api-User-Agent');
-				let _apiUserAgent = apiUserAgent;
-				if (origApiUserAgent) {
-					_apiUserAgent = `${apiUserAgent} ${origApiUserAgent}`;
-				}
 				headers.delete('Api-User-Agent');
-				headers.set('api-user-agent', _apiUserAgent);
+				headers.set(
+					'api-user-agent',
+					origApiUserAgent ? `${apiUserAgent} ${origApiUserAgent}` : apiUserAgent
+				);
 				options.headers = headers;
 			}
 		}
@@ -140,7 +139,9 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			isError = true;
 			console.log('WikiMirror fetch error:', {err: e, options, url});
 		});
-		if (isError || !response) return;
+		if (isError || !response) {
+			return new Response(undefined, {status: 500, headers: options.headers ?? new Headers()});
+		}
 		const contentType = response.headers.get('content-type') ?? response.headers.get('Content-Type');
 		if (
 			!contentType ||
@@ -166,7 +167,9 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 		if (typeof url === 'object') {
 			url = url.toString();
 		}
-		if (/intake-(?:analytics|logging)/.test(url)) return true;
+		if (/intake-(?:analytics|logging)/.test(url)) {
+			return true;
+		}
 		return origSendBeacon(url, data);
 	};
 };
@@ -228,12 +231,16 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			const nodeArr = [];
 			for (const dom of wDom) {
 				for (const node of dom.childNodes) {
-					node.nodeType === 3 && nodeArr.push(node);
+					if (node.nodeType === 3) {
+						nodeArr.push(node);
+					}
 				}
 			}
 			for (const node of nodeArr) {
 				let text = node.nodeValue ?? '';
-				if (text.trim() === '') continue;
+				if (text.trim() === '') {
+					continue;
+				}
 				if (text.match(RegexUrlRoot) || text.match(RegexOther_1)) {
 					text = this.getRealText(text);
 				}
@@ -299,7 +306,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		if (['wiki', 'wikiless'].includes(method ?? '')) {
 			wTex();
 			if (method === 'wiki' && wBox) {
-				wikEd?.useWikEd && wikEd.UpdateTextarea();
+				if (wikEd?.useWikEd) {
+					wikEd.UpdateTextarea();
+				}
 				typeof jQuery === 'function' ? (value = jQuery('#wpTextbox1').val()) : (value = wBox.value);
 			}
 		}
@@ -323,7 +332,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			.replace(/r-e-p-l-a-c-e\.org/g, this.MIRROR_DOMAIN);
 		if (method === 'wiki' && wBox) {
 			typeof jQuery === 'function' ? jQuery('#wpTextbox1').val(value) : (wBox.value = value);
-			wikEd?.useWikEd && wikEd.UpdateFrame();
+			if (wikEd?.useWikEd) {
+				wikEd.UpdateFrame();
+			}
 		}
 		return value;
 	}
@@ -381,7 +392,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				const observer = new MutationObserver((mutations) => {
 					for (const mutation of mutations) {
 						for (const node of mutation.addedNodes) {
-							if (!(node instanceof HTMLElement)) continue;
+							if (!(node instanceof HTMLElement)) {
+								continue;
+							}
 							for (const dom of node.querySelectorAll('.ext-related-articles-card-list h3 a')) {
 								dom.innerHTML = this.getRealText(dom.innerHTML, 'emoji');
 							}
@@ -401,8 +414,12 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					document.querySelector('.cx-skin-menu-content-list'),
 					document.querySelector('#footer-places-statslink a') || document.querySelector('#statslink a'),
 				];
-				cx && (cx.id = 'p-tb');
-				st && (st.href = this.getRealText(st.href));
+				if (cx) {
+					cx.id = 'p-tb';
+				}
+				if (st) {
+					st.href = this.getRealText(st.href);
+				}
 			} else {
 				if (window.portalSearchDomain) {
 					window.portalSearchDomain = window.portalSearchDomain.replace(/org$/, this.MIRROR_DOMAIN);
@@ -428,7 +445,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					WikiMirror.getRealText.initCount = 0;
 					WikiMirror.getRealText.isAceInit = false;
 					mw.hook('codeEditor.configure').add((editor) => {
-						if (WikiMirror.getRealText.isAceInit) return;
+						if (WikiMirror.getRealText.isAceInit) {
+							return;
+						}
 						WikiMirror.getRealText.isAceInit = true;
 						document.getElementById('wpSave')?.addEventListener('click', () => {
 							editor.setValue(this.getRealText(editor.getValue()));
@@ -753,13 +772,17 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			return valid;
 		};
 		pwdInput.on('enter', () => {
-			if (isValid()) doLogin();
+			if (isValid()) {
+				doLogin();
+			}
 		});
 		jQuery('body').append(windowManager.$element);
 		messageDialog.getActionProcess = (action) => {
 			if (action === 'login') {
 				return new OO.ui.Process(() => {
-					if (isValid()) doLogin();
+					if (isValid()) {
+						doLogin();
+					}
 				});
 			}
 			return new OO.ui.Process(() => {
@@ -803,7 +826,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		}
 		const t = (key) => this.messages.confirmLogout[key] || key;
 		const newDom = document.createElement('a');
-		dom.className && (newDom.className = dom.className);
+		if (dom.className) {
+			newDom.className = dom.className;
+		}
 		newDom.href = dom.href;
 		newDom.innerHTML = dom.innerHTML;
 		dom.parentNode.append(newDom);
@@ -819,7 +844,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					)}</span></div>`
 				)
 			);
-			if (!confirmed) return;
+			if (!confirmed) {
+				return;
+			}
 			await mw.loader.using('mediawiki.api');
 			try {
 				await new mw.Api().postWithEditToken({action: 'logout'});
@@ -830,7 +857,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		});
 	}
 	darkMode(method, item, value) {
-		if (!this.localStorage()) return;
+		if (!this.localStorage()) {
+			return;
+		}
 		const ID = 'wikimirror-darkmode';
 		const t = (key) => this.messages.darkMode[key] || key;
 		const [ComHead, ComAnd, ComFoot] = [
@@ -898,7 +927,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				matchMedia('(prefers-color-scheme:dark)').addEventListener('change', modeObserver.dark);
 				matchMedia('(prefers-color-scheme:light)').addEventListener('change', modeObserver.light);
 				window.addEventListener('storage', (e) => {
-					if (e.key === ID) this.darkMode('insert');
+					if (e.key === ID) {
+						this.darkMode('insert');
+					}
 				});
 				this.domReady().then(() => {
 					if (
@@ -918,7 +949,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 							document.documentElement.style.height = 'auto';
 							document.documentElement.style.height = `${document.documentElement.scrollHeight}px`;
 						};
-						if (timer) clearTimeout(timer);
+						if (timer) {
+							clearTimeout(timer);
+						}
 						timer = setTimeout(callback, ms);
 					};
 					const mo = new MutationObserver(() => {
@@ -966,7 +999,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					this.hasClass('skin-minerva')
 						? this.darkMode('meta', 'theme-color', '#1c1e22')
 						: this.darkMode('meta', 'theme-color', '#0d0d0d');
-					if (!dom) return;
+					if (!dom) {
+						return;
+					}
 					dom.innerHTML = dom.innerHTML.replace(Dark, Light);
 					dom.setAttribute('title', LightTip);
 				} else if (this.localStorage(ID) === '0') {
@@ -983,7 +1018,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					} else {
 						this.darkMode('meta', 'theme-color', 'remove');
 					}
-					if (!dom) return;
+					if (!dom) {
+						return;
+					}
 					dom.innerHTML = dom.innerHTML.replace(Light, Dark);
 					dom.setAttribute('title', DarkTip);
 				}
@@ -998,7 +1035,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				meta.content = value;
 				meta.id = metaId;
 				meta.name = metaName;
-				old && !old.id && old.remove();
+				if (old && !old.id) {
+					old.remove();
+				}
 				if (value === 'remove') {
 					tag?.remove();
 				} else {
@@ -1007,7 +1046,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				break;
 			}
 			case 'normal': {
-				if (document.getElementById(ID)) return;
+				if (document.getElementById(ID)) {
+					return;
+				}
 				const [pos, set, unset] = [
 					document.getElementById('pt-preferences') || document.getElementById('p-personal'),
 					this.localStorage(ID) === '1',
@@ -1022,8 +1063,11 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					});
 				};
 				if (pos && this.hasClass('skin-minerva')) {
-					set && pos.insertAdjacentHTML('beforeend', `${ComHead}${LightTip}${ComAnd}${Light}${ComFoot}`);
-					unset && pos.insertAdjacentHTML('beforeend', `${ComHead}${DarkTip}${ComAnd}${Dark}${ComFoot}`);
+					if (set) {
+						pos.insertAdjacentHTML('beforeend', `${ComHead}${LightTip}${ComAnd}${Light}${ComFoot}`);
+					} else if (unset) {
+						pos.insertAdjacentHTML('beforeend', `${ComHead}${DarkTip}${ComAnd}${Dark}${ComFoot}`);
+					}
 					doClick();
 				} else if (
 					document.getElementById('p-tb') ||
@@ -1035,8 +1079,11 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 							? 'mw-content-text'
 							: 'p-tb';
 					mw.loader.using('mediawiki.util').then(() => {
-						set && doClick(mw.util.addPortletLink(pos, '#', Light, ID, LightTip));
-						unset && doClick(mw.util.addPortletLink(pos, '#', Dark, ID, DarkTip));
+						if (set) {
+							doClick(mw.util.addPortletLink(pos, '#', Light, ID, LightTip));
+						} else if (unset) {
+							doClick(mw.util.addPortletLink(pos, '#', Dark, ID, DarkTip));
+						}
 					});
 				}
 				break;
@@ -1100,7 +1147,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		const {diffId, oldId, revisionId} = ids;
 		if (diffId) {
 			const buildLink = (oldId, link = 'Special:Diff/') => {
-				oldId && (link += `${oldId}/`);
+				if (oldId) {
+					link += `${oldId}/`;
+				}
 				link += diffId;
 				doIns({
 					dec: t('Copy the link to the diff version (wiki syntax)'),
@@ -1142,7 +1191,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		}
 	}
 	disableAnonEdit() {
-		if (this.getConf('wgUserName')) return;
+		if (this.getConf('wgUserName')) {
+			return;
+		}
 		mw.hook('wikipage.editform').add(($dom) => {
 			$dom.find('#wpSummary').prop('readonly', true);
 			$dom.find('#wpTextbox1').prop('readonly', true);
@@ -1150,8 +1201,11 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		mw.hook('mobileFrontend.editorOpened').add(() => {
 			jQuery('#wikitext-editor').prop('readonly', true);
 		});
-		mw.hook('ve.activationComplete').add(($surface = ve.init.target.getSurface()) => {
-			$surface && $surface.setReadOnly(true);
+		mw.hook('ve.activationComplete').add(() => {
+			const $surface = ve.init.target.getSurface();
+			if ($surface) {
+				$surface.setReadOnly(true);
+			}
 		});
 	}
 	displayAnonHide() {
@@ -1187,7 +1241,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 	}
 	showRedirect() {
 		const ID = 'wikimirror-redirect';
-		if (document.getElementById(ID)) return;
+		if (document.getElementById(ID)) {
+			return;
+		}
 		const t = (key) => this.messages.showRedirect[key] || key;
 		const [Text, Title] = [
 			t('Official site'),
@@ -1254,7 +1310,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				resolve(true);
 			} else {
 				document.addEventListener('readystatechange', () => {
-					if (condition.includes(document.readyState)) resolve(true);
+					if (condition.includes(document.readyState)) {
+						resolve(true);
+					}
 				});
 			}
 		});
@@ -1363,9 +1421,13 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		};
 	}
 	hasClass(name, selector = 'body') {
-		if (!name || !document.querySelector(selector)) return false;
+		if (!name || !document.querySelector(selector)) {
+			return false;
+		}
 		for (const dom of document.querySelectorAll(selector)) {
-			if (dom.classList.contains(name)) return true;
+			if (dom.classList.contains(name)) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -1393,7 +1455,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		mw.notification.notify(msg, opt);
 	}
 	setCookie({name, value, hour = 0, domain = `.${this.MIRROR_DOMAIN}`, path = '/', isSecure = true}) {
-		if (!name || !value || !domain || !path) return;
+		if (!name || !value || !domain || !path) {
+			return;
+		}
 		const base = `${name}=${this.encodeURIComponent(value)};domain=${domain};path=${path}${
 			isSecure ? ';Secure' : ''
 		}`;
@@ -1413,21 +1477,29 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				}
 				break;
 			case 'remove':
-				value && document.getElementById(value)?.remove();
+				if (value) {
+					document.getElementById(value)?.remove();
+				}
 				break;
 			case 'css':
 				if (value || (value && !(id && document.getElementById(id)))) {
 					const style = document.createElement('style');
-					id && (style.id = id);
+					if (id) {
+						style.id = id;
+					}
 					style.append(document.createTextNode(value));
 					document.head.append(style);
 				}
 				break;
 			case 'url':
 				return new Promise((resolve, reject) => {
-					if (!value) reject();
+					if (!value) {
+						reject();
+					}
 					const link = document.createElement('link');
-					id && (link.id = id);
+					if (id) {
+						link.id = id;
+					}
 					link.href = value;
 					link.rel = 'stylesheet';
 					link.onload = () => resolve();
@@ -1438,13 +1510,26 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 	}
 	setJs(url, method, crossOrigin) {
 		return new Promise((resolve, reject) => {
+			if (!url) {
+				reject();
+			}
 			const script = document.createElement('script');
-			url ? (script.src = url) : reject();
-			crossOrigin && (script.crossOrigin = 'anonymous');
-			method === 'async' && (script.async = true);
-			method === 'defer' && (script.defer = true);
-			script.onload = () => resolve();
-			script.onerror = () => reject();
+			script.src = url;
+			if (crossOrigin) {
+				script.crossOrigin = 'anonymous';
+			}
+			if (method === 'async') {
+				script.async = true;
+			}
+			if (method === 'defer') {
+				script.defer = true;
+			}
+			script.onload = () => {
+				resolve();
+			};
+			script.onerror = () => {
+				reject();
+			};
 			document.head.append(script);
 		});
 	}
@@ -1506,7 +1591,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			new URL(`${location.origin}/w/api.php?${config.body}`),
 		];
 		try {
-			if (config.body === null) throw new ReferenceError('Request body is null.');
+			if (config.body === null) {
+				throw new ReferenceError('Request body is null.');
+			}
 			const bodyObj = JSON.parse(config.body);
 			delete bodyObj.md5;
 			for (const text of textArr) {
@@ -1618,7 +1705,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 	ahCallback_Response(response) {
 		const recursiveObj = (obj, callback, preKey) => {
 			for (const key in obj) {
-				if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+				if (!Object.prototype.hasOwnProperty.call(obj, key)) {
+					continue;
+				}
 				typeof obj[key] === 'object'
 					? recursiveObj(obj[key], callback, key)
 					: callback(obj, key, preKey);
@@ -1903,13 +1992,12 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					hk: '用戶已被全域封鎖',
 					tw: '使用者已被全域封鎖',
 				}),
-				'The user login is too frequent, please try again in five minutes':
-					hanAssist.localize({
-						ja: '利用者が頻繁すぎるため、5分後に再試行してください',
-						cn: '用户登录过于频繁，请五分钟后再试',
-						hk: '用戶登入過於頻繁，請五分鐘後再試',
-						tw: '使用者登入过于频繁，请五分钟后再试',
-					}),
+				'The user login is too frequent, please try again in five minutes': hanAssist.localize({
+					ja: '利用者が頻繁すぎるため、5分後に再試行してください',
+					cn: '用户登录过于频繁，请五分钟后再试',
+					hk: '用戶登入過於頻繁，請五分鐘後再試',
+					tw: '使用者登入过于频繁，请五分钟后再试',
+				}),
 				'Unknown API error': hanAssist.localize({
 					ja: '未定義のAPIエラー',
 					hans: '未定义的API错误',
