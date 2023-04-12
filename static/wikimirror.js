@@ -114,17 +114,6 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			url = privateMethod.ahCallback_Request({
 				url: typeof url === 'object' ? url.toString() : url,
 			}).url;
-			const host = new URL(url, location.origin).host;
-			if (host.includes(config.domain)) {
-				const headers = options.headers ? new Headers(options.headers) : new Headers();
-				const origApiUserAgent = headers.get('api-user-agent') ?? headers.get('Api-User-Agent');
-				headers.delete('Api-User-Agent');
-				headers.set(
-					'api-user-agent',
-					origApiUserAgent ? `${apiUserAgent} ${origApiUserAgent}` : apiUserAgent
-				);
-				options.headers = headers;
-			}
 		}
 		if (
 			options.body &&
@@ -133,6 +122,46 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			)
 		) {
 			options.body = privateMethod.ahCallback_Request(options).body;
+		}
+		if (Object.prototype.toString.call(url) === '[object Request]') {
+			const {body, cache, credentials, headers, integrity, method, mode, redirect, referrer, referrerPolicy} = url;
+			const _options = {body, cache, credentials, integrity, headers, method, mode, redirect, referrer, referrerPolicy};
+			const _url = privateMethod.ahCallback_Request({url: url.url}).url;
+			let _body;
+			if (/post/i.test(_options.method)) {
+				const contentType = _options.headers.get('content-type') ?? _options.headers.get('Content-Type') ?? '';
+				if (contentType.includes('form-data')) {
+					_body = await url.formData();
+				} else if (contentType.includes('json') || contentType.includes('plain')) {
+					_body = await url.text();
+				}
+				if (_body !== undefined) {
+					try {
+						JSON.parse(_body);
+						_options.body = privateMethod.ahCallback_Request({body: _body}).body;
+					} catch (e) {
+						if (typeof _body === 'string' && !_body.includes('?')) {
+							_options.body = privateMethod.getRealText(_body);
+						} else {
+							_body = privateMethod.ahCallback_Request({body: _body}).body;
+							if (typeof _body === 'string') {
+								_body = _body.replace(/^%3F/, '?');
+							}
+							_options.body = _body;
+						}
+					}
+				}
+			}
+			options = _options;
+			url = _url;
+		}
+		const host = new URL(url, location.origin).host;
+		if (host.includes(config.domain)) {
+			const headers = new Headers(options.headers);
+			const origApiUserAgent = headers.get('api-user-agent') ?? headers.get('Api-User-Agent');
+			headers.delete('Api-User-Agent');
+			headers.set('api-user-agent', origApiUserAgent ? `${apiUserAgent} ${origApiUserAgent}` : apiUserAgent);
+			options.headers = headers;
 		}
 		let isError = false;
 		const response = await origFetch(url, options).catch((e) => {
