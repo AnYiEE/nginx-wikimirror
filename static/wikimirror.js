@@ -271,21 +271,21 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				}
 			}
 			for (const node of nodeArr) {
-				let text = node.nodeValue ?? '';
-				if (text.trim() === '') {
+				let _value = node.nodeValue ?? '';
+				if (_value.trim() === '') {
 					continue;
 				}
-				if (text.match(RegexUrlRoot) || text.match(RegexOther_1)) {
-					text = this.getRealText(text);
+				if (_value.match(RegexUrlRoot) || _value.match(RegexOther_1)) {
+					_value = this.getRealText(_value);
 				}
-				if (text.match(RegexOther_2) && this.hasClass('action-view')) {
-					text = text.replace(RegexOther_2, `background$1:url($2$3//upload.${this.MIRROR_DOMAIN}`);
+				if (_value.match(RegexOther_2) && this.hasClass('action-view')) {
+					_value = _value.replace(RegexOther_2, `background$1:url($2$3//upload.${this.MIRROR_DOMAIN}`);
 				}
-				if (node.nodeValue !== text) {
-					node.nodeValue = text;
+				if (node.nodeValue !== _value) {
+					node.nodeValue = _value;
 				}
 				if (
-					text.match(REGEX_EMOJI) &&
+					_value.match(REGEX_EMOJI) &&
 					!(this.hasClass('action-edit') || this.hasClass('action-submit')) &&
 					((typeof WikiMirror === 'object' &&
 						((typeof WikiMirror.getRealText === 'function' &&
@@ -324,9 +324,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				...document.querySelectorAll('input[name="clientUrl"]'),
 				...document.querySelectorAll('input[name="intendedWikitext"]'),
 			]) {
-				const text = dom.value;
-				if (text.match(RegexUrlRoot)) {
-					dom.value = this.getRealText(text);
+				const _value = dom.value;
+				if (_value.match(RegexUrlRoot)) {
+					dom.value = this.getRealText(_value);
 				}
 			}
 			const dom = document.querySelector('#ca-fileExporter a');
@@ -497,11 +497,11 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 						});
 					});
 					mw.hook('wikipage.content').add((item) => {
-						if (!item[0] || !['mw-content-text', 'mw-watchlist-options'].includes(item?.[0].id ?? '')) {
+						if (!item?.[0] || !['mw-content-text', 'mw-watchlist-options'].includes(item?.[0].id ?? '')) {
 							return;
 						}
 						if (WikiMirror.getRealText.initCount > 0) {
-							this.getRealText(void 0, 'wiki');
+							this.getRealText(undefined, 'wiki');
 						}
 						WikiMirror.getRealText.initCount++;
 						this.diffLink({
@@ -665,8 +665,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					formatversion: '2',
 					logintoken: loginToken,
 					loginreturnurl: location.href,
-					username: username || nameInput.value,
-					password: password || pwdInput.value,
+					username: username || nameInput.getValue(),
+					password: password || pwdInput.getValue(),
 				};
 				password = params.password;
 				if (keepLoginCheckbox.isSelected()) {
@@ -805,7 +805,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			return;
 		}
 		const isValid = () => {
-			const valid = ![nameInput.value, pwdInput.value].includes('');
+			const valid = ![nameInput.getValue(), pwdInput.getValue()].includes('');
 			if (!valid) {
 				this.showNotice(`<span>${t('The username or password cannot be empty')}</span>`, {
 					autoHide: true,
