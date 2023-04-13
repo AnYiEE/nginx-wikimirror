@@ -208,8 +208,15 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		this.modules = modules;
 		this.regexps = regexps;
 		this.messages = this.initMessages();
+		this.textCache = new Map();
 	}
 	getRealText(value, method) {
+		if (!['wiki', 'wikiless'].includes(method ?? '')) {
+			if (this.textCache.has(value)) {
+				return this.textCache.get(value);
+			}
+		}
+		let origValue = value;
 		const [RegexUrlRoot, RegexUrlSub, RegexUrlLatex] = [
 			new RegExp(this.MIRROR_DOMAIN_REGEX, 'gi'),
 			new RegExp(
@@ -340,29 +347,38 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			}
 		}
 		if ((typeof value === 'string' && value.trim() === '') || typeof value !== 'string') {
+			this.textCache.set(origValue, value);
 			return value;
 		}
 		if (method === 'emoji') {
-			return value.match(REGEX_EMOJI)
+			value = value.match(REGEX_EMOJI)
 				? value.replace(REGEX_EMOJI, '<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>')
 				: value;
+			this.textCache.set(origValue, value);
+			return value;
 		}
-		value = value
-			.replace(new RegExp(`phab\\.${this.MIRROR_DOMAIN}`, 'gi'), 'phab.wmfusercontent.org')
-			.replace(new RegExp(`xtools-api\\.${this.MIRROR_DOMAIN}\\/`, 'gi'), 'xtools.wmflabs.org/api/')
-			.replace(new RegExp(`wma\\.${this.MIRROR_DOMAIN_REGEX}`, 'gi'), 'wma.wmcloud.org')
-			.replace(new RegExp(`recommend\\.${this.MIRROR_DOMAIN_REGEX}`, 'gi'), 'recommend.wmflabs.org')
-			.replace(RegexUrlLatex, 'wikimedia.org/api/rest_v1/media/math/render/$1')
-			.replace(RegexUrlSub, '$1.org')
-			.replace(RegexUrlRoot, 'wikimedia.org')
-			.replace(RegexOther_1, '\\.wikipedia\\.org')
-			.replace(/r-e-p-l-a-c-e\.org/g, this.MIRROR_DOMAIN);
+		if (this.textCache.has(value)) {
+			origValue = value;
+			value = this.textCache.get(origValue);
+		} else {
+			value = value
+				.replace(new RegExp(`phab\\.${this.MIRROR_DOMAIN}`, 'gi'), 'phab.wmfusercontent.org')
+				.replace(new RegExp(`xtools-api\\.${this.MIRROR_DOMAIN}\\/`, 'gi'), 'xtools.wmflabs.org/api/')
+				.replace(new RegExp(`wma\\.${this.MIRROR_DOMAIN_REGEX}`, 'gi'), 'wma.wmcloud.org')
+				.replace(new RegExp(`recommend\\.${this.MIRROR_DOMAIN_REGEX}`, 'gi'), 'recommend.wmflabs.org')
+				.replace(RegexUrlLatex, 'wikimedia.org/api/rest_v1/media/math/render/$1')
+				.replace(RegexUrlSub, '$1.org')
+				.replace(RegexUrlRoot, 'wikimedia.org')
+				.replace(RegexOther_1, '\\.wikipedia\\.org')
+				.replace(/r-e-p-l-a-c-e\.org/g, this.MIRROR_DOMAIN);
+		}
 		if (method === 'wiki' && wBox) {
 			typeof jQuery === 'function' ? jQuery('#wpTextbox1').val(value) : (wBox.value = value);
 			if (wikEd?.useWikEd) {
 				wikEd.UpdateFrame();
 			}
 		}
+		this.textCache.set(origValue, value);
 		return value;
 	}
 	async init() {
