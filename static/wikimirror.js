@@ -132,12 +132,12 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 				const contentType = _options.headers.get('content-type') ?? _options.headers.get('Content-Type') ?? '';
 				if (contentType.includes('form-data')) {
 					_body = await url.formData();
-				} else if (contentType.includes('json') || contentType.includes('plain')) {
+				} else if (/json|text|xml/i.test(contentType) && !/css|(?:ecma|java)script/i.test(contentType)) {
 					_body = await url.text();
 				}
-				if (_body !== undefined) {
+				if (_body) {
 					try {
-						JSON.parse(_body);
+						JSON.parse(`${_body}`);
 						_options.body = privateMethod.ahCallback_Request({body: _body}).body;
 					} catch (e) {
 						if (typeof _body === 'string' && !_body.includes('?')) {
@@ -147,7 +147,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 							if (typeof _body === 'string') {
 								_body = _body.replace(/^%3F/, '?');
 							}
-							_options.body = _body;
+							_options.body = _body ?? null;
 						}
 					}
 				}
@@ -178,10 +178,8 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 		) {
 			return response;
 		}
-		const responseOptions = {};
-		for (const item of ['headers', 'status', 'statusText']) {
-			responseOptions[item] = response[item];
-		}
+		const {headers, status, statusText} = response;
+		const responseOptions = {headers, status, statusText};
 		return new Response(
 			privateMethod.ahCallback_Response({
 				config: {url, options},
