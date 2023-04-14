@@ -169,7 +169,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			console.log('WikiMirror fetch error:', {err: e, options, url});
 		});
 		if (isError || !response) {
-			return new Response(undefined, {status: 500, headers: options.headers ?? new Headers()});
+			return new Response(undefined, {status: 418});
 		}
 		const contentType = response.headers.get('content-type') ?? response.headers.get('Content-Type');
 		if (
@@ -271,21 +271,21 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				}
 			}
 			for (const node of nodeArr) {
-				let _value = node.nodeValue ?? '';
-				if (_value.trim() === '') {
+				let nodeValue = node.nodeValue ?? '';
+				if (!nodeValue.trim()) {
 					continue;
 				}
-				if (_value.match(RegexUrlRoot) || _value.match(RegexOther_1)) {
-					_value = this.getRealText(_value);
+				if (nodeValue.match(RegexUrlRoot) || nodeValue.match(RegexOther_1)) {
+					nodeValue = this.getRealText(nodeValue);
 				}
-				if (_value.match(RegexOther_2) && this.hasClass('action-view')) {
-					_value = _value.replace(RegexOther_2, `background$1:url($2$3//upload.${this.MIRROR_DOMAIN}`);
+				if (nodeValue.match(RegexOther_2) && this.hasClass('action-view')) {
+					nodeValue = nodeValue.replace(RegexOther_2, `background$1:url($2$3//upload.${this.MIRROR_DOMAIN}`);
 				}
-				if (node.nodeValue !== _value) {
-					node.nodeValue = _value;
+				if (node.nodeValue !== nodeValue) {
+					node.nodeValue = nodeValue;
 				}
 				if (
-					_value.match(REGEX_EMOJI) &&
+					nodeValue.match(REGEX_EMOJI) &&
 					!(this.hasClass('action-edit') || this.hasClass('action-submit')) &&
 					((typeof WikiMirror === 'object' &&
 						((typeof WikiMirror.getRealText === 'function' &&
@@ -311,29 +311,30 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				...document.querySelectorAll('a[href*="//pageviews."]'),
 				...document.querySelectorAll('a[href*="//xtools."]'),
 			]) {
-				const href = dom.href;
-				if (href.match(RegexUrlRoot)) {
-					dom.href = this.getRealText(href);
+				const domHref = dom.href;
+				if (domHref.match(RegexUrlRoot)) {
+					dom.href = this.getRealText(domHref);
 				}
 				const XTOOLS_API = 'xtools.wmflabs.org/api/';
-				if (href.includes(XTOOLS_API)) {
-					dom.href = href.replace(XTOOLS_API, `xtools-api.${this.MIRROR_DOMAIN}/`);
+				if (domHref.includes(XTOOLS_API)) {
+					dom.href = domHref.replace(XTOOLS_API, `xtools-api.${this.MIRROR_DOMAIN}/`);
 				}
 			}
 			for (const dom of [
 				...document.querySelectorAll('input[name="clientUrl"]'),
 				...document.querySelectorAll('input[name="intendedWikitext"]'),
 			]) {
-				const _value = dom.value;
-				if (_value.match(RegexUrlRoot)) {
-					dom.value = this.getRealText(_value);
+				const domValue = dom.value;
+				if (domValue.match(RegexUrlRoot)) {
+					dom.value = this.getRealText(domValue);
 				}
 			}
-			const dom = document.querySelector('#ca-fileExporter a');
-			if (dom) {
-				const url = dom.href.match(/clientUrl=(\S+?)&/)?.[1] ?? '';
-				if (url !== '') {
-					dom.href = dom.href.replace(url, this.getRealText(url));
+			const fileExporterDom = document.querySelector('#ca-fileExporter a');
+			if (fileExporterDom) {
+				const domHref = fileExporterDom.href;
+				const url = domHref.match(/clientUrl=(\S+?)&/)?.[1];
+				if (url) {
+					fileExporterDom.href = domHref.replace(url, this.getRealText(url));
 				}
 			}
 		};
@@ -346,7 +347,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				typeof jQuery === 'function' ? (value = jQuery('#wpTextbox1').val()) : (value = wBox.value);
 			}
 		}
-		if ((typeof value === 'string' && value.trim() === '') || typeof value !== 'string') {
+		if ((typeof value === 'string' && !value.trim()) || typeof value !== 'string') {
 			this.textCache.set(origValue, value);
 			return value;
 		}
