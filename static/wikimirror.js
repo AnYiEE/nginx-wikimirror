@@ -569,7 +569,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			return; // API BUG <https://phabricator.wikimedia.org/T328397>
 		}
 		const t = (key) => this.messages.ajaxLogin[key] || key;
-		const CookiePrefix = location.host.includes('wikitech') ? 'lastLoginWikitech' : 'lastLogin';
+		const cookiePrefix = location.host.includes('wikitech') ? 'lastLoginWikitech' : 'lastLogin';
 		if (method === 'init') {
 			const dom =
 				document.getElementById('ca-cb-login') ||
@@ -578,23 +578,35 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				document.getElementById('pt-login-2') ||
 				document.getElementById('pt-login') ||
 				document.querySelector('.vector-user-menu-login');
-			dom?.addEventListener('click', (e) => {
-				e.preventDefault();
-				this.ajaxLogin();
-			});
 			const [username, password] = [
-				this.getCookie(`${CookiePrefix}UserName`),
-				this.getCookie(`${CookiePrefix}Password`),
+				this.getCookie(`${cookiePrefix}UserName`),
+				this.getCookie(`${cookiePrefix}Password`),
 			];
+			const ajaxLogin = () => {
+				event.preventDefault();
+				this.ajaxLogin();
+			};
+			dom?.addEventListener('click', ajaxLogin);
 			if (username && password && password !== 'deleted' && !this.getConf('wgUserName')) {
-				this.showNotice(`<span>${t('Starting automatic login')}</span>`, {
-					autoHide: true,
-					tag: 'login',
-				});
-				this.ajaxLogin(undefined, {
-					username,
-					password: this.inflateRaw(password),
-				});
+				const autoLogin = () => {
+					this.showNotice(`<span>${t('Starting automatic login')}</span>`, {
+						autoHide: true,
+						tag: 'login',
+					});
+					this.ajaxLogin(undefined, {
+						username,
+						password: this.inflateRaw(password),
+					});
+				};
+				if (this.getCookie(`${cookiePrefix}Use2FA`) === '1') {
+					dom?.removeEventListener('click', ajaxLogin);
+					dom?.addEventListener('click', (e) => {
+						e.preventDefault();
+						autoLogin();
+					});
+				} else {
+					autoLogin();
+				}
 			}
 			return;
 		}
@@ -610,7 +622,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			icon: 'userAvatar',
 			placeholder: t('Username'),
 			validate: 'non-empty',
-			value: this.getCookie(`${CookiePrefix}UserName`) ?? '',
+			value: this.getCookie(`${cookiePrefix}UserName`) ?? '',
 		});
 		const pwdInput = new OO.ui.TextInputWidget({
 			icon: 'key',
@@ -738,25 +750,30 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 						tag: 'login',
 					});
 					this.setCookie({
-						name: `${CookiePrefix}UserName`,
+						name: `${cookiePrefix}UserName`,
 						value: response['clientlogin'].username,
 						hour,
 					});
 					if (autoLoginCheckbox.isSelected()) {
 						this.setCookie({
-							name: `${CookiePrefix}Password`,
+							name: `${cookiePrefix}Password`,
 							value: this.deflateRaw(password, ''),
 							hour,
 						});
 					} else {
 						if (!autoLogin) {
-							this.setCookie({name: `${CookiePrefix}Password`, value: 'deleted', hour: -1});
+							this.setCookie({name: `${cookiePrefix}Password`, value: 'deleted', hour: -1});
 						}
+					}
+					if (params.OATHToken) {
+						this.setCookie({name: `${cookiePrefix}Use2FA`, value: '1', hour});
+					} else {
+						this.setCookie({name: `${cookiePrefix}Use2FA`, value: 'deleted', hour: -1});
 					}
 					location.reload();
 				} else if (response['clientlogin']?.messagecode) {
 					if (autoLogin) {
-						this.setCookie({name: `${CookiePrefix}Password`, value: 'deleted', hour: -1});
+						this.setCookie({name: `${cookiePrefix}Password`, value: 'deleted', hour: -1});
 					}
 					switch (response['clientlogin'].messagecode) {
 						case 'authmanager-authn-autocreate-failed':
@@ -1710,6 +1727,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 						for (const cookiePrefix of ['lastLogin', 'lastLoginWikitech']) {
 							if (this.getCookie(`${cookiePrefix}Password`)) {
 								this.setCookie({name: `${cookiePrefix}Password`, value: 'deleted', hour: -1});
+								this.setCookie({name: `${cookiePrefix}Use2FA`, value: 'deleted', hour: -1});
 							}
 						}
 						break;
