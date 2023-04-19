@@ -1180,7 +1180,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		} else {
 			pos = 'p-cactions';
 		}
-		const doIns = async ({dec, tex, link, prema}) => {
+		const doIns = async ({dec, tex, link, perma}) => {
 			let dom = document.getElementById(ID);
 			if (dom === null) {
 				await mw.loader.using('mediawiki.util');
@@ -1198,7 +1198,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				e.preventDefault();
 				await mw.loader.using(['mediawiki.widgets', 'oojs-ui-windows']);
 				const $dom = jQuery('<div>');
-				[link, `[[${link}${prema ? this.decodeURIComponent(this.getLocate('originHash')) : ''}]]`].forEach(
+				[link, `[[${link}${perma ? this.decodeURIComponent(this.getLocate('originHash')) : ''}]]`].forEach(
 					(value) => {
 						$dom.append(new mw.widgets.CopyTextLayout({align: 'top', copyText: value}).$element);
 					}
@@ -1233,7 +1233,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 						diffId === this.getConf('wgDiffNewId') &&
 						response.compare?.fromrevid === this.getConf('wgDiffOldId')
 					) {
-						buildLink(0);
+						buildLink(false);
 					}
 				} catch (e) {
 					this.showNetworkErrorNotice();
@@ -1250,7 +1250,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				dec: t('Copy the permanent link to the current version (wiki syntax)'),
 				tex: t('Permanent link'),
 				link: `Special:PermaLink/${revisionId}`,
-				prema: true,
+				perma: true,
 			});
 		}
 	}
