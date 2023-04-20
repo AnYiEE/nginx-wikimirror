@@ -83,7 +83,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			handler.next(err);
 		},
 		onRequest: (_config, handler) => {
-			if (!/^%5Bobject\+(?:ArrayBuffer|Blob|DataView|Document)%5D=$/.test(_config.body)) {
+			if (!/^%5Bobject\+(ArrayBuffer|Blob|DataView|Document)%5D=$/.test(_config.body)) {
 				_config = privateMethod.ahCallback_Request(_config);
 			}
 			if (new URL(_config.url, location.origin).host.includes(config.domain)) {
@@ -100,7 +100,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			if (
 				contentType &&
 				/json|text|xml/i.test(contentType) &&
-				!/css|(?:ecma|java)script/i.test(contentType)
+				!/css|(ecma|java)script/i.test(contentType)
 			) {
 				response = privateMethod.ahCallback_Response(response);
 			}
@@ -132,7 +132,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 				const contentType = _options.headers.get('content-type') ?? _options.headers.get('Content-Type') ?? '';
 				if (contentType.includes('form-data')) {
 					_body = await url.formData();
-				} else if (/json|text|xml/i.test(contentType) && !/css|(?:ecma|java)script/i.test(contentType)) {
+				} else if (/json|text|xml/i.test(contentType) && !/css|(ecma|java)script/i.test(contentType)) {
 					_body = await url.text();
 				}
 				if (_body) {
@@ -174,7 +174,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 		const contentType = response.headers.get('content-type') ?? response.headers.get('Content-Type');
 		if (
 			!contentType ||
-			(contentType && (/css|(?:ecma|java)script/i.test(contentType) || !/json|text|xml/i.test(contentType)))
+			(contentType && (/css|(ecma|java)script/i.test(contentType) || !/json|text|xml/i.test(contentType)))
 		) {
 			return response;
 		}
@@ -194,7 +194,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 		if (typeof url === 'object') {
 			url = url.toString();
 		}
-		if (/intake-(?:analytics|logging)/.test(url)) {
+		if (/intake-(analytics|logging)/.test(url)) {
 			return true;
 		}
 		return origSendBeacon(url, data);
@@ -211,10 +211,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		this.textCache = new Map();
 	}
 	getRealText(value, method) {
-		if (!['wiki', 'wikiless'].includes(method ?? '')) {
-			if (this.textCache.has(value)) {
-				return this.textCache.get(value);
-			}
+		if (!['wiki', 'wikiless'].includes(method ?? '') && this.textCache.has(value)) {
+			return this.textCache.get(value);
 		}
 		let origValue = value;
 		const [RegexUrlRoot, RegexUrlSub, RegexUrlLatex] = [
@@ -255,9 +253,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 						((typeof WikiMirror.getRealText === 'function' &&
 							((typeof WikiMirror.getRealText.initCount === 'number' &&
 								WikiMirror.getRealText.initCount < 1) ||
-								typeof WikiMirror.getRealText.initCount === 'undefined')) ||
-							typeof WikiMirror.getRealText === 'undefined')) ||
-						typeof WikiMirror === 'undefined') &&
+								WikiMirror.getRealText.initCount === undefined)) ||
+							WikiMirror.getRealText === undefined)) ||
+						WikiMirror === undefined) &&
 					!this.hasClass('action-history'))
 			) {
 				return;
@@ -294,9 +292,9 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 						((typeof WikiMirror.getRealText === 'function' &&
 							((typeof WikiMirror.getRealText.initCount === 'number' &&
 								WikiMirror.getRealText.initCount < 1) ||
-								typeof WikiMirror.getRealText.initCount === 'undefined')) ||
-							typeof WikiMirror.getRealText === 'undefined')) ||
-						typeof WikiMirror === 'undefined')
+								WikiMirror.getRealText.initCount === undefined)) ||
+							WikiMirror.getRealText === undefined)) ||
+						WikiMirror === undefined)
 				) {
 					const el = document.createElement('wikimirror-emoji-line');
 					el.innerHTML = node.nodeValue.replace(
@@ -960,12 +958,12 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				document.documentElement.classList.add(ID);
 				document.documentElement.style.filter = '';
 				if (
-					/^zh(?:\.m)?\.wikipedia/.test(location.host) &&
+					/^zh(\.m)?\.wikipedia/.test(location.host) &&
 					(this.hasClass('skin-monobook') || this.hasClass('skin-vector-legacy'))
 				) {
 					this.setCss('wikimirror-css-darkmode-logo-zhwiki', 'add');
 				}
-				if (/^(?!zh\.)\S+?(?:\.m)?\.wikipedia/.test(location.host)) {
+				if (/^(?!zh\.)\S+?(\.m)?\.wikipedia/.test(location.host)) {
 					if (this.hasClass('skin-monobook')) {
 						this.setCss('wikimirror-css-darkmode-logo-wiki-monobook', 'add');
 					} else if (this.hasClass('skin-vector-legacy')) {
@@ -997,7 +995,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				});
 				this.domReady().then(() => {
 					if (
-						/^(?!zh\.)\S+?(?:\.m)?\.wikipedia/.test(location.host) &&
+						/^(?!zh\.)\S+?(\.m)?\.wikipedia/.test(location.host) &&
 						(this.hasClass('skin-monobook') || this.hasClass('skin-vector-legacy')) &&
 						document.getElementById('p-logo')
 					) {
@@ -1198,12 +1196,13 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				e.preventDefault();
 				await mw.loader.using(['mediawiki.widgets', 'oojs-ui-windows']);
 				const $dom = jQuery('<div>');
-				[link, `[[${link}${perma ? this.decodeURIComponent(this.getLocate('originHash')) : ''}]]`].forEach(
-					(value) => {
-						$dom.append(new mw.widgets.CopyTextLayout({align: 'top', copyText: value}).$element);
-					}
-				);
-				/(?:Android|iPhone|Mobile)/i.test(navigator.userAgent)
+				for (const value of [
+					link,
+					`[[${link}${perma ? this.decodeURIComponent(this.getLocate('originHash')) : ''}]]`,
+				]) {
+					$dom.append(new mw.widgets.CopyTextLayout({align: 'top', copyText: value}).$element);
+				}
+				/android|iphone|mobile/i.test(navigator.userAgent)
 					? OO.ui.alert($dom)
 					: OO.ui.alert($dom, {size: 'medium'});
 			};
@@ -1224,14 +1223,13 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			buildLink(oldId);
 			if (oldId) {
 				try {
-					const response = await (
-						await fetch(
-							`/w/api.php?action=compare&format=json&fromrev=${diffId}&prop=ids&torelative=prev`
-						)
-					).json();
+					const response = await fetch(
+						`/w/api.php?action=compare&format=json&fromrev=${diffId}&prop=ids&torelative=prev`
+					);
+					const data = await response.json();
 					if (
 						diffId === this.getConf('wgDiffNewId') &&
-						response.compare?.fromrevid === this.getConf('wgDiffOldId')
+						data.compare?.fromrevid === this.getConf('wgDiffOldId')
 					) {
 						buildLink(false);
 					}
@@ -1532,7 +1530,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		if (hour === 0) {
 			document.cookie = base;
 		} else {
-			date.setTime(date.getTime() + hour * 3600000);
+			date.setTime(date.getTime() + hour * 3_600_000);
 			document.cookie = `${base};expires=${date.toUTCString()}`;
 		}
 	}
@@ -1569,8 +1567,12 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					}
 					link.href = value;
 					link.rel = 'stylesheet';
-					link.onload = () => resolve();
-					link.onerror = () => reject();
+					link.addEventListener('load', () => {
+						resolve();
+					});
+					link.addEventListener('error', () => {
+						reject();
+					});
 					document.head.append(link);
 				});
 		}
@@ -1591,12 +1593,12 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			if (method === 'defer') {
 				script.defer = true;
 			}
-			script.onload = () => {
+			script.addEventListener('load', () => {
 				resolve();
-			};
-			script.onerror = () => {
+			});
+			script.addEventListener('error', () => {
 				reject();
-			};
+			});
 			document.head.append(script);
 		});
 	}
@@ -1610,7 +1612,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		return outputArray;
 	}
 	uint8arrayToBase64(value) {
-		const chunk = 0x8000;
+		const chunk = 0x80_00;
 		let [index, result, slice] = [0, '', new Uint8Array()];
 		while (index < value.length) {
 			slice = value.subarray(index, Math.min(index + chunk, value.length));
@@ -1676,7 +1678,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					request.set('tags', request.has('tags') ? `WikiMirror|${request.get('tags')}` : 'WikiMirror');
 				}
 			};
-			if (config.body && /^\?(?:\[object%20FormData\]|null)$/.test(postObj.search)) {
+			if (config.body && /^\?(\[object%20FormData]|null)$/.test(postObj.search)) {
 				setTag(config.body);
 				config.body.delete('md5');
 				if (config.body.get('action') === 'visualeditoredit') {
@@ -1789,7 +1791,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			}
 		};
 		const domParse = (domStr = '', mimeType = 'text/html') => {
-			const doc = new DOMParser().parseFromString(domStr, mimeType.match(/^([a-z-+/]+?)(?:;|$)/)[1]);
+			const doc = new DOMParser().parseFromString(domStr, mimeType.match(/^([+/a-z-]+?)(?:;|$)/)[1]);
 			const dom = doc.documentElement;
 			dom.querySelector('parsererror')?.remove();
 			for (const el of dom.querySelectorAll('span[data-mw-variant]')) {
@@ -1897,7 +1899,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					if (dom) {
 						response.response = this.getRealText(dom.outerHTML);
 					}
-				} else if (/json|text/i.test(contentType) && !/css|html|(?:ecma|java)script/i.test(contentType)) {
+				} else if (/json|text/i.test(contentType) && !/css|html|(ecma|java)script/i.test(contentType)) {
 					response.response = this.getRealText(responseText);
 				}
 			} else if (
