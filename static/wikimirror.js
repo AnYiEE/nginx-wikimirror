@@ -52,6 +52,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 		},
 		regexps: {
 			noDarkmode: /developer|techblog/,
+			xtools_api: /xtools\.(wmcloud|wmflabs)\.org\/api\//i,
 		},
 	};
 	const privateMethod = new WikiMirrorPrivateMethod(config);
@@ -97,11 +98,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 		},
 		onResponse: (response, handler) => {
 			const contentType = response.headers['content-type'] ?? response.headers['Content-Type'];
-			if (
-				contentType &&
-				/json|text|xml/i.test(contentType) &&
-				!/css|(ecma|java)script/i.test(contentType)
-			) {
+			if (contentType && /json|text|xml/i.test(contentType) && !/css|(ecma|java)script/i.test(contentType)) {
 				response = privateMethod.ahCallback_Response(response);
 			}
 			handler.next(response);
@@ -316,9 +313,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 				if (domHref.match(RegexUrlRoot)) {
 					dom.href = this.getRealText(domHref);
 				}
-				const XTOOLS_API = 'xtools.wmflabs.org/api/';
-				if (domHref.includes(XTOOLS_API)) {
-					dom.href = domHref.replace(XTOOLS_API, `xtools-api.${this.MIRROR_DOMAIN}/`);
+				if (this.regexps.xtools_api.test(domHref)) {
+					dom.href = domHref.replace(this.regexps.xtools_api, `xtools-api.${this.MIRROR_DOMAIN}/`);
 				}
 			}
 			for (const dom of [
@@ -365,7 +361,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		} else {
 			value = value
 				.replace(new RegExp(`phab\\.${this.MIRROR_DOMAIN}`, 'gi'), 'phab.wmfusercontent.org')
-				.replace(new RegExp(`xtools-api\\.${this.MIRROR_DOMAIN}\\/`, 'gi'), 'xtools.wmflabs.org/api/')
+				.replace(new RegExp(`xtools-api\\.${this.MIRROR_DOMAIN}\\/`, 'gi'), 'xtools.wmcloud.org/api/')
 				.replace(new RegExp(`wma\\.${this.MIRROR_DOMAIN_REGEX}`, 'gi'), 'wma.wmcloud.org')
 				.replace(new RegExp(`recommend\\.${this.MIRROR_DOMAIN_REGEX}`, 'gi'), 'recommend.wmflabs.org')
 				.replace(RegexUrlLatex, 'wikimedia.org/api/rest_v1/media/math/render/$1')
@@ -1753,8 +1749,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					getObj.host = `wma.${this.MIRROR_DOMAIN}`;
 				}
 				const urlWithPath = `${getObj.host}${getObj.pathname}`;
-				const XTOOLS_API = 'xtools.wmflabs.org/api/';
-				if (urlWithPath.includes(XTOOLS_API)) {
+				if (this.regexps.xtools_api.test(urlWithPath)) {
 					const path = this.getRealText(getObj.pathname);
 					getObj.host = `xtools-api.${this.MIRROR_DOMAIN}`;
 					getObj.pathname = path.replace('/api/', '/');

@@ -561,7 +561,7 @@ server {
         }
         error_page              404 = @errors;
         include                 /path/to/wikimirror/conf/wiki.conf;
-        proxy_pass              https://xtools.wmflabs.org/api/;
+        proxy_pass              https://xtools.wmcloud.org/api/;
         proxy_hide_header       access-control-allow-headers;
         proxy_hide_header       access-control-allow-methods;
         proxy_hide_header       access-control-allow-origin;
@@ -569,8 +569,8 @@ server {
         proxy_hide_header       x-clacks-overhead;
         proxy_intercept_errors  on;
         proxy_set_header        Accept-Encoding "";
-        proxy_set_header        Host xtools.wmflabs.org;
-        proxy_set_header        Referer https://xtools.wmflabs.org$request_uri;
+        proxy_set_header        Host xtools.wmcloud.org;
+        proxy_set_header        Referer https://xtools.wmcloud.org$request_uri;
     }
     location @errors {
         return 204;
