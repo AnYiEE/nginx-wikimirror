@@ -31,6 +31,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 			body: {
 				displayAnonHide: {
 					enable: true,
+					param: false,
 				},
 			},
 			dom: {},
@@ -56,8 +57,7 @@ const WikiMirrorStartup = async function WikiMirrorStartup() {
 		},
 	};
 	const privateMethod = new WikiMirrorPrivateMethod(config);
-	const {isMediaWiki, status} = await privateMethod.init();
-	console.log('WikiMirror modules status:', status);
+	const isMediaWiki = await privateMethod.init();
 	if (!isMediaWiki) {
 		return;
 	}
@@ -338,7 +338,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		if (['wiki', 'wikiless'].includes(method ?? '')) {
 			wTex();
 			if (method === 'wiki' && wBox) {
-				if (wikEd?.useWikEd) {
+				if (window.wikEd?.useWikEd) {
 					wikEd.UpdateTextarea();
 				}
 				typeof jQuery === 'function' ? (value = jQuery('#wpTextbox1').val()) : (value = wBox.value);
@@ -372,7 +372,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		}
 		if (method === 'wiki' && wBox) {
 			typeof jQuery === 'function' ? jQuery('#wpTextbox1').val(value) : (wBox.value = value);
-			if (wikEd?.useWikEd) {
+			if (window.wikEd?.useWikEd) {
 				wikEd.UpdateFrame();
 			}
 		}
@@ -380,12 +380,10 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		return value;
 	}
 	async init() {
-		const status = {};
 		const moduleLoader = (modules) => {
 			for (const [moduleName, {enable, param}] of Object.entries(modules)) {
 				if (enable) {
 					this[moduleName](param);
-					status[moduleName] = true;
 				}
 			}
 		};
@@ -520,7 +518,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 					console.log('WikiMirror dependencies load failed.');
 				});
 		}
-		return {isMediaWiki, status};
+		return isMediaWiki;
 	}
 	async collapsibleSidebar() {
 		if (
@@ -1266,8 +1264,8 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 			}
 		});
 	}
-	displayAnonHide() {
-		const isLogin = this.getConf('wgUserName');
+	displayAnonHide(isTrusted) {
+		const isLogin = isTrusted || this.getConf('wgUserName');
 		if (isLogin) {
 			this.setCss('wikimirror-css-anon-hide', 'remove');
 		} else {
