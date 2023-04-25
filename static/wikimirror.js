@@ -391,7 +391,7 @@ const WikiMirrorPrivateMethod = class WikiMirrorPrivateMethod {
 		if (!this.regexps.noDarkmode.test(location.host) && this.darkMode('check')) {
 			document.documentElement.style.filter = 'invert(.95) hue-rotate(.5turn)';
 		}
-		this.setCss('/wikimirror.css?date=20230330', 'url')
+		this.setCss('/wikimirror.css?date=20230425', 'url')
 			.then(() => {
 				console.log('WikiMirror basic stylesheet load succeeded.');
 			})

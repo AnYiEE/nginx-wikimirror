@@ -6,8 +6,8 @@
  *
  * This source code is licensed under the GPL v3 license.
  */
-.WikiMirrorNotice {
-	background: #ffffff;
+ .WikiMirrorNotice {
+	background: #fff;
 	border: 0.1rem solid #0645ad;
 	cursor: default;
 	direction: ltr;
@@ -21,7 +21,7 @@
 
 .skin-minerva .WikiMirrorNotice {
 	background: transparent;
-	border: 0.1rem solid #ffffff;
+	border: 0.1rem solid #fff;
 	color: inherit;
 }
 
@@ -40,11 +40,11 @@
 }
 
 .skin-minerva .WikiMirrorNotice > *:first-child {
-	border-right: 0.1em dotted #ffffff;
+	border-right: 0.1em dotted #fff;
 }
 
 .WikiMirrorNotice button {
-	background: #ffffff;
+	background: #fff;
 	border: none;
 	color: inherit;
 	cursor: pointer;
@@ -69,7 +69,7 @@
 .skin-minerva .WikiMirrorNotice button:active,
 .skin-minerva .WikiMirrorNotice button:focus,
 .skin-minerva .WikiMirrorNotice button:hover {
-	background: rgba(255, 255, 255, 0.2);
+	background: rgb(255 255 255 / 20%);
 }
 
 .skin-minerva .WikiMirrorTip {
@@ -102,7 +102,7 @@
 	z-index: 5;
 }
 
-.skin-minerva #footer-places-cookiestatement:after {
+.skin-minerva #footer-places-cookiestatement::after {
 	display: none;
 }
 
@@ -128,10 +128,10 @@
 	background: #f8f9fa;
 	border: solid #eaecf0;
 	border-width: 1px 1px 0.2em;
-	box-shadow: 0 1px 2px 1px rgba(0, 0, 0, 0.02);
+	box-shadow: 0 1px 2px 1px rgb(0 0 0 / 2%);
 	display: inherit;
 	font-size: 0.95em;
-	margin: 1em 0 0 0;
+	margin: 1em 0 0;
 	padding: 1em 2em;
 }
 
@@ -166,12 +166,12 @@ sup.reference {
 	backdrop-filter: blur(5px);
 }
 
-.skin-minerva #wikimirror-darkmode a:before {
-	background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20fill%3D%22%2354595d%22%20d%3D%22M5%201a2%202%200%200%200-2%202v14a2%202%200%200%200%202%202h10a2%202%200%200%200%202-2V3a2%202%200%200%200-2-2zm0%203h5v1H5zm0%202h5v1H5zm0%202h5v1H5zm10%207H5v-1h10zm0-2H5v-1h10zm0-2H5v-1h10zm0-2h-4V4h4z%22%2F%3E%3C%2Fsvg%3E);
+.skin-minerva #wikimirror-darkmode a::before {
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20fill%3D%22%2354595d%22%20d%3D%22M5%201a2%202%200%200%200-2%202v14a2%202%200%200%200%202%202h10a2%202%200%200%200%202-2V3a2%202%200%200%200-2-2zm0%203h5v1H5zm0%202h5v1H5zm0%202h5v1H5zm10%207H5v-1h10zm0-2H5v-1h10zm0-2H5v-1h10zm0-2h-4V4h4z%22%2F%3E%3C%2Fsvg%3E");
 }
 
-.mw-ui-icon-portletlink-wikimirror-difflink:before {
-	background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cg%20fill%3D%22%2354595d%22%3E%3Cpath%20d%3D%22M4.83%2015h2.91a4.88%204.88%200%2001-1.55-2H5a3%203%200%20110-6h3a3%203%200%20012.82%204h2.1a4.82%204.82%200%2000.08-.83v-.34A4.83%204.83%200%20008.17%205H4.83A4.83%204.83%200%20000%209.83v.34A4.83%204.83%200%20004.83%2015z%22%2F%3E%3Cpath%20d%3D%22M15.17%205h-2.91a4.88%204.88%200%20011.55%202H15a3%203%200%20110%206h-3a3%203%200%2001-2.82-4h-2.1a4.82%204.82%200%2000-.08.83v.34A4.83%204.83%200%200011.83%2015h3.34A4.83%204.83%200%200020%2010.17v-.34A4.83%204.83%200%200015.17%205z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E);
+.mw-ui-icon-portletlink-wikimirror-difflink::before {
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cg%20fill%3D%22%2354595d%22%3E%3Cpath%20d%3D%22M4.83%2015h2.91a4.88%204.88%200%2001-1.55-2H5a3%203%200%20110-6h3a3%203%200%20012.82%204h2.1a4.82%204.82%200%2000.08-.83v-.34A4.83%204.83%200%20008.17%205H4.83A4.83%204.83%200%20000%209.83v.34A4.83%204.83%200%20004.83%2015z%22%2F%3E%3Cpath%20d%3D%22M15.17%205h-2.91a4.88%204.88%200%20011.55%202H15a3%203%200%20110%206h-3a3%203%200%2001-2.82-4h-2.1a4.82%204.82%200%2000-.08.83v.34A4.83%204.83%200%200011.83%2015h3.34A4.83%204.83%200%200020%2010.17v-.34A4.83%204.83%200%200015.17%205z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 }
 
 #frbanner,
@@ -230,7 +230,7 @@ pre,
 		filter: blur(3px) invert(0.95) hue-rotate(0.5turn) !important;
 	}
 	.wikimirror-darkmode img,
-	.wikimirror-darkmode .mw-ui-icon:before,
+	.wikimirror-darkmode .mw-ui-icon::before,
 	.wikimirror-darkmode .mw-wiki-logo,
 	.wikimirror-darkmode #mp-2012-banner,
 	.wikimirror-darkmode #mp-2012-banner-logo {
@@ -311,7 +311,7 @@ pre,
 		background: #e88e89;
 	}
 	.wikimirror-darkmode .mw-kartographer-mapDialog-map {
-		background-color: #000000;
+		background-color: #000;
 	}
 	.wikimirror-darkmode .mwe-popups {
 		border: 10px solid #c8ccd1;
@@ -321,13 +321,13 @@ pre,
 	.wikimirror-darkmode #mw-footer-container a,
 	.wikimirror-darkmode .skin-modern .mw-editsection *,
 	.wikimirror-darkmode .skin-modern .Wikiplus-Edit-SectionBtn {
-		color: #3366cc;
+		color: #36c;
 	}
 	.wikimirror-darkmode .locmap .pr {
-		color: #ffffff;
+		color: #fff;
 	}
 	.wikimirror-darkmode .skin-minerva .main-menu-mask {
-		background: rgba(0, 0, 0, 0.2);
+		background: rgb(0 0 0 / 20%);
 	}
 	.wikimirror-darkmode .skin-timeless h1.firstHeading,
 	.wikimirror-darkmode .skin-timeless .mw-footer-container,
@@ -367,7 +367,7 @@ pre,
 	.wikimirror-darkmode .mw-mmv-image .error-box,
 	.wikimirror-darkmode .skin-timeless .mw-footer-container,
 	.wikimirror-darkmode .in-page-edit .CodeMirror {
-		color: #000000 !important;
+		color: #000 !important;
 	}
 	/* cxserver */
 	.wikimirror-darkmode .swagger-ui .topbar {
@@ -379,7 +379,7 @@ pre,
 	}
 	/* gitlab */
 	.wikimirror-darkmode body.ui-gray .navbar-gitlab {
-		background-color: #ffffff;
+		background-color: #fff;
 	}
 	/* phabricator */
 	.wikimirror-darkmode .phui-comment-image,
@@ -392,7 +392,7 @@ pre,
 		filter: invert(0.95) hue-rotate(0.5turn);
 	}
 	.wikimirror-darkmode .phui-theme-blue .phabricator-main-menu-background {
-		background: #ffffff;
+		background: #fff;
 	}
 	/* project portal */
 	.wikimirror-darkmode body[id*='www'] [data-el-section='other projects'] .app-badges .sprite,
@@ -400,25 +400,25 @@ pre,
 		filter: invert(0.95) hue-rotate(0.5turn);
 	}
 	.wikimirror-darkmode body[id*='www'] [data-jsl10n='portal.slogan'] {
-		color: #000000;
+		color: #000;
 	}
 	/* stream */
 	.wikimirror-darkmode #eventstreams-ui-app .nav-bar {
-		background-color: #ffffff;
+		background-color: #fff;
 	}
 	.wikimirror-darkmode #eventstreams-ui-app .nav-bar a {
-		color: #000000 !important;
+		color: #000 !important;
 	}
 }
 
-@media only screen and (max-width: 550px) {
+@media only screen and (width <= 550px) {
 	.skin-monobook #echo-hack-badges,
 	.skin-monobook #globalWrapper-toggle {
 		display: none;
 	}
 }
 
-@media only screen and (max-width: 850px) {
+@media only screen and (width <= 850px) {
 	.skin-timeless .diff {
 		width: 100% !important;
 	}
@@ -431,10 +431,16 @@ pre,
 	}
 }
 
-@media only screen and (min-width: 1340px) {
+@media only screen and (width >= 1340px) {
 	.skin-timeless #site-tools {
 		position: -webkit-sticky;
 		position: sticky;
 		top: 4.475em;
+	}
+}
+
+@media print {
+	.noprint {
+		display: none !important;
 	}
 }
