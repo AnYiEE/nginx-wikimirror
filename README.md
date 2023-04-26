@@ -81,12 +81,13 @@
 
 * 支持的浏览器有哪些？<br>Supported Browsers
 
-    - Chrome 85+
+    - Chrome 45+
+    - Edge 17+
     - Edge 85+ (Chromium Version)
-    - Firefox 79+
-    - Safari 14+
+    - Firefox 69+
+    - Safari 12+
 
-  目前支持在2020年下半年后发行的浏览器<br>Currently supported browsers are those released in the second half of 2020 or later
+  目前支持在2019年下半年后发行的浏览器<br>Currently supported browsers are those released in the second half of 2019 or later
 
 **提示 | Tips**
 
