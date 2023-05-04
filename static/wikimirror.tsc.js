@@ -956,6 +956,7 @@
 				}
 				await mw.loader.using('mediawiki.api');
 				try {
+					this.showNotice(`<span>${mw.message('logging-out-notify')}</span>`);
 					await new mw.Api().postWithEditToken({action: 'logout'});
 					location.reload();
 				} catch {
