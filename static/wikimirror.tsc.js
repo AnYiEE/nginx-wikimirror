@@ -541,8 +541,11 @@
 								editor.setValue(this.getRealText(editor.getValue()));
 							});
 						});
-						mw.hook('wikipage.content').add((item) => {
-							if (!item?.[0] || !['mw-content-text', 'mw-watchlist-options'].includes(item?.[0].id)) {
+						mw.hook('wikipage.content').add(($content) => {
+							if (
+								!$content?.[0] ||
+								!['mw-content-text', 'mw-watchlist-options'].includes($content?.[0].id)
+							) {
 								return;
 							}
 							if (WikiMirror.getRealText.initCount > 0) {
@@ -1195,20 +1198,20 @@
 			) {
 				return;
 			}
-			let pos = 'p-cactions';
+			let portletId = 'p-cactions';
 			if (this.hasClass('mw-special-MobileDiff')) {
-				pos = 'mw-mf-diffarea';
+				portletId = 'mw-mf-diffarea';
 			} else if (this.hasClass('skin-nostalgia')) {
-				pos = 'mw-content-text';
+				portletId = 'mw-content-text';
 			} else if (this.hasClass('skin-minerva')) {
-				pos = 'p-tb';
+				portletId = 'p-tb';
 			}
-			const doIns = async ({dec, tex, link, perma}) => {
+			const doIns = async ({text, tooltip, link, isPermaLink}) => {
 				let element = document.querySelector(`#${ID}`);
 				if (element === null) {
 					await mw.loader.using('mediawiki.util');
-					element = mw.util.addPortletLink(pos, '#', tex, ID, dec);
-					if (pos === 'mw-mf-diffarea') {
+					element = mw.util.addPortletLink(portletId, '#', text, ID, tooltip);
+					if (portletId === 'mw-mf-diffarea') {
 						this.setCss(
 							`#${ID}{float:right}#${ID}>a>span:first-child{vertical-align:text-bottom}`,
 							'css',
@@ -1216,7 +1219,7 @@
 						);
 					}
 				}
-				if (pos === 'mw-mf-diffarea' || this.hasClass('skin-minerva')) {
+				if (portletId === 'mw-mf-diffarea' || this.hasClass('skin-minerva')) {
 					element = element.firstElementChild;
 				}
 				element.onclick = async (event) => {
@@ -1225,7 +1228,7 @@
 					const $element = jQuery('<div>');
 					for (const value of [
 						link,
-						`[[${link}${perma ? this.decodeURIComponent(this.getLocate('originHash')) : ''}]]`,
+						`[[${link}${isPermaLink ? this.decodeURIComponent(this.getLocate('originHash')) : ''}]]`,
 					]) {
 						$element.append(new mw.widgets.CopyTextLayout({align: 'top', copyText: value}).$element);
 					}
@@ -1242,8 +1245,8 @@
 					}
 					link += diffId;
 					doIns({
-						dec: t('Copy the link to the diff version (wiki syntax)'),
-						tex: t('Diff link'),
+						text: t('Diff link'),
+						tooltip: t('Copy the link to the diff version (wiki syntax)'),
 						link,
 					});
 				};
@@ -1272,10 +1275,10 @@
 				].includes(1)
 			) {
 				doIns({
-					dec: t('Copy the permanent link to the current version (wiki syntax)'),
-					tex: t('Permanent link'),
+					text: t('Permanent link'),
+					tooltip: t('Copy the permanent link to the current version (wiki syntax)'),
 					link: `Special:PermaLink/${revisionId}`,
-					perma: true,
+					isPermaLink: true,
 				});
 			}
 		}
@@ -1283,9 +1286,9 @@
 			if (this.getConf('wgUserName')) {
 				return;
 			}
-			mw.hook('wikipage.editform').add(($element) => {
-				$element.find('#wpSummary').prop('readonly', true);
-				$element.find('#wpTextbox1').prop('readonly', true);
+			mw.hook('wikipage.editform').add(($editForm) => {
+				$editForm.find('#wpSummary').prop('readonly', true);
+				$editForm.find('#wpTextbox1').prop('readonly', true);
 			});
 			mw.hook('mobileFrontend.editorOpened').add(() => {
 				jQuery('#wikitext-editor').prop('readonly', true);
