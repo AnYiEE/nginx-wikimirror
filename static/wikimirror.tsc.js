@@ -1514,7 +1514,7 @@
 					FallbackTableList = FallbackTable[locale];
 				}
 				for (const key of FallbackTableList ?? DefaultFallback) {
-					if (this.isValidKey(key, candidates) && candidates[key] !== undefined) {
+					if (this.isValidKey(key, candidates)) {
 						return candidates[key];
 					}
 				}
