@@ -149,9 +149,9 @@
 					referrer,
 					referrerPolicy,
 				};
-				const _url = privateMethod.ahCallback_Request({
+				const {url: _url} = privateMethod.ahCallback_Request({
 					url: url.url,
-				}).url;
+				});
 				let _body;
 				if (/post/i.test(_options.method)) {
 					const contentType =
@@ -183,7 +183,7 @@
 				options = _options;
 				url = _url;
 			}
-			const host = new URL(url, location.origin).host;
+			const {host} = new URL(url, location.origin);
 			if (host.includes(config.domain)) {
 				const headers = new Headers(options.headers);
 				const originApiUserAgent = headers.get('api-user-agent') ?? headers.get('Api-User-Agent');
@@ -351,7 +351,7 @@
 					...document.querySelectorAll('a[href*="//pageviews."]'),
 					...document.querySelectorAll('a[href*="//xtools."]'),
 				]) {
-					const href = element.href;
+					const {href} = element;
 					if (href.match(RegexUrlRoot)) {
 						element.href = this.getRealText(href);
 					}
@@ -363,14 +363,14 @@
 					...document.querySelectorAll('input[name="clientUrl"]'),
 					...document.querySelectorAll('input[name="intendedWikitext"]'),
 				]) {
-					const value = element.value;
+					const {value} = element;
 					if (value.match(RegexUrlRoot)) {
 						element.value = this.getRealText(value);
 					}
 				}
 				const cafileExporterA = document.querySelector('#ca-fileExporter a');
 				if (cafileExporterA) {
-					const href = cafileExporterA.href;
+					const {href} = cafileExporterA;
 					const url = href.match(/clientUrl=(\S+?)&/)?.[1];
 					if (url) {
 						cafileExporterA.href = href.replace(url, this.getRealText(url));
@@ -1208,7 +1208,7 @@
 			}
 			const doIns = async ({text, tooltip, link, isPermaLink}) => {
 				let element = document.querySelector(`#${ID}`);
-				if (element === null) {
+				if (!element) {
 					await mw.loader.using('mediawiki.util');
 					element = mw.util.addPortletLink(portletId, '#', text, ID, tooltip);
 					if (portletId === 'mw-mf-diffarea') {
@@ -1743,8 +1743,8 @@
 					const getDeflateRaw = (deflateRawValue) => {
 						return this.deflateRaw(this.getRealText(this.inflateRaw(deflateRawValue)));
 					};
-					const getParams = getURL.searchParams;
-					const postParams = postURL.searchParams;
+					const {searchParams: getParams} = getURL;
+					const {searchParams: postParams} = postURL;
 					setTag(postParams);
 					postParams.delete('md5');
 					for (const text of textArray) {
@@ -1837,7 +1837,7 @@
 			};
 			const parseHtmlString = (htmlString = '', mimeType = 'text/html') => {
 				const doc = new DOMParser().parseFromString(htmlString, mimeType.match(/^([+/a-z-]+?)(?:;|$)/)[1]);
-				const element = doc.documentElement;
+				const {documentElement: element} = doc;
 				element.querySelector('parsererror')?.remove();
 				for (const _element of element.querySelectorAll('span[data-mw-variant]')) {
 					const mwVariantObject = JSON.parse(_element.dataset['mwVariant']);
@@ -1873,14 +1873,14 @@
 			try {
 				const responseObject = JSON.parse(response.response);
 				if (responseObject.discussiontoolspreview?.parse?.text) {
-					const element = parseHtmlString(responseObject.discussiontoolspreview.parse.text).element;
+					const {element} = parseHtmlString(responseObject.discussiontoolspreview.parse.text);
 					responseObject.discussiontoolspreview.parse.text = this.getRealText(
 						element.querySelector('.mw-parser-output').outerHTML
 					);
 				}
 				if (responseObject.visualeditor || responseObject.visualeditoredit) {
 					const mode = responseObject.visualeditor ? 'visualeditor' : 'visualeditoredit';
-					const content = responseObject[mode].content;
+					const {content} = responseObject[mode];
 					if (content) {
 						if (responseObject[mode].etag) {
 							const elementObject = parseHtmlString(content);
@@ -1888,7 +1888,7 @@
 								elementObject.element.outerHTML
 							)}`;
 						} else if (/^<\S+?\sid=\S+?>/.test(content)) {
-							const element = parseHtmlString(content).element;
+							const {element} = parseHtmlString(content);
 							responseObject[mode].content = this.getRealText(element.querySelector('body').innerHTML);
 						} else {
 							responseObject[mode].content = this.getRealText(content);
@@ -1906,7 +1906,7 @@
 					);
 				}
 				if (responseObject.html) {
-					const element = parseHtmlString(responseObject.html).element;
+					const {element} = parseHtmlString(responseObject.html);
 					responseObject.html = this.getRealText(element.querySelector('div').outerHTML);
 				}
 				if (
@@ -1917,7 +1917,7 @@
 					recursiveObject(responseObject.parse, (object, key, preKey) => {
 						if (this.isValidKey(key, object)) {
 							if (['parsedsummary', 'text'].includes(preKey)) {
-								const element = parseHtmlString(object[key]).element;
+								const {element} = parseHtmlString(object[key]);
 								object[key] = this.getRealText(element.querySelector('.mw-parser-output').outerHTML);
 							} else if (preKey === 'wikitext') {
 								object[key] = this.getRealText(object[key]);
@@ -1926,7 +1926,7 @@
 					});
 				}
 				if (responseObject.segmentedContent) {
-					const element = parseHtmlString(responseObject.segmentedContent).element;
+					const {element} = parseHtmlString(responseObject.segmentedContent);
 					responseObject.segmentedContent = this.getRealText(element.outerHTML);
 				}
 				if (responseObject[0]?.url) {
@@ -1935,8 +1935,8 @@
 				response.response = JSON.stringify(responseObject);
 			} catch {
 				const responseHeaders = response.originResponse?.headers ?? response.headers ?? {};
-				const responseText = response.response;
-				const responseUrl = response.config.url;
+				const {response: responseText} = response;
+				const {url: responseUrl} = response.config;
 				const contentType =
 					(typeof responseHeaders.get === 'function'
 						? responseHeaders.get('content-type') ?? responseHeaders.get('Content-Type')
@@ -1952,7 +1952,7 @@
 					response.response = `${elementObject.dec}${elementObject.dtd}${elementObject.element.outerHTML}`;
 				} else if (responseUrl.includes('/w/index.php')) {
 					if (responseUrl.includes('action=render')) {
-						const element = parseHtmlString(responseText).element;
+						const {element} = parseHtmlString(responseText);
 						const _element = element.querySelector('.mw-parser-output');
 						if (_element) {
 							response.response = this.getRealText(_element.outerHTML);
@@ -1997,7 +1997,7 @@
 			}
 		}
 		initMessages() {
-			const localize = this.i18n().localize;
+			const {localize} = this.i18n();
 			return {
 				ajaxLogin: {
 					'6-digit number': localize({
