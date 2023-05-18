@@ -483,7 +483,12 @@
 									continue;
 								}
 								for (const element of node.querySelectorAll('.ext-related-articles-card-list h3 a')) {
-									element.innerHTML = this.getRealText(element.innerHTML, 'emoji');
+									const innerHTML = element.innerHTML;
+									element.innerHTML = this.getRealText(innerHTML, 'emoji');
+								}
+								for (const element of node.querySelectorAll('.mm-submenu a')) {
+									const urlObject = new URL(element.href, location.origin);
+									element.href = `${urlObject.origin}${this.getRealText(urlObject.pathname)}${urlObject.search}`;
 								}
 							}
 						}
