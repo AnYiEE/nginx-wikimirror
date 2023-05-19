@@ -29,6 +29,9 @@
 					showRedirect: {
 						enable: true,
 					},
+					viewOnOtherWikis: {
+						enable: true,
+					},
 				},
 				body: {
 					displayAnonHide: {
@@ -488,7 +491,9 @@
 								}
 								for (const element of node.querySelectorAll('.mm-submenu a')) {
 									const urlObject = new URL(element.href, location.origin);
-									element.href = `${urlObject.origin}${this.getRealText(urlObject.pathname)}${urlObject.search}`;
+									element.href = `${urlObject.origin}${this.getRealText(urlObject.pathname)}${
+										urlObject.search
+									}`;
 								}
 							}
 						}
@@ -1315,13 +1320,13 @@
 				}
 			}
 		}
-		showNotice(value, {autoHide = false, tag} = {}) {
-			const t = (key) => this.messages.showNotice[key] || '';
+		showNotice(value, {autoHide = false, forceNotify = false, tag} = {}) {
+			const t = (key) => this.messages.showNotice[key] || key;
 			const ComHead = '<div class="WikiMirrorNotice">';
 			const ComFoot = '</div>';
 			const OK = `<button>${t('OK')}</button>`;
 			const notify = () => {
-				if (typeof bldkDingExposedInterface === 'function') {
+				if (typeof bldkDingExposedInterface === 'function' && !forceNotify) {
 					bldkDingExposedInterface(value, 'default', autoHide ? undefined : 'long');
 				} else {
 					this.notify(jQuery(`${ComHead}${value}${OK}${ComFoot}`), {
@@ -1382,6 +1387,106 @@
 				document.querySelector('#footer-places')
 			) {
 				document.querySelector('#footer-places').insertAdjacentHTML('beforeend', Redirect);
+			}
+		}
+		async viewOnOtherWikis() {
+			if (
+				this.getConf('wgIsRedirect') ||
+				this.getConf('wgAction') !== 'view' ||
+				this.getConf('wgCanonicalNamespace') !== '' ||
+				this.getConf('wgDBname') !== 'zhwiki'
+			) {
+				return;
+			}
+			const hosts = {Moegirl: 'https://zh.moegirl.org.cn', Qiuwen: 'https://www.qiuwenbaike.cn'};
+			const t = (key) => this.messages.viewOnOtherWikis[key] || key;
+			const wgTitle = this.getConf('wgTitle');
+			const notice = ({site, title, path}) => {
+				const headerElement = document.querySelector('.mw-first-heading')?.firstChild;
+				const pageTitle = headerElement?.textContent ?? wgTitle;
+				const message = t(site)
+					.replace('$1', pageTitle)
+					.replace('$2', `${hosts[site]}${path}`)
+					.replace('$3', title);
+				this.showNotice(`<span>${message}</span>`, {
+					autoHide: true,
+					forceNotify: true,
+					tag: 'viewOnOtherWikis',
+				});
+			};
+			const pageStatusOld = this.localStorage('wikimirror-viewonotherwikis');
+			const pageStatus = pageStatusOld ? new Map(JSON.parse(pageStatusOld)) : new Map();
+			const pageInfo = pageStatus.get(wgTitle);
+			if (pageInfo) {
+				notice(pageInfo);
+				return;
+			}
+			let site = 'Qiuwen';
+			for (const element of document.querySelectorAll('.mw-parser-output p:nth-child(-n+10)')) {
+				if (
+					/[动動][画畫漫]|漫[画畫]|游[戏戲]|小[说説]|音[乐樂]|偶像|声优|聲優|歌手|配音|演[员員]|作品|[发發]行|出版/.test(
+						element.innerText
+					)
+				) {
+					site = 'Moegirl';
+					break;
+				}
+			}
+			await mw.loader.using('mediawiki.ForeignApi');
+			let apiError;
+			const queryApi = async (site) => {
+				const api = new mw.ForeignApi(`${hosts[site]}/api.php`, {anonymous: true});
+				const params = {
+					format: 'json',
+					formatversion: '2',
+					action: 'query',
+					prop: 'info',
+					titles: wgTitle,
+					inprop: 'url',
+					iwurl: 1,
+					redirects: 1,
+				};
+				try {
+					return await api.get(params);
+				} catch (error) {
+					apiError = error;
+					return {query: {pages: [{title: '', fullurl: '', missing: true}]}};
+				}
+			};
+			try {
+				const checkApiError = () => {
+					if (apiError) {
+						throw new ReferenceError();
+					}
+				};
+				const checkPageExists = (response) => {
+					if (response.query.pages[0].missing) {
+						return false;
+					}
+					return true;
+				};
+				let response = await queryApi(site);
+				checkApiError();
+				if (!checkPageExists(response)) {
+					if (site === 'Moegirl') {
+						response = await queryApi('Qiuwen');
+						checkApiError();
+					}
+					if (!checkPageExists(response)) {
+						return;
+					}
+				}
+				const {
+					query: {
+						pages: [{title, fullurl}],
+					},
+				} = response;
+				const path = fullurl.replace(hosts[site], '');
+				pageStatus.set(wgTitle, {site, title, path});
+				this.localStorage('wikimirror-viewonotherwikis', JSON.stringify([...pageStatus]));
+				notice({site, title, path});
+			} catch {
+				console.log('WikiMirror viewOnOtherWikis method error:', apiError);
 			}
 		}
 		///////////////////////////
@@ -2231,6 +2336,22 @@
 						ja: '現在のミラーページを公式の対応ページにリダイレクトします',
 						'zh-hans': '将当前镜像站页面重定向至官方相应页面',
 						'zh-hant': '將當前鏡像頁重新導向至官方相應頁',
+					}),
+				},
+				viewOnOtherWikis: {
+					Moegirl: localize({
+						en: 'Read the article "<a href="$2" target="_blank" title="$3">$1</a>" on <span style="color:#25b449">Moegirlpedia</span>®.',
+						ja: '「<a href="$2" target="_blank" title="$3">$1</a>」<br>は<span style="color:#25b449">萌えっ娘百科事典</span>®で読むことができます。',
+						'zh-hans':
+							'在<span style="color:#25b449">萌娘百科</span>®上阅读<br>“<a href="$2" target="_blank" title="$3">$1</a>”',
+						'zh-hant':
+							'在<span style="color:#25b449">萌娘百科</span>®上閱讀<br>「<a href="$2" target="_blank" title="$3">$1</a>」',
+					}),
+					Qiuwen: localize({
+						en: 'Read the article "<a href="$2" target="_blank" title="$3">$1</a>" on Qiuwen Baike®.',
+						ja: '「<a href="$2" target="_blank" title="$3">$1</a>」<br>は求聞百科®で読むことができます。',
+						'zh-hans': '在求闻百科®上阅读<br>“<a href="$2" target="_blank" title="$3">$1</a>”',
+						'zh-hant': '在求聞百科®上閱讀<br>「<a href="$2" target="_blank" title="$3">$1</a>」',
 					}),
 				},
 			};
