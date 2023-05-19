@@ -1423,9 +1423,13 @@
 			};
 			const pageStatusOld = this.localStorage('wikimirror-viewonotherwikis');
 			const pageStatus = pageStatusOld ? new Map(JSON.parse(pageStatusOld)) : new Map();
-			const pageInfo = pageStatus.get(wgTitle);
-			if (pageInfo) {
-				notice(pageInfo);
+			if (pageStatus.size >= 100) {
+				const pageStatusKeysIterator = pageStatus.keys();
+				pageStatus.delete(pageStatusKeysIterator.next().value);
+			}
+			const hasPageInfo = pageStatus.has(wgTitle);
+			if (hasPageInfo) {
+				notice(pageStatus.get(wgTitle));
 				return;
 			}
 			let site = 'Qiuwen';
@@ -1449,6 +1453,7 @@
 					action: 'query',
 					prop: 'info',
 					titles: wgTitle,
+					converttitles: 1,
 					inprop: 'url',
 					iwurl: 1,
 					redirects: 1,
@@ -1476,7 +1481,8 @@
 				checkApiError();
 				if (!checkPageExists(response)) {
 					if (site === 'Moegirl') {
-						response = await queryApi('Qiuwen');
+						site = 'Qiuwen';
+						response = await queryApi(site);
 						checkApiError();
 					}
 					if (!checkPageExists(response)) {
