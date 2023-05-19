@@ -970,7 +970,8 @@
 				await mw.loader.using('mediawiki.api');
 				try {
 					this.showNotice(`<span>${mw.message('logging-out-notify')}</span>`);
-					await new mw.Api().postWithEditToken({action: 'logout'});
+					const api = new mw.Api();
+					await api.postWithEditToken({action: 'logout'});
 					location.reload();
 				} catch {
 					this.showNetworkErrorNotice();
@@ -1263,13 +1264,19 @@
 				buildLink(oldId);
 				if (oldId) {
 					try {
-						const response = await fetch(
-							`/w/api.php?action=compare&format=json&fromrev=${diffId}&prop=ids&torelative=prev`
-						);
-						const data = await response.json();
+						const api = new mw.Api();
+						const params = {
+							action: 'compare',
+							format: 'json',
+							formatversion: '2',
+							prop: 'ids',
+							fromrev: diffId,
+							torelative: 'prev',
+						};
+						const response = await api.get(params);
 						if (
 							diffId === this.getConf('wgDiffNewId') &&
-							data.compare?.fromrevid === this.getConf('wgDiffOldId')
+							response['compare']?.fromrevid === this.getConf('wgDiffOldId')
 						) {
 							buildLink(false);
 						}
