@@ -144,8 +144,8 @@
 					body,
 					cache,
 					credentials,
-					integrity,
 					headers,
+					integrity,
 					method,
 					mode,
 					redirect,
@@ -1263,16 +1263,17 @@
 				};
 				buildLink(oldId);
 				if (oldId) {
+					await mw.loader.using('mediawiki.api');
+					const api = new mw.Api();
+					const params = {
+						action: 'compare',
+						format: 'json',
+						formatversion: '2',
+						prop: 'ids',
+						fromrev: diffId,
+						torelative: 'prev',
+					};
 					try {
-						const api = new mw.Api();
-						const params = {
-							action: 'compare',
-							format: 'json',
-							formatversion: '2',
-							prop: 'ids',
-							fromrev: diffId,
-							torelative: 'prev',
-						};
 						const response = await api.get(params);
 						if (
 							diffId === this.getConf('wgDiffNewId') &&
