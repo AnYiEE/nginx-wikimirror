@@ -642,7 +642,7 @@
 				element?.addEventListener('click', ajaxLogin);
 				if (username && password && password !== 'deleted' && !this.getConf('wgUserName')) {
 					const autoLogin = () => {
-						this.showNotice(`<span>${t('Starting automatic login')}</span>`, {
+						this.showNotice(t('Starting automatic login'), {
 							autoHide: true,
 							tag: 'login',
 						});
@@ -720,11 +720,11 @@
 				const api = new mw.Api();
 				try {
 					if (!loginContinue) {
-						this.showNotice(`<span>${t('Getting login token')}</span>`, {
+						this.showNotice(t('Getting login token'), {
 							tag: 'token',
 						});
 						loginToken = await api.getToken('login');
-						this.showNotice(`<span>${t('Login token getted')}</span>`, {
+						this.showNotice(t('Login token getted'), {
 							autoHide: true,
 							tag: 'token',
 						});
@@ -763,18 +763,16 @@
 							}
 						);
 						if (value === null) {
-							this.showNotice(`<span>${t('Login cancelled')}</span>`, {
+							this.showNotice(t('Login cancelled'), {
 								autoHide: true,
 								tag: 'login',
 							});
 							return;
 						} else if (value === '') {
 							this.showNotice(
-								`<span>${
-									retypePassword
-										? t('The password cannot be empty')
-										: t('The 2FA verification code cannot be empty')
-								}</span>`,
+								retypePassword
+									? t('The password cannot be empty')
+									: t('The 2FA verification code cannot be empty'),
 								{
 									autoHide: true,
 									tag: 'login',
@@ -794,13 +792,13 @@
 							params.OATHToken = value;
 						}
 					}
-					this.showNotice(`<span>${t('Logging in')}</span>`, {
+					this.showNotice(t('Logging in'), {
 						tag: 'login',
 					});
 					const response = await api.post(params);
 					if (response['clientlogin']?.status === 'PASS') {
 						const hour = params.rememberMe ? 8760 : 720;
-						this.showNotice(`<span>${t('Login succeed')}</span>`, {
+						this.showNotice(t('Login succeed'), {
 							tag: 'login',
 						});
 						this.setCookie({
@@ -831,38 +829,34 @@
 						}
 						switch (response['clientlogin'].messagecode) {
 							case 'authmanager-authn-autocreate-failed':
-								this.showNotice(`<span>${t('Automatic account creation failed')}</span>`);
+								this.showNotice(t('Automatic account creation failed'));
 								windowManager.clearWindows();
 								break;
 							case 'centralauth-login-error-locked':
-								this.showNotice(`<span>${t('The user has been globally locked')}</span>`);
+								this.showNotice(t('The user has been globally locked'));
 								windowManager.clearWindows();
 								break;
 							case 'login-throttled':
-								this.showNotice(
-									`<span>${t(
-										'The user login is too frequent, please try again in five minutes'
-									)}</span>`
-								);
+								this.showNotice(t('The user login is too frequent, please try again in five minutes'));
 								break;
 							case 'oathauth-auth-ui':
 								doLogin({loginContinue: true});
 								break;
 							case 'oathauth-login-failed':
-								this.showNotice(`<span>${t('Invalid 2FA verification code')}</span>`, {
+								this.showNotice(t('Invalid 2FA verification code'), {
 									autoHide: true,
 									tag: 'login',
 								});
 								doLogin({loginContinue: true});
 								break;
 							case 'resetpass-temp-emailed':
-								this.showNotice(`<span>${t('New password is required')}</span>`, {
+								this.showNotice(t('New password is required'), {
 									tag: 'login',
 								});
 								doLogin({retypePassword: true});
 								break;
 							case 'wrongpassword':
-								this.showNotice(`<span>${t('Invalid useruame or password')}</span>`, {
+								this.showNotice(t('Invalid useruame or password'), {
 									autoHide: true,
 									tag: 'login',
 								});
@@ -870,7 +864,7 @@
 								this.ajaxLogin();
 								break;
 							default:
-								this.showNotice(`<span>${t('Unknown API error')}</span>`);
+								this.showNotice(t('Unknown API error'));
 						}
 					}
 				} catch {
@@ -884,7 +878,7 @@
 			const checkValid = () => {
 				const isValid = ![nameInput.getValue(), pwdInput.getValue()].includes('');
 				if (!isValid) {
-					this.showNotice(`<span>${t('The username or password cannot be empty')}</span>`, {
+					this.showNotice(t('The username or password cannot be empty'), {
 						autoHide: true,
 						tag: 'login',
 					});
@@ -969,7 +963,7 @@
 				}
 				await mw.loader.using('mediawiki.api');
 				try {
-					this.showNotice(`<span>${mw.message('logging-out-notify')}</span>`);
+					this.showNotice(mw.message('logging-out-notify'));
 					const api = new mw.Api();
 					await api.postWithEditToken({action: 'logout'});
 					location.reload();
@@ -1335,9 +1329,9 @@
 			const OK = `<button>${t('OK')}</button>`;
 			const notify = () => {
 				if (typeof bldkDingExposedInterface === 'function' && !forceNotify) {
-					bldkDingExposedInterface(value, 'default', autoHide ? undefined : 'long');
+					bldkDingExposedInterface(`<span>${value}</span>`, 'default', autoHide ? undefined : 'long');
 				} else {
-					this.notify(jQuery(`${ComHead}${value}${OK}${ComFoot}`), {
+					this.notify(jQuery(`${ComHead}<span>${value}</span>${OK}${ComFoot}`), {
 						autoHide,
 						tag: tag ?? null,
 					});
@@ -1349,7 +1343,7 @@
 		}
 		showNetworkErrorNotice() {
 			const t = (key) => this.messages.showNetworkErrorNotice[key] || key;
-			this.showNotice(`<span>${t('Network error')}</span>`);
+			this.showNotice(t('Network error'));
 		}
 		showRedirect() {
 			const ID = 'wikimirror-redirect';
@@ -1416,7 +1410,7 @@
 					.replace('$1', pageTitle)
 					.replace('$2', `${hosts[site]}${path}`)
 					.replace('$3', title);
-				this.showNotice(`<span>${message}</span>`, {
+				this.showNotice(message, {
 					autoHide: true,
 					forceNotify: true,
 					tag: 'viewOnOtherWikis',
