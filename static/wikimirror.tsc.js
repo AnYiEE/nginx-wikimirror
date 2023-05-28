@@ -430,7 +430,7 @@
 		async init() {
 			const moduleLoader = (modules) => {
 				for (const [moduleName, {enable, param}] of Object.entries(modules)) {
-					if (this.isValidKey(moduleName, this) && enable) {
+					if (this.isValidKey(this, moduleName) && enable) {
 						this[moduleName](param);
 					}
 				}
@@ -1554,7 +1554,7 @@
 			if (typeof mw === 'object' && typeof mw.config?.get === 'function') {
 				return mw.config.get(key);
 			}
-			if (typeof RLCONF === 'object' && this.isValidKey(key, RLCONF)) {
+			if (typeof RLCONF === 'object') {
 				return RLCONF[key] ?? null;
 			}
 			return null;
@@ -1628,11 +1628,11 @@
 			};
 			const elect = (candidates, locale) => {
 				let FallbackTableList;
-				if (this.isValidKey(locale, FallbackTable)) {
+				if (this.isValidKey(FallbackTable, locale)) {
 					FallbackTableList = FallbackTable[locale];
 				}
 				for (const key of FallbackTableList ?? DefaultFallback) {
-					if (this.isValidKey(key, candidates)) {
+					if (this.isValidKey(candidates, key)) {
 						return candidates[key];
 					}
 				}
@@ -1650,7 +1650,7 @@
 				},
 			};
 		}
-		isValidKey(key, object) {
+		isValidKey(object, key) {
 			return key in object;
 		}
 		localStorage(name, value) {
@@ -1939,15 +1939,9 @@
 		}
 		ahCallback_Response(response) {
 			const recursiveObject = (object, callback, preKey) => {
-				for (const key in object) {
-					if (!Object.prototype.hasOwnProperty.call(object, key)) {
-						continue;
-					}
-					if (!this.isValidKey(key, object)) {
-						continue;
-					}
-					if (typeof object[key] === 'object') {
-						recursiveObject(object[key], callback, key);
+				for (const [key, value] of Object.entries(object)) {
+					if (typeof value === 'object') {
+						recursiveObject(value, callback, key);
 					} else {
 						callback(object, key, preKey);
 					}
@@ -1960,25 +1954,21 @@
 				for (const _element of element.querySelectorAll('span[data-mw-variant]')) {
 					const mwVariantObject = JSON.parse(_element.dataset['mwVariant']);
 					recursiveObject(mwVariantObject, (object, key) => {
-						if (this.isValidKey(key, object)) {
-							const value = key === 't' ? object[key] : '';
-							if (value && /^<(\w+?)\s.+?>.*?<\/\1>$/.test(value)) {
-								object[key] = parseHtmlString(value).element.querySelector('body').innerHTML;
-							}
+						const value = key === 't' ? object[key] : '';
+						if (value && /^<(\w+?)\s.+?>.*?<\/\1>$/.test(value)) {
+							object[key] = parseHtmlString(value).element.querySelector('body').innerHTML;
 						}
 					});
 					_element.dataset['mwVariant'] = JSON.stringify(mwVariantObject);
 				}
-				for (const _element of element.querySelectorAll('audio,base,img,source,video')) {
+				for (const _element of element.querySelectorAll('a,audio,base,img,source,video')) {
 					for (const attribute of ['href', 'poster', 'src', 'srcset']) {
-						if (this.isValidKey(attribute, _element)) {
-							const value = _element[attribute];
-							if (value) {
-								_element[attribute] = value.replace(
-									new RegExp(this.MIRROR_DOMAIN_REGEX, 'g'),
-									'r-e-p-l-a-c-e.org'
-								);
-							}
+						const value = _element[attribute];
+						if (value) {
+							_element[attribute] = value.replace(
+								new RegExp(this.MIRROR_DOMAIN_REGEX, 'g'),
+								'r-e-p-l-a-c-e.org'
+							);
 						}
 					}
 				}
@@ -2017,7 +2007,7 @@
 					recursiveObject(
 						responseObject.compare || responseObject.expandtemplates || responseObject.query?.pages,
 						(object, key) => {
-							if (this.isValidKey(key, object) && ['content', '*'].includes(key)) {
+							if (['content', '*'].includes(key)) {
 								object[key] = this.getRealText(object[key]);
 							}
 						}
@@ -2033,13 +2023,11 @@
 					responseObject.parse?.wikitext
 				) {
 					recursiveObject(responseObject.parse, (object, key, preKey) => {
-						if (this.isValidKey(key, object)) {
-							if (['parsedsummary', 'text'].includes(preKey)) {
-								const {element} = parseHtmlString(object[key]);
-								object[key] = this.getRealText(element.querySelector('.mw-parser-output').outerHTML);
-							} else if (preKey === 'wikitext') {
-								object[key] = this.getRealText(object[key]);
-							}
+						if (['parsedsummary', 'text'].includes(preKey)) {
+							const {element} = parseHtmlString(object[key]);
+							object[key] = this.getRealText(element.querySelector('.mw-parser-output').outerHTML);
+						} else if (preKey === 'wikitext') {
+							object[key] = this.getRealText(object[key]);
 						}
 					});
 				}
