@@ -26,6 +26,9 @@
 						enable: true,
 						param: 'normal',
 					},
+					floatTOC: {
+						enable: true,
+					},
 					showRedirect: {
 						enable: true,
 					},
@@ -1322,6 +1325,153 @@
 				}
 			}
 		}
+		async floatTOC() {
+			const id = 'floatTOC';
+			const t = (key) => this.messages.floatTOC[key] || key;
+			if (
+				this.hasClass('skin-minerva') ||
+				this.hasClass('skin-vector-2022') ||
+				this.getConf('wgAction') !== 'view' ||
+				!('IntersectionObserver' in window)
+			) {
+				return;
+			}
+			const originToc = document.querySelector('#toc');
+			if (!originToc) {
+				return;
+			}
+			await mw.loader.using([
+				'mediawiki.notification',
+				'mediawiki.storage',
+				'mediawiki.util',
+				'oojs-ui.styles.icons-editing-citation',
+				'oojs-ui.styles.icons-interactions',
+			]);
+			mw.util.addCSS(
+				'#floatTOC{padding:.5rem;cursor:auto}#floatTOC .toc{display:block;overflow:auto;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}#floatTOC .toctitle{line-height:1}#floatTOC ul{padding-right:1rem}#floatTOC #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#floatTOC #close:hover{text-decoration:underline}.skin-timeless #floatTOC #close{top:.1rem}#floatToc-opener{position:fixed;z-index:13;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgb(255 255 255 / 95%);box-shadow:0 0 2px 2px rgb(0 0 0 / 10%);cursor:pointer;font-size:.5rem}#floatToc-opener span{opacity:.6}#floatToc-opener span:first-child{position:relative;width:2.5em;height:2.5em}#floatToc-opener span:last-child{color:#000}.ve-activated #floatToc-opener{display:none}'
+			);
+			let state = mw.storage.get(id) ?? 'open';
+			const style = mw.util.addCSS(
+				'.mw-notification-area{right:unset;width:auto;max-width:20em}.mw-notification{-webkit-transform:translateX(-999px);-moz-transform:translateX(-999px);transform:translateX(-999px)}.mw-notification-visible{-webkit-transform:translateX(0);-moz-transform:translateX(0);transform:translateX(0)}'
+			);
+			style.disabled = true;
+			const toc = originToc.cloneNode(true);
+			toc.querySelector('input')?.remove();
+			toc.querySelector('.toctogglespan')?.remove();
+			const $toc = $(toc);
+			const $floatToc = $toc
+				.clone()
+				.removeAttr('id')
+				.prepend(
+					$('<span>')
+						.addClass('oo-ui-indicatorElement-indicator oo-ui-icon-close')
+						.attr({id: 'close', title: t('Close')})
+				);
+			const $floatTocOpener = $('<div>')
+				.attr({id: 'floatToc-opener', title: t('TOC')})
+				.append(
+					$('<span>').addClass('oo-ui-indicatorElement-indicator oo-ui-icon-reference'),
+					$('<span>').text(t('TOC'))
+				)
+				.hide()
+				.appendTo(document.body);
+			let isShow;
+			let preNotification;
+			let disableStyleTimer;
+			const disableStyle = () => {
+				if (disableStyleTimer) {
+					clearTimeout(disableStyleTimer);
+				}
+				disableStyleTimer = setTimeout(() => {
+					if (!isShow) {
+						style.disabled = true;
+					}
+				}, 5000);
+			};
+			const storeState = (_state) => {
+				state = _state;
+				mw.storage.setObject(id, _state);
+			};
+			const smoothScroll = (event) => {
+				const {target} = event;
+				const $target = $(target).parent();
+				const href = $target.attr('href');
+				if (!href) {
+					return;
+				}
+				const anchorOffset = $(href).offset();
+				if (!anchorOffset) {
+					return;
+				}
+				event.preventDefault();
+				$('html, body').animate(
+					{
+						scrollTop: this.hasClass('skin-timeless')
+							? `${anchorOffset.top - 60}px`
+							: `${anchorOffset.top}px`,
+					},
+					{
+						duration: 660,
+						easing: 'swing',
+					}
+				);
+			};
+			const closeNotification = (notification) => {
+				notification.close();
+				$floatTocOpener.fadeIn();
+				storeState('close');
+				disableStyle();
+			};
+			const tocToggle = (_isShow = true, _preNotification = undefined) => {
+				_preNotification?.close();
+				isShow = !!_isShow;
+				switch (_isShow) {
+					case true:
+						if (state === 'close') {
+							$floatTocOpener.fadeIn();
+							return;
+						}
+						break;
+					case 'open':
+						$floatTocOpener.fadeOut();
+						storeState('open');
+						break;
+					default:
+						$floatTocOpener.fadeOut();
+						disableStyle();
+						return;
+				}
+				style.disabled = false;
+				if (_preNotification) {
+					_preNotification.start();
+				} else {
+					_preNotification = mw.notification.notify($floatToc, {id, autoHide: false});
+					_preNotification.$notification.on('click', (event) => {
+						event.stopPropagation();
+						const {target} = event;
+						if (target.id === 'close') {
+							closeNotification(_preNotification);
+						} else {
+							smoothScroll(event);
+						}
+					});
+				}
+				return _preNotification;
+			};
+			const observer = new IntersectionObserver((entries) => {
+				const [entry] = entries;
+				if (!entry) {
+					return;
+				}
+				const {intersectionRatio} = entry;
+				preNotification = tocToggle(intersectionRatio === 0, preNotification);
+			});
+			observer.observe(originToc);
+			$(originToc).find('a').on('click', smoothScroll);
+			$floatTocOpener.on('click', () => {
+				preNotification = tocToggle('open');
+			});
+		}
 		showNotice(value, {autoHide = false, forceNotify = false, tag} = {}) {
 			const t = (key) => this.messages.showNotice[key] || key;
 			const ComHead = '<div class="WikiMirrorNotice">';
@@ -1674,7 +1824,7 @@
 		}
 		async notify(msg, opt) {
 			await mw.loader.using('mediawiki.notification');
-			mw.notification.notify(msg, opt);
+			return mw.notification.notify(msg, opt);
 		}
 		setCookie({name, value, hour = 0, domain = `.${this.MIRROR_DOMAIN}`, path = '/', isSecure = true}) {
 			if (!name || !value || !domain || !path) {
@@ -2309,6 +2459,17 @@
 						ja: 'この版への固定リンク',
 						'zh-hans': '当前修订链接',
 						'zh-hant': '當前修訂連結',
+					}),
+				},
+				floatTOC: {
+					Close: localize({
+						ja: '閉じる',
+						'zh-hans': '关闭',
+						'zh-hant': '關閉',
+					}),
+					TOC: localize({
+						ja: '目次',
+						zh: '目录',
 					}),
 				},
 				showNotice: {
