@@ -440,7 +440,7 @@
 			};
 			// stand alone functions
 			moduleLoader(this.modules.standard);
-			if (this.regexps.noDarkmode.test(location.host) === false && this.darkMode('check')) {
+			if (this.darkMode('check') && !this.regexps.noDarkmode.test(location.host)) {
 				document.documentElement.style.filter = 'invert(.95) hue-rotate(.5turn)';
 			}
 			this.setCss('/wikimirror.css?date=20230505', 'url')
@@ -629,20 +629,21 @@
 			const t = (key) => this.messages.ajaxLogin[key] || key;
 			const cookiePrefix = location.host.includes('wikitech') ? 'lastLoginWikitech' : 'lastLogin';
 			if (method === 'init') {
-				const element =
-					document.querySelector('#ca-cb-login') ||
-					document.querySelector('.menu__item--login') ||
-					document.querySelector('#topbar>a[href*="UserLogin"]') ||
-					document.querySelector('#pt-login-2') ||
-					document.querySelector('#pt-login') ||
-					document.querySelector('.vector-user-menu-login');
+				if (this.getConf('wgUserName')) {
+					return;
+				}
+				const elementList = document.querySelectorAll(
+					'#ca-cb-login,.menu__item--login,#topbar>a[href*="UserLogin"],#pt-login-2,.vector-user-menu-login,#pt-login'
+				);
 				const username = this.getCookie(`${cookiePrefix}UserName`);
 				const password = this.getCookie(`${cookiePrefix}Password`);
 				const ajaxLogin = (event) => {
 					event.preventDefault();
 					this.ajaxLogin();
 				};
-				element?.addEventListener('click', ajaxLogin);
+				for (const element of elementList) {
+					element.addEventListener('click', ajaxLogin);
+				}
 				if (username && password && password !== 'deleted' && !this.getConf('wgUserName')) {
 					const autoLogin = () => {
 						this.showNotice(t('Starting automatic login'), {
@@ -655,11 +656,13 @@
 						});
 					};
 					if (this.getCookie(`${cookiePrefix}Use2FA`) === '1') {
-						element?.removeEventListener('click', ajaxLogin);
-						element?.addEventListener('click', (event) => {
-							event.preventDefault();
-							autoLogin();
-						});
+						for (const element of elementList) {
+							element.removeEventListener('click', ajaxLogin);
+							element.addEventListener('click', (event) => {
+								event.preventDefault();
+								autoLogin();
+							});
+						}
 					} else {
 						autoLogin();
 					}
@@ -709,14 +712,15 @@
 			const $forgotPassword = $label
 				.clone()
 				.css('float', 'right')
-				.html(
-					`<a href="/wiki/Special:PasswordReset" title="${t('Reset password')}">${t('Forgot password?')}</a>`
+				.append(
+					jQuery('<a>')
+						.attr({href: '/wiki/Special:PasswordReset', title: t('Reset password')})
+						.text(t('Forgot password?'))
 				);
 			const $inputBox = $label
 				.clone()
 				.css({display: 'block', 'font-size': 'inherit', padding: '6px 0'})
-				.append(nameInput.$element.css('margin-bottom', '6px'))
-				.append(pwdInput.$element);
+				.append(nameInput.$element.css('margin-bottom', '6px'), pwdInput.$element);
 			const $rememberMe = $label.clone().append(keepLoginLayout.$element.css('margin-top', '6px'));
 			let loginToken = '';
 			const doLogin = async ({autoLogin = false, loginContinue = false, retypePassword = false} = {}) => {
@@ -738,8 +742,8 @@
 						formatversion: '2',
 						logintoken: loginToken,
 						loginreturnurl: location.href,
-						username: username || nameInput.getValue(),
-						password: password || pwdInput.getValue(),
+						username: username ?? nameInput.getValue(),
+						password: password ?? pwdInput.getValue(),
 					};
 					password = params.password;
 					if (keepLoginCheckbox.isSelected()) {
@@ -752,11 +756,9 @@
 						delete params.password;
 						params.logincontinue = true;
 						const value = await OO.ui.prompt(
-							jQuery(
-								`<b class="oo-ui-messageDialog-title oo-ui-window-head">${
-									retypePassword ? t('Enter password') : t('Enter 2FA verification code')
-								}</b>`
-							),
+							jQuery('<b>')
+								.addClass('oo-ui-messageDialog-title oo-ui-window-head')
+								.text(retypePassword ? t('Enter password') : t('Enter 2FA verification code')),
 							{
 								textInput: {
 									icon: 'key',
@@ -893,7 +895,7 @@
 					doLogin();
 				}
 			});
-			jQuery('body').append(windowManager.$element);
+			windowManager.$element.appendTo(document.body);
 			messageDialog.getActionProcess = (action) => {
 				if (action === 'login') {
 					return new OO.ui.Process(() => {
@@ -911,55 +913,44 @@
 				actions: [
 					{
 						action: 'login',
-						flags: 'primary',
-						label: jQuery(`<b style="color:#36c">${t('Login')}</b>`),
+						flags: ['primary', 'progressive'],
+						label: jQuery('<b>').text(t('Login')),
 					},
 					{
 						action: 'cancle',
-						label: jQuery(`<b style="color:#d33">${t('Cancel')}</b>`),
+						flags: ['safe', 'close'],
+						label: jQuery('<b>').text(t('Cancel')),
 					},
 				],
 				message: jQuery('<div>')
 					.addClass('oo-ui-window-foot')
 					.append($inputBox, $forgotPassword, $rememberMe, $autoLogin),
-				title: jQuery(`<b class="oo-ui-window-head">${t('Login')}</b>`),
+				title: jQuery('<b>').addClass('oo-ui-window-head').text(t('Login')),
 				size: 'small',
 			});
 		}
 		confirmLogout() {
-			const element =
-				document.querySelector('#ca-cb-logout>a') ||
-				document.querySelector('.menu__item--logout') ||
-				document.querySelector('#topbar>a[href*="UserLogout"]') ||
-				document.querySelector('#pt-logout>a') ||
-				document.querySelector('.vector-user-menu-logout');
+			const $element = jQuery(
+				'#ca-cb-logout>a,.menu__item--logout,#topbar>a[href*="UserLogout"],#pt-logout>a,.vector-user-menu-logout'
+			);
 			if (
-				!element ||
-				!element.parentNode ||
+				!$element.length ||
 				!this.getConf('wgUserName') ||
 				RLPAGEMODULES?.includes('ext.gadget.confirm-logout')
 			) {
 				return;
 			}
 			const t = (key) => this.messages.confirmLogout[key] || key;
-			const newDom = document.createElement('a');
-			if (element.className) {
-				newDom.className = element.className;
-			}
-			newDom.href = element.href;
-			newDom.innerHTML = element.innerHTML;
-			element.parentNode.append(newDom);
-			element.remove();
-			newDom.addEventListener('click', async (event) => {
+			$element.off('click');
+			$element.parent().off('click');
+			$element.on('click', async (event) => {
 				event.preventDefault();
 				event.stopPropagation();
 				await mw.loader.using('oojs-ui-windows');
 				const confirmed = await OO.ui.confirm(
-					jQuery(
-						`<div class="WikiMirrorNotice WikiMirrorTip"><span style="font-size:1.2rem">${t(
-							'Confirm logout?'
-						)}</span></div>`
-					)
+					jQuery('<div>')
+						.addClass('WikiMirrorNotice WikiMirrorTip')
+						.append(jQuery('<span>').css('font-size', '1.2rem').text(t('Confirm logout?')))
 				);
 				if (!confirmed) {
 					return;
@@ -1191,8 +1182,6 @@
 			}
 		}
 		async diffLink(ids) {
-			const ID = 'wikimirror-difflink';
-			const t = (key) => this.messages.diffLink[key] || key;
 			if (
 				!ids ||
 				!(
@@ -1206,6 +1195,8 @@
 			) {
 				return;
 			}
+			const ID = 'wikimirror-difflink';
+			const t = (key) => this.messages.diffLink[key] || key;
 			let portletId = 'p-cactions';
 			if (this.hasClass('mw-special-MobileDiff')) {
 				portletId = 'mw-mf-diffarea';
@@ -1326,8 +1317,6 @@
 			}
 		}
 		async floatTOC() {
-			const id = 'floatTOC';
-			const t = (key) => this.messages.floatTOC[key] || key;
 			if (
 				this.hasClass('skin-minerva') ||
 				this.hasClass('skin-vector-2022') ||
@@ -1336,6 +1325,8 @@
 			) {
 				return;
 			}
+			const ID = 'floatTOC';
+			const t = (key) => this.messages.floatTOC[key] || key;
 			const originToc = document.querySelector('#toc');
 			if (!originToc) {
 				return;
@@ -1350,7 +1341,7 @@
 			mw.util.addCSS(
 				'#floatTOC{padding:.5rem;cursor:auto}#floatTOC .toc{display:block;overflow:auto;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}#floatTOC .toctitle{line-height:1}#floatTOC ul{padding-right:1rem}#floatTOC #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#floatTOC #close:hover{text-decoration:underline}.skin-timeless #floatTOC #close{top:.1rem}#floatToc-opener{position:fixed;z-index:13;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgb(255 255 255 / 95%);box-shadow:0 0 2px 2px rgb(0 0 0 / 10%);cursor:pointer;font-size:.5rem}#floatToc-opener span{opacity:.6}#floatToc-opener span:first-child{position:relative;width:2.5em;height:2.5em}#floatToc-opener span:last-child{color:#000}.ve-activated #floatToc-opener{display:none}'
 			);
-			let state = mw.storage.get(id) ?? 'open';
+			let state = mw.storage.get(ID) ?? 'open';
 			const style = mw.util.addCSS(
 				'.mw-notification-area{right:unset;width:auto;max-width:20em}.mw-notification{-webkit-transform:translateX(-999px);-moz-transform:translateX(-999px);transform:translateX(-999px)}.mw-notification-visible{-webkit-transform:translateX(0);-moz-transform:translateX(0);transform:translateX(0)}'
 			);
@@ -1358,20 +1349,20 @@
 			const toc = originToc.cloneNode(true);
 			toc.querySelector('input')?.remove();
 			toc.querySelector('.toctogglespan')?.remove();
-			const $toc = $(toc);
+			const $toc = jQuery(toc);
 			const $floatToc = $toc
 				.clone()
 				.removeAttr('id')
 				.prepend(
-					$('<span>')
+					jQuery('<span>')
 						.addClass('oo-ui-indicatorElement-indicator oo-ui-icon-close')
 						.attr({id: 'close', title: t('Close')})
 				);
-			const $floatTocOpener = $('<div>')
+			const $floatTocOpener = jQuery('<div>')
 				.attr({id: 'floatToc-opener', title: t('TOC')})
 				.append(
-					$('<span>').addClass('oo-ui-indicatorElement-indicator oo-ui-icon-reference'),
-					$('<span>').text(t('TOC'))
+					jQuery('<span>').addClass('oo-ui-indicatorElement-indicator oo-ui-icon-reference'),
+					jQuery('<span>').text(t('TOC'))
 				)
 				.hide()
 				.appendTo(document.body);
@@ -1390,21 +1381,21 @@
 			};
 			const storeState = (_state) => {
 				state = _state;
-				mw.storage.setObject(id, _state);
+				mw.storage.set(ID, _state);
 			};
 			const smoothScroll = (event) => {
 				const {target} = event;
-				const $target = $(target).parent();
+				const $target = jQuery(target).parent();
 				const href = $target.attr('href');
 				if (!href) {
 					return;
 				}
-				const anchorOffset = $(href).offset();
+				const anchorOffset = jQuery(href).offset();
 				if (!anchorOffset) {
 					return;
 				}
 				event.preventDefault();
-				$('html, body').animate(
+				jQuery('html, body').animate(
 					{
 						scrollTop: this.hasClass('skin-timeless')
 							? `${anchorOffset.top - 60}px`
@@ -1445,7 +1436,7 @@
 				if (_preNotification) {
 					_preNotification.start();
 				} else {
-					_preNotification = mw.notification.notify($floatToc, {id, autoHide: false});
+					_preNotification = mw.notification.notify($floatToc, {id: ID, autoHide: false});
 					_preNotification.$notification.on('click', (event) => {
 						event.stopPropagation();
 						const {target} = event;
@@ -1467,7 +1458,7 @@
 				preNotification = tocToggle(intersectionRatio === 0, preNotification);
 			});
 			observer.observe(originToc);
-			$(originToc).find('a').on('click', smoothScroll);
+			jQuery(originToc).find('a').on('click', smoothScroll);
 			$floatTocOpener.on('click', () => {
 				preNotification = tocToggle('open');
 			});
@@ -1550,8 +1541,8 @@
 			) {
 				return;
 			}
-			const hosts = {Moegirl: 'https://zh.moegirl.org.cn', Qiuwen: 'https://www.qiuwenbaike.cn'};
 			const t = (key) => this.messages.viewOnOtherWikis[key] || key;
+			const hosts = {Moegirl: 'https://zh.moegirl.org.cn', Qiuwen: 'https://www.qiuwenbaike.cn'};
 			const wgTitle = this.getConf('wgTitle');
 			const notice = ({site, title, path}) => {
 				const headerElement = document.querySelector('.mw-first-heading')?.firstChild;
