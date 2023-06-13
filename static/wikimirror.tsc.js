@@ -200,12 +200,10 @@
 				);
 				options.headers = headers;
 			}
-			let isError = false;
 			const response = await originFetch(url, options).catch((error) => {
-				isError = true;
 				console.log('WikiMirror fetch error:', {error, options, url});
 			});
-			if (isError || !response) {
+			if (!response) {
 				return new Response(undefined, {status: 418});
 			}
 			const contentType = response.headers.get('content-type') ?? response.headers.get('Content-Type');
@@ -306,8 +304,8 @@
 					return;
 				}
 				const nodeArray = [];
-				for (const element of pageNodeList) {
-					for (const childNode of element.childNodes) {
+				for (const pageNode of pageNodeList) {
+					for (const childNode of pageNode.childNodes) {
 						if (childNode.nodeType === 3) {
 							nodeArray.push(childNode);
 						}
@@ -479,8 +477,8 @@
 					const doClick = (event) => {
 						event.preventDefault();
 						this.getRealText(undefined, 'wiki');
-						wpSave?.removeEventListener('click', doClick);
-						wpSave?.click();
+						wpSave.removeEventListener('click', doClick);
+						wpSave.click();
 					};
 					const observer = new MutationObserver((mutations) => {
 						for (const mutationRecord of mutations) {
@@ -502,9 +500,11 @@
 						}
 					});
 					this.getRealText(undefined, 'wiki');
-					wpSave?.addEventListener('click', doClick);
-					if (!this.getConf('wgUserName')) {
-						wpSave?.removeAttribute('accesskey');
+					if (wpSave) {
+						wpSave.addEventListener('click', doClick);
+						if (!this.getConf('wgUserName')) {
+							wpSave.removeAttribute('accesskey');
+						}
 					}
 					observer.observe(document.body, {
 						childList: true,
@@ -555,10 +555,7 @@
 							});
 						});
 						mw.hook('wikipage.content').add(($content) => {
-							if (
-								!$content?.[0] ||
-								!['mw-content-text', 'mw-watchlist-options'].includes($content?.[0].id)
-							) {
+							if (!['mw-content-text', 'mw-watchlist-options'].includes($content.attr('id'))) {
 								return;
 							}
 							if (WikiMirror.getRealText.initCount > 0) {
@@ -578,7 +575,7 @@
 					})
 					.catch(() => {
 						this.setCss(
-							document.querySelectorAll('noscript')[0]?.innerHTML.replace(/<\/?style>/g, '') ?? '',
+							document.querySelector('noscript')?.innerHTML.replace(/<\/?style>/g, '') ?? '',
 							'css'
 						);
 						console.log('WikiMirror dependencies load failed.');
@@ -1331,19 +1328,17 @@
 			if (!originToc) {
 				return;
 			}
-			await mw.loader.using([
-				'mediawiki.notification',
-				'mediawiki.storage',
-				'mediawiki.util',
-				'oojs-ui.styles.icons-editing-citation',
-				'oojs-ui.styles.icons-interactions',
-			]);
-			mw.util.addCSS(
-				'#floatTOC{padding:.5rem;cursor:auto}#floatTOC .toc{display:block;overflow:auto;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}#floatTOC .toctitle{line-height:1}#floatTOC ul{padding-right:1rem}#floatTOC #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#floatTOC #close:hover{text-decoration:underline}.skin-timeless #floatTOC #close{top:.1rem}#floatToc-opener{position:fixed;z-index:13;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgb(255 255 255 / 95%);box-shadow:0 0 2px 2px rgb(0 0 0 / 10%);cursor:pointer;font-size:.5rem}#floatToc-opener span{opacity:.6}#floatToc-opener span:first-child{position:relative;width:2.5em;height:2.5em}#floatToc-opener span:last-child{color:#000}.ve-activated #floatToc-opener{display:none}'
+			await mw.loader.using(['oojs-ui.styles.icons-editing-citation', 'oojs-ui.styles.icons-interactions']);
+			this.setCss(
+				'#floatTOC{padding:.5rem;cursor:auto}#floatTOC .toc{display:block;overflow:auto;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}#floatTOC .toctitle{line-height:1}#floatTOC ul{padding-right:1rem}#floatTOC #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#floatTOC #close:hover{text-decoration:underline}.skin-timeless #floatTOC #close{top:.1rem}#floatToc-opener{position:fixed;z-index:13;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgb(255 255 255 / 95%);box-shadow:0 0 2px 2px rgb(0 0 0 / 10%);cursor:pointer;font-size:.5rem}#floatToc-opener span{opacity:.6}#floatToc-opener span:first-child{position:relative;width:2.5em;height:2.5em}#floatToc-opener span:last-child{color:#000}.ve-activated #floatToc-opener{display:none}',
+				'css',
+				'wikimirror-css-floattoc'
 			);
-			let state = mw.storage.get(ID) ?? 'open';
-			const style = mw.util.addCSS(
-				'.mw-notification-area{right:unset;width:auto;max-width:20em}.mw-notification{-webkit-transform:translateX(-999px);-moz-transform:translateX(-999px);transform:translateX(-999px)}.mw-notification-visible{-webkit-transform:translateX(0);-moz-transform:translateX(0);transform:translateX(0)}'
+			let state = this.localStorage(ID) ?? 'open';
+			const style = this.setCss(
+				'.mw-notification-area{right:unset;width:auto;max-width:20em}.mw-notification{-webkit-transform:translateX(-999px);-moz-transform:translateX(-999px);transform:translateX(-999px)}.mw-notification-visible{-webkit-transform:translateX(0);-moz-transform:translateX(0);transform:translateX(0)}',
+				'css',
+				'wikimirror-css-floattoc-notification'
 			);
 			style.disabled = true;
 			const toc = originToc.cloneNode(true);
@@ -1381,7 +1376,7 @@
 			};
 			const storeState = (_state) => {
 				state = _state;
-				mw.storage.set(ID, _state);
+				this.localStorage(ID, _state);
 			};
 			const smoothScroll = (event) => {
 				const {target} = event;
@@ -1413,7 +1408,7 @@
 				storeState('close');
 				disableStyle();
 			};
-			const tocToggle = (_isShow = true, _preNotification = undefined) => {
+			const tocToggle = async (_isShow = true, _preNotification = undefined) => {
 				_preNotification?.close();
 				isShow = !!_isShow;
 				switch (_isShow) {
@@ -1436,7 +1431,7 @@
 				if (_preNotification) {
 					_preNotification.start();
 				} else {
-					_preNotification = mw.notification.notify($floatToc, {id: ID, autoHide: false});
+					_preNotification = await this.notify($floatToc, {id: ID, autoHide: false});
 					_preNotification.$notification.on('click', (event) => {
 						event.stopPropagation();
 						const {target} = event;
@@ -1449,18 +1444,18 @@
 				}
 				return _preNotification;
 			};
-			const observer = new IntersectionObserver((entries) => {
+			const observer = new IntersectionObserver(async (entries) => {
 				const [entry] = entries;
 				if (!entry) {
 					return;
 				}
 				const {intersectionRatio} = entry;
-				preNotification = tocToggle(intersectionRatio === 0, preNotification);
+				preNotification = await tocToggle(intersectionRatio === 0, preNotification);
 			});
 			observer.observe(originToc);
 			jQuery(originToc).find('a').on('click', smoothScroll);
-			$floatTocOpener.on('click', () => {
-				preNotification = tocToggle('open');
+			$floatTocOpener.on('click', async () => {
+				preNotification = await tocToggle('open');
 			});
 		}
 		showNotice(value, {autoHide = false, forceNotify = false, tag} = {}) {
@@ -1656,13 +1651,15 @@
 				}, 0);
 			});
 		}
-		domReady(condition = ['complete', 'interactive']) {
+		domReady() {
+			const condition = ['complete', 'interactive'];
+			const checkReady = () => condition.includes(document.readyState);
 			return new Promise((resolve) => {
-				if (condition.includes(document.readyState)) {
+				if (checkReady()) {
 					resolve(true);
 				} else {
 					document.addEventListener('readystatechange', () => {
-						if (condition.includes(document.readyState)) {
+						if (checkReady()) {
 							resolve(true);
 						}
 					});
@@ -1677,9 +1674,9 @@
 					if (
 						document.body?.classList.contains('mediawiki') &&
 						typeof mw === 'object' &&
-						typeof mw.config.get === 'function' &&
+						typeof mw.config?.get === 'function' &&
 						typeof mw.hook === 'function' &&
-						typeof mw.loader.using === 'function' &&
+						typeof mw.loader?.using === 'function' &&
 						typeof mw.message === 'function'
 					) {
 						clearInterval(mwReadyTimer);
@@ -1795,7 +1792,7 @@
 			return key in object;
 		}
 		localStorage(name, value) {
-			const isStorageEnabled = (() => {
+			const isStorageEnable = (() => {
 				try {
 					localStorage.setItem('_', '_');
 					localStorage.removeItem('_');
@@ -1804,14 +1801,14 @@
 					return false;
 				}
 			})();
-			if (isStorageEnabled && name) {
+			if (isStorageEnable && name) {
 				if (value) {
 					localStorage.setItem(name, value);
 				} else {
 					return localStorage.getItem(name);
 				}
 			}
-			return isStorageEnabled;
+			return isStorageEnable;
 		}
 		async notify(msg, opt) {
 			await mw.loader.using('mediawiki.notification');
@@ -1852,6 +1849,7 @@
 						}
 						element.append(document.createTextNode(value));
 						document.head.append(element);
+						return element.sheet;
 					}
 					break;
 				case 'url':
