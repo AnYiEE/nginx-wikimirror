@@ -555,7 +555,7 @@
 							});
 						});
 						mw.hook('wikipage.content').add(($content) => {
-							if (!['mw-content-text', 'mw-watchlist-options'].includes($content.attr('id'))) {
+							if (!($content.attr('id') === 'mw-content-text' || $content.hasClass('mw-changeslist'))) {
 								return;
 							}
 							if (WikiMirror.getRealText.initCount > 0) {
