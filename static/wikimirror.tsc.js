@@ -1529,10 +1529,11 @@
 		}
 		async viewOnOtherWikis() {
 			if (
+				this.getConf('wgDiffNewId') ||
 				this.getConf('wgIsRedirect') ||
 				this.getConf('wgAction') !== 'view' ||
-				this.getConf('wgCanonicalNamespace') !== '' ||
-				this.getConf('wgDBname') !== 'zhwiki'
+				this.getConf('wgDBname') !== 'zhwiki' ||
+				this.getConf('wgNamespaceNumber') !== 0
 			) {
 				return;
 			}
