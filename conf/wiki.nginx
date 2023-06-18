@@ -90,7 +90,7 @@ server {
 }
 
 server {
-    server_name  ~^(?<subdomain>(analytics|annual|bugzilla|config-master|cxserver|dbtree|design|developer|doc|grafana|graphite|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|planet|research|schema|secure|static-bugzilla|svn|ticket|toolsadmin|transparency))\.example\.org$;
+    server_name  ~^(?<subdomain>(analytics|annual|bugzilla|config-master|cxserver|dbtree|design|developer|doc|grafana|graphite|horizon|id-internal(?:\.m)?|il|integration|logstash|noc|office(?:\.m)?|performance|planet|research|schema|secure|static-(?:bugzilla|codereview)|svn|ticket|toolsadmin|transparency))\.example\.org$;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
     set          $hostdomain wikimedia;
 
