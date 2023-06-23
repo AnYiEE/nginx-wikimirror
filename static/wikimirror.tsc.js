@@ -1264,7 +1264,7 @@
 							diffId === this.getConf('wgDiffNewId') &&
 							response['compare']?.fromrevid === this.getConf('wgDiffOldId')
 						) {
-							buildLink(false);
+							buildLink(0);
 						}
 					} catch {
 						this.showNetworkErrorNotice();
