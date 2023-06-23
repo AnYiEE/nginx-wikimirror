@@ -243,6 +243,7 @@
 		regexps;
 		messages;
 		textCache;
+		windowManager;
 		constructor({domain, modules, regexps}) {
 			this.MIRROR_DOMAIN = domain;
 			this.MIRROR_DOMAIN_REGEX = domain.replace('.', '\\.');
@@ -251,6 +252,7 @@
 			this.regexps = regexps;
 			this.messages = this.initMessages();
 			this.textCache = new Map();
+			this.windowManager = undefined;
 		}
 		getRealText(value, method) {
 			if (!['wiki', 'wikiless'].includes(method) && this.textCache.has(value)) {
@@ -673,8 +675,11 @@
 				'oojs-ui.styles.icons-interactions',
 				'oojs-ui.styles.icons-user',
 			]);
+			if (!this.windowManager) {
+				this.windowManager = new OO.ui.WindowManager();
+				this.windowManager.$element.appendTo(document.body);
+			}
 			const messageDialog = new OO.ui.MessageDialog();
-			const windowManager = new OO.ui.WindowManager();
 			const nameInput = new OO.ui.TextInputWidget({
 				icon: 'userAvatar',
 				placeholder: t('Username'),
@@ -719,6 +724,11 @@
 				.css({display: 'block', 'font-size': 'inherit', padding: '6px 0'})
 				.append(nameInput.$element.css('margin-bottom', '6px'), pwdInput.$element);
 			const $rememberMe = $label.clone().append(keepLoginLayout.$element.css('margin-top', '6px'));
+			const removeWindowResizeHandler = () => {
+				$(window).off({
+					'orientationchange resize': this.windowManager.onWindowResizeHandler,
+				});
+			};
 			let loginToken = '';
 			const doLogin = async ({autoLogin = false, loginContinue = false, retypePassword = false} = {}) => {
 				const api = new mw.Api();
@@ -747,23 +757,40 @@
 						params.rememberMe = '1';
 					}
 					if (loginContinue || retypePassword) {
-						await windowManager.clearWindows();
+						await this.windowManager.clearWindows();
 						delete params.loginreturnurl;
 						delete params.username;
 						delete params.password;
 						params.logincontinue = true;
-						const value = await OO.ui.prompt(
-							jQuery('<b>')
-								.addClass('oo-ui-messageDialog-title oo-ui-window-head')
-								.text(retypePassword ? t('Enter password') : t('Enter 2FA verification code')),
-							{
-								textInput: {
-									icon: 'key',
-									placeholder: retypePassword ? t('New password') : t('6-digit number'),
-									validate: 'integer',
-								},
-							}
-						);
+						const prompt = async () => {
+							const codeDialog = new OO.ui.MessageDialog();
+							const codeInput = new OO.ui.TextInputWidget({
+								icon: 'key',
+								placeholder: retypePassword ? t('New password') : t('6-digit number'),
+								validate: 'integer',
+							});
+							const codeLayout = new OO.ui.FieldLayout(codeInput, {
+								align: 'top',
+								label: jQuery('<b>')
+									.addClass('oo-ui-messageDialog-title oo-ui-window-head')
+									.text(retypePassword ? t('Enter password') : t('Enter 2FA verification code')),
+							});
+							this.windowManager.addWindows([codeDialog]);
+							const instance = this.windowManager.openWindow(codeDialog, {
+								message: codeLayout.$element,
+							});
+							removeWindowResizeHandler();
+							instance.opened.then(() => {
+								codeInput.on('enter', () => {
+									this.windowManager.getCurrentWindow().close({action: 'accept'});
+								});
+								codeInput.focus();
+							});
+							const data = await instance.closed;
+							const _data = data;
+							return _data?.action === 'accept' ? codeInput.getValue() : null;
+						};
+						const value = await prompt();
 						if (value === null) {
 							this.showNotice(t('Login cancelled'), {
 								autoHide: true,
@@ -771,20 +798,19 @@
 							});
 							return;
 						} else if (value === '') {
-							this.showNotice(
-								retypePassword
-									? t('The password cannot be empty')
-									: t('The 2FA verification code cannot be empty'),
-								{
+							if (retypePassword) {
+								this.showNotice(t('The password cannot be empty'), {
 									autoHide: true,
 									tag: 'login',
-								}
-							);
-							if (retypePassword) {
+								});
 								doLogin({retypePassword: true});
-								return;
+							} else {
+								this.showNotice(t('The 2FA verification code cannot be empty'), {
+									autoHide: true,
+									tag: 'login',
+								});
+								doLogin({loginContinue: true});
 							}
-							doLogin({loginContinue: true});
 							return;
 						}
 						if (retypePassword) {
@@ -832,11 +858,11 @@
 						switch (response['clientlogin'].messagecode) {
 							case 'authmanager-authn-autocreate-failed':
 								this.showNotice(t('Automatic account creation failed'));
-								windowManager.clearWindows();
+								this.windowManager.clearWindows();
 								break;
 							case 'centralauth-login-error-locked':
 								this.showNotice(t('The user has been globally locked'));
-								windowManager.clearWindows();
+								this.windowManager.clearWindows();
 								break;
 							case 'login-throttled':
 								this.showNotice(t('The user login is too frequent, please try again in five minutes'));
@@ -862,7 +888,7 @@
 									autoHide: true,
 									tag: 'login',
 								});
-								await windowManager.clearWindows();
+								await this.windowManager.clearWindows();
 								this.ajaxLogin();
 								break;
 							default:
@@ -892,21 +918,20 @@
 					doLogin();
 				}
 			});
-			windowManager.$element.appendTo(document.body);
+			this.windowManager.$element.appendTo(document.body);
 			messageDialog.getActionProcess = (action) => {
-				if (action === 'login') {
-					return new OO.ui.Process(() => {
+				return new OO.ui.Process(() => {
+					if (action === 'login') {
 						if (checkValid()) {
 							doLogin();
 						}
-					});
-				}
-				return new OO.ui.Process(() => {
-					windowManager.clearWindows();
+					} else {
+						this.windowManager.clearWindows();
+					}
 				});
 			};
-			windowManager.addWindows([messageDialog]);
-			windowManager.openWindow(messageDialog, {
+			this.windowManager.addWindows([messageDialog]);
+			this.windowManager.openWindow(messageDialog, {
 				actions: [
 					{
 						action: 'login',
@@ -925,6 +950,7 @@
 				title: jQuery('<b>').addClass('oo-ui-window-head').text(t('Login')),
 				size: 'small',
 			});
+			removeWindowResizeHandler();
 		}
 		confirmLogout() {
 			const $element = jQuery(
