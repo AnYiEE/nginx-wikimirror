@@ -1169,6 +1169,9 @@
 					const set = this.localStorage(ID) === '1';
 					const unset = this.localStorage(ID) === '0';
 					const doClick = (button) => {
+						if (button === null) {
+							return;
+						}
 						const element = button?.firstElementChild || document.querySelector(`#${ID}`);
 						element.addEventListener('click', (event) => {
 							event.preventDefault();
@@ -1233,6 +1236,9 @@
 				if (!element) {
 					await mw.loader.using('mediawiki.util');
 					element = mw.util.addPortletLink(portletId, '#', text, ID, tooltip);
+					if (!element) {
+						return;
+					}
 					if (portletId === 'mw-mf-diffarea') {
 						this.setCss(
 							`#${ID}{float:right}#${ID}>a>span:first-child{vertical-align:text-bottom}`,
