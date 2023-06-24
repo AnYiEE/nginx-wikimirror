@@ -26,7 +26,7 @@ upstream static-IPAddress {
 
 server {
     listen       80 reuseport default;
-    listen       443 ssl http2 reuseport default;
+    listen       443 ssl reuseport default;
     server_name  _;
     include      /path/to/wikimirror/conf/wiki-site-http.conf;
 
