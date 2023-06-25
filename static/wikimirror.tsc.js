@@ -1354,7 +1354,7 @@
 			) {
 				return;
 			}
-			const ID = 'floatTOC';
+			const ID = 'wikimirror-floattoc';
 			const t = (key) => this.messages.floatTOC[key] || key;
 			const originToc = document.querySelector('#toc');
 			if (!originToc) {
@@ -1362,11 +1362,11 @@
 			}
 			await mw.loader.using(['oojs-ui.styles.icons-editing-citation', 'oojs-ui.styles.icons-interactions']);
 			this.setCss(
-				'#floatTOC{padding:.5rem;cursor:auto}#floatTOC .toc{display:block;overflow:auto;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}#floatTOC .toctitle{line-height:1}#floatTOC ul{padding-right:1rem}#floatTOC #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#floatTOC #close:hover{text-decoration:underline}.skin-timeless #floatTOC #close{top:.1rem}#floatToc-opener{position:fixed;z-index:13;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgb(255 255 255 / 95%);box-shadow:0 0 2px 2px rgb(0 0 0 / 10%);cursor:pointer;font-size:.5rem}#floatToc-opener span{opacity:.6}#floatToc-opener span:first-child{position:relative;width:2.5em;height:2.5em}#floatToc-opener span:last-child{color:#000}.ve-activated #floatToc-opener{display:none}',
+				`#${ID}{padding:.5rem;cursor:auto}#${ID} .toc{display:block;overflow:auto;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}#${ID} .toctitle{line-height:1}#${ID} ul{padding-right:1rem}#${ID} #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#${ID} #close:hover{text-decoration:underline}.skin-timeless #${ID} #close{top:.1rem}#${ID}-opener{position:fixed;z-index:13;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgb(255 255 255 / 95%);box-shadow:0 0 2px 2px rgb(0 0 0 / 10%);cursor:pointer;font-size:.5rem}#${ID}-opener span{opacity:.6}#${ID}-opener span:first-child{position:relative;width:2.5em;height:2.5em}#${ID}-opener span:last-child{color:#000}.ve-activated #${ID}-opener{display:none}`,
 				'css',
 				'wikimirror-css-floattoc'
 			);
-			let state = this.localStorage(ID) ?? 'open';
+			let state = this.localStorage(ID) ?? (window.outerHeight < window.outerWidth ? 'open' : 'close');
 			const style = this.setCss(
 				'.mw-notification-area{right:unset;width:auto;max-width:20em}.mw-notification{-webkit-transform:translateX(-999px);-moz-transform:translateX(-999px);transform:translateX(-999px)}.mw-notification-visible{-webkit-transform:translateX(0);-moz-transform:translateX(0);transform:translateX(0)}',
 				'css',
@@ -1386,7 +1386,7 @@
 						.attr({id: 'close', title: t('Close')})
 				);
 			const $floatTocOpener = jQuery('<div>')
-				.attr({id: 'floatToc-opener', title: t('TOC')})
+				.attr({id: `${ID}-opener`, title: t('TOC')})
 				.append(
 					jQuery('<span>').addClass('oo-ui-indicatorElement-indicator oo-ui-icon-reference'),
 					jQuery('<span>').text(t('TOC'))
