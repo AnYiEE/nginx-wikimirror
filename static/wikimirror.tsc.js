@@ -590,7 +590,7 @@
 				this.hasClass('ltr') &&
 				this.hasClass('skin-vector-legacy') &&
 				!RLPAGEMODULES?.includes('ext.gadget.CollapsibleSidebar') &&
-				!['bo', 'dz'].includes(this.getConf('wgContentLanguage') ?? '')
+				!['bo', 'dz'].includes(this.getConf('wgContentLanguage'))
 			) {
 				await mw.loader.using('mediawiki.storage');
 				const base = 'WikiMirror collapsibleSidebar.js load';
@@ -1336,7 +1336,7 @@
 			});
 		}
 		displayAnonHide(isTrusted) {
-			const isLogin = isTrusted || this.getConf('wgUserName');
+			const isLogin = isTrusted ?? !!this.getConf('wgUserName');
 			if (isLogin) {
 				this.setCss('wikimirror-css-anon-hide', 'remove');
 			} else {
@@ -1811,13 +1811,13 @@
 			};
 			return {
 				content: (candidates) => {
-					return elect(candidates, this.getConf('wgContentLanguage') ?? '');
+					return elect(candidates, this.getConf('wgContentLanguage'));
 				},
 				localize: (candidates) => {
-					return elect(candidates, this.getConf('wgUserLanguage') ?? this.getConf('wgContentLanguage') ?? '');
+					return elect(candidates, this.getConf('wgUserLanguage') ?? this.getConf('wgContentLanguage'));
 				},
 				vary: (candidates) => {
-					return elect(candidates, this.getConf('wgUserVariant') ?? this.getConf('wgContentLanguage') ?? '');
+					return elect(candidates, this.getConf('wgUserVariant') ?? this.getConf('wgContentLanguage'));
 				},
 			};
 		}
