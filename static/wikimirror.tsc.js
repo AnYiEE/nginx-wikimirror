@@ -2195,12 +2195,12 @@
 					responseObject.parse?.wikitext
 				) {
 					recursiveObject(responseObject.parse, (object, key, preKey) => {
-						if (['parsedsummary', 'text', '*'].includes(key ?? preKey)) {
+						if (['parsedsummary', 'text'].includes(preKey ?? key)) {
 							const {element} = parseHtmlString(object[key]);
 							const _element = element.querySelector('.mw-parser-output');
 							const elementHTML = _element ? _element.outerHTML : element.querySelector('body').innerHTML;
 							object[key] = this.getRealText(elementHTML);
-						} else if ((key ?? preKey) === 'wikitext') {
+						} else if (['wikitext'].includes(preKey ?? key)) {
 							object[key] = this.getRealText(object[key]);
 						}
 					});
