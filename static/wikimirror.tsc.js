@@ -636,12 +636,22 @@
 				);
 				const username = this.getCookie(`${cookiePrefix}UserName`);
 				const password = this.getCookie(`${cookiePrefix}Password`);
-				const ajaxLogin = (event) => {
+				const checkPressedKey = (event) => {
+					if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') {
+						return true;
+					}
+					return false;
+				};
+				const ajaxLoginHandler = (event) => {
+					if (checkPressedKey(event)) {
+						return;
+					}
 					event.preventDefault();
 					this.ajaxLogin();
 				};
 				for (const element of elementList) {
-					element.addEventListener('click', ajaxLogin);
+					element.addEventListener('click', ajaxLoginHandler);
+					element.addEventListener('keydown', ajaxLoginHandler);
 				}
 				if (username && password && password !== 'deleted' && !this.getConf('wgUserName')) {
 					const autoLogin = () => {
@@ -655,12 +665,18 @@
 						});
 					};
 					if (this.getCookie(`${cookiePrefix}Use2FA`) === '1') {
+						const autoLoginHandler = (event) => {
+							if (checkPressedKey(event)) {
+								return;
+							}
+							event.preventDefault();
+							autoLogin();
+						};
 						for (const element of elementList) {
-							element.removeEventListener('click', ajaxLogin);
-							element.addEventListener('click', (event) => {
-								event.preventDefault();
-								autoLogin();
-							});
+							element.removeEventListener('click', ajaxLoginHandler);
+							element.removeEventListener('keydown', ajaxLoginHandler);
+							element.addEventListener('click', autoLoginHandler);
+							element.addEventListener('keydown', autoLoginHandler);
 						}
 					} else {
 						autoLogin();
@@ -1362,7 +1378,7 @@
 			}
 			await mw.loader.using(['oojs-ui.styles.icons-editing-citation', 'oojs-ui.styles.icons-interactions']);
 			this.setCss(
-				`#${ID}{padding:.5rem;cursor:auto}#${ID} .toc{display:block;overflow:auto;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}.skin-timeless #${ID} .toc{max-height:85vh}#${ID} .toctitle{line-height:1}#${ID} ul{padding-right:1rem}#${ID} #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#${ID} #close:hover{text-decoration:underline}.skin-timeless #${ID} #close{top:.1rem}#${ID}-opener{position:fixed;z-index:13;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgb(255 255 255 / 95%);box-shadow:0 0 2px 2px rgb(0 0 0 / 10%);cursor:pointer;font-size:.5rem}#${ID}-opener span{opacity:.6}#${ID}-opener span:first-child{position:relative;width:2.5em;height:2.5em}#${ID}-opener span:last-child{color:#000}.ve-activated #${ID}-opener{display:none}`,
+				`#${ID}{padding:.5rem;cursor:auto}#${ID} .toc{display:block;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}.skin-timeless #${ID} .toc{max-height:85vh}#${ID} .toc>ul{overflow:auto;max-height:70vh;border-bottom:1px solid #cdcdcd}#${ID} .toctitle{line-height:1}#${ID} ul{padding-right:1rem}#${ID} #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#${ID} #close:hover{filter:drop-shadow(0 0 1px #000)}.skin-timeless #${ID} #close{top:.1rem}#${ID}-opener{position:fixed;z-index:203;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgb(255 255 255 / 95%);box-shadow:0 0 2px 2px rgb(0 0 0 / 10%);cursor:pointer;font-size:.5rem}#${ID}-opener:active{box-shadow:inset 0 0 2px 2px rgb(0 0 0 / 10%)}#${ID}-opener:hover{box-shadow: 0 0 4px 4px rgb(0 0 0 / 10%)}#${ID}-opener span{opacity:.6}#${ID}-opener span:first-child{position:relative;width:2.5em;height:2.5em}#${ID}-opener span:last-child{color:#000}.ve-activated #${ID}-opener{display:none}`,
 				'css',
 				'wikimirror-css-floattoc'
 			);
@@ -1383,10 +1399,10 @@
 				.prepend(
 					jQuery('<span>')
 						.addClass('oo-ui-indicatorElement-indicator oo-ui-icon-close')
-						.attr({id: 'close', title: t('Close')})
+						.attr({id: 'close', title: t('Close'), role: 'button', tabindex: '0'})
 				);
 			const $floatTocOpener = jQuery('<div>')
-				.attr({id: `${ID}-opener`, title: t('TOC')})
+				.attr({'class': 'noprint', id: `${ID}-opener`, title: t('TOC'), role: 'button', tabindex: '0'})
 				.append(
 					jQuery('<span>').addClass('oo-ui-indicatorElement-indicator oo-ui-icon-reference'),
 					jQuery('<span>').text(t('TOC'))
@@ -1463,7 +1479,7 @@
 				if (_preNotification) {
 					_preNotification.start();
 				} else {
-					_preNotification = await this.notify($floatToc, {id: ID, autoHide: false});
+					_preNotification = await this.notify($floatToc, {classes: 'noprint', id: ID, autoHide: false});
 					_preNotification.$notification.on('click', (event) => {
 						event.stopPropagation();
 						const {target} = event;
