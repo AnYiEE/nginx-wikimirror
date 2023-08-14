@@ -1412,6 +1412,12 @@
 			let isShow;
 			let preNotification;
 			let disableStyleTimer;
+			const checkPressedKey = (event) => {
+				if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') {
+					return true;
+				}
+				return false;
+			};
 			const disableStyle = () => {
 				if (disableStyleTimer) {
 					clearTimeout(disableStyleTimer);
@@ -1480,7 +1486,10 @@
 					_preNotification.start();
 				} else {
 					_preNotification = await this.notify($floatToc, {classes: 'noprint', id: ID, autoHide: false});
-					_preNotification.$notification.on('click', (event) => {
+					const notificationHandler = (event) => {
+						if (checkPressedKey(event)) {
+							return;
+						}
 						event.stopPropagation();
 						const {target} = event;
 						if (target.id === 'close') {
@@ -1488,7 +1497,9 @@
 						} else {
 							smoothScroll(event);
 						}
-					});
+					};
+					_preNotification.$notification.on('click', notificationHandler);
+					_preNotification.$notification.on('keydown', notificationHandler);
 				}
 				return _preNotification;
 			};
@@ -1502,9 +1513,15 @@
 			});
 			observer.observe(originToc);
 			jQuery(originToc).find('a').on('click', smoothScroll);
-			$floatTocOpener.on('click', async () => {
+			jQuery(originToc).find('a').on('keydown', smoothScroll);
+			const openerHandler = async (event) => {
+				if (checkPressedKey(event)) {
+					return;
+				}
 				preNotification = await tocToggle('open');
-			});
+			};
+			$floatTocOpener.on('click', openerHandler);
+			$floatTocOpener.on('keydown', openerHandler);
 		}
 		showNotice(value, {autoHide = false, forceNotify = false, tag} = {}) {
 			const t = (key) => this.messages.showNotice[key] || key;
