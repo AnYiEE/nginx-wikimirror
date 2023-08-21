@@ -631,9 +631,16 @@
 				if (this.getConf('wgUserName')) {
 					return;
 				}
-				const elementList = document.querySelectorAll(
+				const minervaLoginElement =
+					document.querySelector('.menu__item--login') ??
+					document.querySelector('.mw-ui-icon-minerva-logIn')?.parentElement;
+				const _elementList = document.querySelectorAll(
 					'#ca-cb-login,.menu__item--login,#topbar>a[href*="UserLogin"],#pt-login-2,.vector-user-menu-login,#pt-login'
 				);
+				const elementList = [..._elementList];
+				if (minervaLoginElement) {
+					elementList.push(minervaLoginElement);
+				}
 				const username = this.getCookie(`${cookiePrefix}UserName`);
 				const password = this.getCookie(`${cookiePrefix}Password`);
 				const checkPressedKey = (event) => {
@@ -969,9 +976,13 @@
 			removeWindowResizeHandler();
 		}
 		confirmLogout() {
-			const $element = jQuery(
-				'#ca-cb-logout>a,.menu__item--logout,#topbar>a[href*="UserLogout"],#pt-logout>a,.vector-user-menu-logout'
-			);
+			const $element = jQuery()
+				.add(
+					jQuery(
+						'#ca-cb-logout>a,.menu__item--logout,#topbar>a[href*="UserLogout"],#pt-logout>a,.vector-user-menu-logout'
+					)
+				)
+				.add(jQuery('.mw-ui-icon-minerva-logOut').parent('.minerva-user-menu'));
 			if (
 				!$element.length ||
 				!this.getConf('wgUserName') ||
