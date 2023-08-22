@@ -153,7 +153,9 @@
 						nodeValue = nodeValue.replace(regexOther2, `background$1:url($2$3//upload.${this.DOMAIN}`);
 					}
 					if (node.nodeValue !== nodeValue) {
-						node.nodeValue = nodeValue;
+						requestAnimationFrame(() => {
+							node.nodeValue = nodeValue;
+						});
 					}
 					if (
 						nodeValue.match(REGEX_EMOJI) &&
@@ -167,13 +169,15 @@
 							WikiMirror === undefined)
 					) {
 						const element = document.createElement('wikimirror-emoji-line');
-						element.innerHTML = node.nodeValue.replace(
+						element.innerHTML = nodeValue.replace(
 							REGEX_EMOJI,
 							'<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>'
 						);
 						if (node.parentNode) {
-							node.parentNode.insertBefore(element, node.nextSibling);
-							node.remove();
+							requestAnimationFrame(() => {
+								node.parentNode.insertBefore(element, node.nextSibling);
+								node.remove();
+							});
 						}
 					}
 				}
@@ -928,7 +932,9 @@
 							if (timer) {
 								clearTimeout(timer);
 							}
-							timer = setTimeout(callback, ms);
+							timer = setTimeout(() => {
+								requestAnimationFrame(callback);
+							}, ms);
 						};
 						const mutationObserver = new MutationObserver(() => {
 							debounce(500);
