@@ -324,6 +324,24 @@
 								if (!(node instanceof HTMLElement)) {
 									continue;
 								}
+								if (this.hasClass('mw-special-UrlShortener')) {
+									for (const element of node.querySelectorAll('code')) {
+										let innerHTML = element.innerHTML;
+										innerHTML = this.getRealText(innerHTML);
+										const domain = 'wikipedia.org';
+										if (innerHTML.includes(domain)) {
+											innerHTML = `${innerHTML} (${innerHTML.replace(domain, this.DOMAIN)})`;
+										}
+										element.innerHTML = innerHTML;
+									}
+									if (mw.urlshortener?.regex) {
+										mw.urlshortener.regex = new RegExp(
+											`${mw.config.get('wgUrlShortenerAllowedDomains')}|^(.*\\.)?${
+												this.DOMAIN_REGEX
+											}$`
+										);
+									}
+								}
 								for (const element of node.querySelectorAll('.ext-related-articles-card-list h3 a')) {
 									const innerHTML = element.innerHTML;
 									element.innerHTML = this.getRealText(innerHTML, 'emoji');
