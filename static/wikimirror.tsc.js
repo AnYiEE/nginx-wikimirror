@@ -937,30 +937,16 @@
 					});
 					this.darkMode('insert');
 					if (this.hasClass('skin-vector-legacy')) {
-						let timer;
-						const debounce = (ms) => {
-							const callback = () => {
+						const resetDocumentHeight = () => {
+							requestAnimationFrame(() => {
 								document.documentElement.style.height = 'auto';
 								document.documentElement.style.height = `${document.documentElement.scrollHeight}px`;
-							};
-							if (timer) {
-								clearTimeout(timer);
-							}
-							timer = setTimeout(() => {
-								requestAnimationFrame(callback);
-							}, ms);
+							});
 						};
-						const mutationObserver = new MutationObserver(() => {
-							debounce(500);
-						});
-						const resizeObserver = new ResizeObserver(() => {
-							debounce(1000);
-						});
-						mutationObserver.observe(document.body, {
-							attributes: true,
-							childList: true,
-							subtree: true,
-						});
+						const callback = this.debounce(resetDocumentHeight);
+						const mutationObserver = new MutationObserver(callback);
+						const resizeObserver = new ResizeObserver(callback);
+						mutationObserver.observe(document.body, {attributes: true, attributeFilter: ['class']});
 						resizeObserver.observe(document.body);
 					}
 					break;
@@ -1369,7 +1355,6 @@
 				}
 				return _preNotification;
 			};
-			// eslint-disable-next-line compat/compat
 			const intersectionObserver = new IntersectionObserver(async (entries) => {
 				const [entry] = entries;
 				if (!entry) {
@@ -1656,6 +1641,17 @@
 				default:
 					return originUrl;
 			}
+		}
+		debounce(callback, timeout = 500) {
+			let timer;
+			return function (...args) {
+				if (timer) {
+					clearTimeout(timer);
+				}
+				timer = setTimeout(() => {
+					callback.apply(this, args);
+				}, timeout);
+			};
 		}
 		decodeURIComponent(value) {
 			return decodeURIComponent(
