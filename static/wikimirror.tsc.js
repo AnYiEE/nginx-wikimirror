@@ -270,7 +270,7 @@
 			if (this.darkMode('check') && !this.REGEX_LIST.noDarkmode.test(location.host)) {
 				document.documentElement.style.filter = 'invert(.95) hue-rotate(.5turn)';
 			}
-			this.setCss('/wikimirror.css?date=20230505', 'url')
+			this.setCss('/wikimirror.css?date=20230901', 'url')
 				.then(() => {
 					console.log('WikiMirror basic stylesheet load succeeded.');
 				})
@@ -477,9 +477,7 @@
 				if (this.getConf('wgUserName')) {
 					return;
 				}
-				const minervaLoginElement =
-					document.querySelector('.menu__item--login') ??
-					document.querySelector('.mw-ui-icon-minerva-logIn')?.parentElement;
+				const minervaLoginElement = document.querySelector('.mw-ui-icon-minerva-logIn')?.parentElement;
 				const _elementList = document.querySelectorAll(
 					'#ca-cb-login,#topbar>a[href*="UserLogin"],#pt-login-2,.vector-user-menu-login,#pt-login'
 				);
@@ -822,12 +820,8 @@
 		}
 		confirmLogout() {
 			const $element = jQuery()
-				.add(
-					jQuery(
-						'#ca-cb-logout>a,.menu__item--logout,#topbar>a[href*="UserLogout"],#pt-logout>a,.vector-user-menu-logout'
-					)
-				)
-				.add(jQuery('.mw-ui-icon-minerva-logOut').parent('.minerva-user-menu'));
+				.add(jQuery('#ca-cb-logout>a,#topbar>a[href*="UserLogout"],#pt-logout>a,.vector-user-menu-logout'))
+				.add(jQuery('.minerva-icon--minerva-logOut').parent('.minerva-user-menu'));
 			if (
 				!$element.length ||
 				!this.getConf('wgUserName') ||
@@ -1044,8 +1038,9 @@
 						});
 					};
 					if (element && this.hasClass('skin-minerva')) {
-						const ComHead = `<li id="${ID}"><a class="mw-ui-icon mw-ui-icon-before" title="`;
-						const ComAnd = '"><span>';
+						const ComHead = `<li class="toggle-list-item" id="${ID}"><a class="toggle-list-item__anchor" title="`;
+						const ComAnd =
+							'"><span class="minerva-icon minerva-icon--wikimirror-darkmode"></span><span class="toggle-list-item__label">';
 						const ComFoot = '</span></a></li>';
 						if (set) {
 							element.insertAdjacentHTML('beforeend', `${ComHead}${LightTip}${ComAnd}${Light}${ComFoot}`);
@@ -1108,7 +1103,7 @@
 					}
 					if (portletId === 'mw-mf-diffarea') {
 						this.setCss(
-							`#${ID}{float:right}#${ID}>a>span:first-child{vertical-align:text-bottom}`,
+							`#${ID}{float:right}#${ID}>a>span:first-child{vertical-align:text-bottom;padding-right:.5em}`,
 							'css',
 							`wikimirror-css-difflink`
 						);
@@ -1409,9 +1404,9 @@
 			const Redirect = `<li id="${ID}"><a href="${this.getLocate(
 				'originUrl'
 			)}" target="_blank" title="${Title}">${Text}</a></li>`;
-			const RedirectMinerva = `<li id="${ID}"><a href="${this.getLocate(
+			const RedirectMinerva = `<li class="toggle-list-item" id="${ID}"><a class="toggle-list-item__anchor" href="${this.getLocate(
 				'originUrl'
-			)}" target="_blank" title="${Title}"><span class="mw-ui-icon mw-ui-icon-minerva-logOut"></span><span>${Text}</span></a></li>`;
+			)}" target="_blank" title="${Title}"><span class="minerva-icon minerva-icon--minerva-logOut"></span><span class="toggle-list-item__label">${Text}</span></a></li>`;
 			const apihelpFlagsUl = document.querySelector('.apihelp-flags>ul');
 			if (this.hasClass('skin-apioutput') && apihelpFlagsUl) {
 				return apihelpFlagsUl.insertAdjacentHTML('beforeend', Redirect);
