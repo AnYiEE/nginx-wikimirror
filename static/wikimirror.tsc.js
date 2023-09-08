@@ -821,7 +821,11 @@
 		confirmLogout() {
 			const $element = jQuery()
 				.add(jQuery('#ca-cb-logout>a,#topbar>a[href*="UserLogout"],#pt-logout>a,.vector-user-menu-logout'))
-				.add(jQuery('.minerva-icon--minerva-logOut').parent('.minerva-user-menu'));
+				.add(
+					jQuery('.minerva-icon--minerva-logOut')
+						.parent('.minerva-user-menu,.toggle-list-item__anchor')
+						.not('[target]')
+				);
 			if (
 				!$element.length ||
 				!this.getConf('wgUserName') ||
