@@ -1686,27 +1686,55 @@
 			return false;
 		}
 		i18n() {
-			const defaultFallbackList = [
-				document.documentElement.lang ?? navigator.language.split('-')[0] ?? navigator.language.toLowerCase(),
-				'en',
-			];
 			const FALLBACK_TABLE = {
-				zh: ['zh', 'zh-hans', 'zh-hant', 'zh-cn', 'zh-tw', 'zh-hk', 'zh-sg', 'zh-mo', 'zh-my', 'en'],
-				'zh-hans': ['zh-hans', 'zh-cn', 'zh-sg', 'zh-my', 'zh', 'zh-hant', 'zh-tw', 'zh-hk', 'zh-mo', 'en'],
-				'zh-hant': ['zh-hant', 'zh-tw', 'zh-hk', 'zh-mo', 'zh', 'zh-hans', 'zh-cn', 'zh-sg', 'zh-my', 'en'],
-				'zh-cn': ['zh-cn', 'zh-hans', 'zh-sg', 'zh-my', 'zh', 'zh-hant', 'zh-tw', 'zh-hk', 'zh-mo', 'en'],
-				'zh-sg': ['zh-sg', 'zh-hans', 'zh-cn', 'zh-my', 'zh', 'zh-hant', 'zh-tw', 'zh-hk', 'zh-mo', 'en'],
-				'zh-my': ['zh-my', 'zh-hans', 'zh-cn', 'zh-sg', 'zh', 'zh-hant', 'zh-tw', 'zh-hk', 'zh-mo', 'en'],
-				'zh-tw': ['zh-tw', 'zh-hant', 'zh-hk', 'zh-mo', 'zh', 'zh-hans', 'zh-cn', 'zh-sg', 'zh-my', 'en'],
-				'zh-hk': ['zh-hk', 'zh-hant', 'zh-mo', 'zh-tw', 'zh', 'zh-hans', 'zh-cn', 'zh-sg', 'zh-my', 'en'],
-				'zh-mo': ['zh-mo', 'zh-hant', 'zh-hk', 'zh-tw', 'zh', 'zh-hans', 'zh-cn', 'zh-sg', 'zh-my', 'en'],
+				zh: ['zh', 'zh-hans', 'zh-hant', 'zh-cn', 'zh-tw', 'zh-hk', 'zh-sg', 'zh-mo', 'zh-my'],
+				'zh-hans': ['zh-hans', 'zh-cn', 'zh-sg', 'zh-my', 'zh', 'zh-hant', 'zh-tw', 'zh-hk', 'zh-mo'],
+				'zh-hant': ['zh-hant', 'zh-tw', 'zh-hk', 'zh-mo', 'zh', 'zh-hans', 'zh-cn', 'zh-sg', 'zh-my'],
+				'zh-cn': ['zh-cn', 'zh-hans', 'zh-sg', 'zh-my', 'zh', 'zh-hant', 'zh-tw', 'zh-hk', 'zh-mo'],
+				'zh-sg': ['zh-sg', 'zh-hans', 'zh-cn', 'zh-my', 'zh', 'zh-hant', 'zh-tw', 'zh-hk', 'zh-mo'],
+				'zh-my': ['zh-my', 'zh-hans', 'zh-cn', 'zh-sg', 'zh', 'zh-hant', 'zh-tw', 'zh-hk', 'zh-mo'],
+				'zh-tw': ['zh-tw', 'zh-hant', 'zh-hk', 'zh-mo', 'zh', 'zh-hans', 'zh-cn', 'zh-sg', 'zh-my'],
+				'zh-hk': ['zh-hk', 'zh-hant', 'zh-mo', 'zh-tw', 'zh', 'zh-hans', 'zh-cn', 'zh-sg', 'zh-my'],
+				'zh-mo': ['zh-mo', 'zh-hant', 'zh-hk', 'zh-tw', 'zh', 'zh-hans', 'zh-cn', 'zh-sg', 'zh-my'],
 			};
-			const elect = (candidates, locale) => {
-				let fallbackTableList;
-				if (this.isValidKey(FALLBACK_TABLE, locale)) {
-					fallbackTableList = FALLBACK_TABLE[locale];
+			const getDefaultFallbackList = () => {
+				const defaultLanguageCode = 'en';
+				const getLanguageCodeSplitArray = (languageCode) => {
+					return languageCode.split('-').map((value) => {
+						return value.toLowerCase();
+					});
+				};
+				const documentLanguageSplitArray = getLanguageCodeSplitArray(document.documentElement.lang);
+				const navigatorLanguageSplitArray = getLanguageCodeSplitArray(navigator.language);
+				let languageCode = defaultLanguageCode;
+				for (const languageCodeSplitArray of [documentLanguageSplitArray, navigatorLanguageSplitArray]) {
+					switch (languageCodeSplitArray.length) {
+						case 2:
+							languageCode = `${languageCodeSplitArray[0]}-${languageCodeSplitArray[1]}`;
+							break;
+						case 3:
+							languageCode = `${languageCodeSplitArray[0]}-${languageCodeSplitArray[2]}`;
+							break;
+						default:
+							languageCode = languageCodeSplitArray[0];
+							break;
+					}
+					if (this.isValidKey(FALLBACK_TABLE, languageCode)) {
+						break;
+					}
 				}
-				for (const key of fallbackTableList ?? defaultFallbackList) {
+				return [...new Set([languageCode, defaultLanguageCode])];
+			};
+			const defaultFallbackList = getDefaultFallbackList();
+			const elect = (candidates, locale) => {
+				let fallbackList = defaultFallbackList;
+				for (const key of [locale, ...fallbackList]) {
+					if (this.isValidKey(FALLBACK_TABLE, key)) {
+						fallbackList = FALLBACK_TABLE[key];
+						break;
+					}
+				}
+				for (const key of [...new Set([locale, ...fallbackList, ...defaultFallbackList])]) {
 					if (this.isValidKey(candidates, key)) {
 						return candidates[key];
 					}
