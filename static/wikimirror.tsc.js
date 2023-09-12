@@ -834,9 +834,7 @@
 				return;
 			}
 			const t = (key) => this.messages.confirmLogout[key] || key;
-			$element.off('click');
-			$element.parent().off('click');
-			$element.on('click', async (event) => {
+			const clickHander = async (event) => {
 				event.preventDefault();
 				await mw.loader.using('oojs-ui-windows');
 				const confirmed = await OO.ui.confirm(
@@ -856,7 +854,13 @@
 				} catch {
 					this.showNetworkErrorNotice();
 				}
-			});
+			};
+			const overHander = () => {
+				$element.off('click');
+				$element.on('click', clickHander);
+			};
+			const overHanderDebounce = this.debounce(overHander, 200, true);
+			$element.on('mouseover touchstart', overHanderDebounce);
 		}
 		darkMode(method, item, value) {
 			if (!this.localStorage()) {
@@ -1641,11 +1645,14 @@
 					return originUrl;
 			}
 		}
-		debounce(callback, timeout = 500) {
+		debounce(callback, timeout = 500, immediate = false) {
 			let timer;
 			return function (...args) {
 				if (timer) {
 					clearTimeout(timer);
+				}
+				if (immediate && !timer) {
+					callback.apply(this, args);
 				}
 				timer = setTimeout(() => {
 					callback.apply(this, args);
