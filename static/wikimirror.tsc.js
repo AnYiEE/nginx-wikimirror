@@ -80,7 +80,6 @@
 			this.REGEX_LIST = regexps;
 			this.messages = this.initMessages();
 			this.textCache = new Map();
-			this.windowManager = undefined;
 		}
 		getRealText(value, method) {
 			if (!['wiki', 'wikiless'].includes(method) && this.textCache.has(value)) {
@@ -116,8 +115,8 @@
 				}`
 			);
 			const wpTextbox1 = document.querySelector('#wpTextbox1');
-			const wrapEmoji = (_value) => {
-				return _value.replace(REGEX_EMOJI, '<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>');
+			const wrapEmoji = (emojiHtml) => {
+				return emojiHtml.replace(REGEX_EMOJI, '<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>');
 			};
 			const nodeFilter = () => {
 				if (
@@ -198,17 +197,17 @@
 					...document.querySelectorAll('input[name="clientUrl"]'),
 					...document.querySelectorAll('input[name="intendedWikitext"]'),
 				]) {
-					const {value} = element;
-					if (value.match(regexUrlRoot)) {
-						element.value = this.getRealText(value);
+					const {value: _value} = element;
+					if (_value.match(regexUrlRoot)) {
+						element.value = this.getRealText(_value);
 					}
 				}
-				const cafileExporterA = document.querySelector('#ca-fileExporter a');
-				if (cafileExporterA) {
-					const {href} = cafileExporterA;
+				const caFileExporterA = document.querySelector('#ca-fileExporter a');
+				if (caFileExporterA) {
+					const {href} = caFileExporterA;
 					const url = href.match(/clientUrl=(\S+?)&/)?.[1];
 					if (url) {
-						cafileExporterA.href = href.replace(url, this.getRealText(url));
+						caFileExporterA.href = href.replace(url, this.getRealText(url));
 					}
 				}
 			};
@@ -316,7 +315,7 @@
 							wpSave.removeAttribute('accesskey');
 						}
 					}
-					const mutationObserver = new MutationObserver((mutations) => {
+					const callback = (mutations) => {
 						for (const mutationRecord of mutations) {
 							for (const node of mutationRecord.addedNodes) {
 								if (!(node instanceof HTMLElement)) {
@@ -352,19 +351,20 @@
 								}
 							}
 						}
-					});
+					};
+					const mutationObserver = new MutationObserver(callback);
 					mutationObserver.observe(document.body, {
 						childList: true,
 						subtree: true,
 					});
-					const cx = document.querySelector('.cx-skin-menu-content-list');
-					const st =
-						document.querySelector('#footer-places-statslink a') ?? document.querySelector('#statslink a');
-					if (cx) {
-						cx.id = 'p-tb';
+					const cxSkinMenuContentList = document.querySelector('.cx-skin-menu-content-list');
+					if (cxSkinMenuContentList) {
+						cxSkinMenuContentList.id = 'p-tb';
 					}
-					if (st) {
-						st.href = this.getRealText(st.href);
+					const statslinkA =
+						document.querySelector('#footer-places-statslink a') ?? document.querySelector('#statslink a');
+					if (statslinkA) {
+						statslinkA.href = this.getRealText(statslinkA.href);
 					}
 				} else {
 					const portalSearchDomain = window.portalSearchDomain;
@@ -398,9 +398,17 @@
 								return;
 							}
 							WikiMirror.getRealText.isAceInit = true;
-							document.querySelector('#wpSave')?.addEventListener('click', () => {
+							const wpSave = document.querySelector('#wpSave');
+							if (!wpSave) {
+								return;
+							}
+							const handler = (event) => {
+								event.preventDefault();
 								editor.setValue(this.getRealText(editor.getValue()));
-							});
+								wpSave.removeEventListener('click', handler);
+								wpSave.click();
+							};
+							wpSave.addEventListener('click', handler);
 						});
 						mw.hook('wikipage.content').add(($content) => {
 							if (!($content.attr('id') === 'mw-content-text' || $content.hasClass('mw-changeslist'))) {
@@ -477,16 +485,17 @@
 				if (this.getConf('wgUserName')) {
 					return;
 				}
-				const minervaLoginElement = document.querySelector('.mw-ui-icon-minerva-logIn')?.parentElement;
-				const _elementList = document.querySelectorAll(
-					'#ca-cb-login,#topbar>a[href*="UserLogin"],#pt-login-2,.vector-user-menu-login,#pt-login'
-				);
-				const elementList = [..._elementList];
+				const elementList = [
+					...document.querySelectorAll(
+						'#ca-cb-login,#topbar>a[href*="UserLogin"],#pt-login-2,.vector-user-menu-login,#pt-login'
+					),
+				];
+				const minervaLoginElement = document.querySelector('.minerva-icon--minerva-logIn')?.parentElement;
 				if (minervaLoginElement) {
 					elementList.push(minervaLoginElement);
 				}
-				const username = this.getCookie(`${cookiePrefix}UserName`);
-				const password = this.getCookie(`${cookiePrefix}Password`);
+				const savedUsername = this.getCookie(`${cookiePrefix}UserName`);
+				const savedPassword = this.getCookie(`${cookiePrefix}Password`);
 				const checkPressedKey = (event) => {
 					if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') {
 						return true;
@@ -504,15 +513,15 @@
 					element.addEventListener('click', ajaxLoginHandler);
 					element.addEventListener('keydown', ajaxLoginHandler);
 				}
-				if (username && password && password !== 'deleted' && !this.getConf('wgUserName')) {
+				if (savedUsername && savedPassword && savedPassword !== 'deleted' && !this.getConf('wgUserName')) {
 					const autoLogin = () => {
 						this.showNotice(t('Starting automatic login'), {
 							autoHide: true,
 							tag: 'login',
 						});
 						this.ajaxLogin(undefined, {
-							username,
-							password: this.inflateRaw(password),
+							username: savedUsername,
+							password: this.inflateRaw(savedPassword),
 						});
 					};
 					if (this.getCookie(`${cookiePrefix}Use2FA`) === '1') {
@@ -948,7 +957,10 @@
 						const callback = this.debounce(resetDocumentHeight);
 						const mutationObserver = new MutationObserver(callback);
 						const resizeObserver = new ResizeObserver(callback);
-						mutationObserver.observe(document.body, {attributes: true, attributeFilter: ['class']});
+						mutationObserver.observe(document.body, {
+							attributes: true,
+							attributeFilter: ['class'],
+						});
 						resizeObserver.observe(document.body);
 					}
 					break;
@@ -1038,8 +1050,8 @@
 						if (button === null) {
 							return;
 						}
-						const element = button?.firstElementChild || document.querySelector(`#${ID}`);
-						element.addEventListener('click', (event) => {
+						const targetElement = button?.firstElementChild || document.querySelector(`#${ID}`);
+						targetElement.addEventListener('click', (event) => {
 							event.preventDefault();
 							modeSwitcher();
 							this.darkMode('insert');
@@ -1137,9 +1149,9 @@
 			};
 			const {diffId, oldId, revisionId} = ids;
 			if (diffId) {
-				const buildLink = (oldId, link = 'Special:Diff/') => {
-					if (oldId) {
-						link += `${oldId}/`;
+				const buildLink = (_oldId, link = 'Special:Diff/') => {
+					if (_oldId) {
+						link += `${_oldId}/`;
 					}
 					link += diffId;
 					doIns({
@@ -1367,8 +1379,9 @@
 				preNotification = await tocToggle(intersectionRatio === 0, preNotification);
 			});
 			intersectionObserver.observe(originToc);
-			jQuery(originToc).find('a').on('click', smoothScroll);
-			jQuery(originToc).find('a').on('keydown', smoothScroll);
+			const $originTocItem = jQuery(originToc).find('a');
+			$originTocItem.on('click', smoothScroll);
+			$originTocItem.on('keydown', smoothScroll);
 			const openerHandler = async (event) => {
 				if (checkPressedKey(event)) {
 					return;
@@ -1467,12 +1480,12 @@
 			const t = (key) => this.messages.viewOnOtherWikis[key] || key;
 			const hosts = {Moegirl: 'https://zh.moegirl.org.cn', Qiuwen: 'https://www.qiuwenbaike.cn'};
 			const wgTitle = this.getConf('wgTitle');
-			const notice = ({site, title, path}) => {
+			const notice = ({site: currentSite, title, path}) => {
 				const headerElement = document.querySelector('.mw-first-heading')?.firstChild;
 				const pageTitle = headerElement?.textContent ?? wgTitle;
-				const message = t(site)
+				const message = t(currentSite)
 					.replace('$1', pageTitle)
-					.replace('$2', `${hosts[site]}${path}`)
+					.replace('$2', `${hosts[currentSite]}${path}`)
 					.replace('$3', title);
 				this.showNotice(message, {
 					autoHide: true,
@@ -1504,8 +1517,8 @@
 			}
 			await mw.loader.using('mediawiki.ForeignApi');
 			let apiError;
-			const queryApi = async (site) => {
-				const api = new mw.ForeignApi(`${hosts[site]}/api.php`, {anonymous: true});
+			const queryApi = async (currentSite) => {
+				const api = new mw.ForeignApi(`${hosts[currentSite]}/api.php`, {anonymous: true});
 				const params = {
 					format: 'json',
 					formatversion: '2',
@@ -1530,8 +1543,8 @@
 						throw new ReferenceError();
 					}
 				};
-				const checkPageExists = (response) => {
-					if (response.query.pages[0].missing) {
+				const checkPageExists = (_response) => {
+					if (_response.query.pages[0].missing) {
 						return false;
 					}
 					return true;
@@ -1706,8 +1719,8 @@
 			};
 			const getDefaultFallbackList = () => {
 				const defaultLanguageCode = 'en';
-				const getLanguageCodeSplitArray = (languageCode) => {
-					return languageCode.split('-').map((value) => {
+				const getLanguageCodeSplitArray = (_languageCode) => {
+					return _languageCode.split('-').map((value) => {
 						return value.toLowerCase();
 					});
 				};
@@ -2528,8 +2541,12 @@
 				handler.next(_config);
 			},
 			onResponse: (response, handler) => {
-				const contentType = response.headers['content-type'] ?? response.headers['Content-Type'];
-				if (contentType && /json|text|xml/i.test(contentType) && !/css|(ecma|java)script/i.test(contentType)) {
+				const responseContentType = response.headers['content-type'] ?? response.headers['Content-Type'];
+				if (
+					responseContentType &&
+					/json|text|xml/i.test(responseContentType) &&
+					!/css|(ecma|java)script/i.test(responseContentType)
+				) {
 					response = privateMethod.ahCallback_Response(response);
 				}
 				handler.next(response);
@@ -2552,13 +2569,23 @@
 				options.body = privateMethod.ahCallback_Request(options).body;
 			}
 			if (Object.prototype.toString.call(url) === '[object Request]') {
-				const {body, cache, credentials, headers, integrity, method, mode, redirect, referrer, referrerPolicy} =
-					url;
+				const {
+					body,
+					cache,
+					credentials,
+					headers: _headers,
+					integrity,
+					method,
+					mode,
+					redirect,
+					referrer,
+					referrerPolicy,
+				} = url;
 				const _options = {
 					body,
 					cache,
 					credentials,
-					headers,
+					headers: _headers,
 					integrity,
 					method,
 					mode,
@@ -2571,11 +2598,14 @@
 				});
 				let _body;
 				if (/post/i.test(_options.method)) {
-					const contentType =
+					const optionsContentType =
 						_options.headers.get('content-type') ?? _options.headers.get('Content-Type') ?? '';
-					if (contentType.includes('form-data')) {
+					if (optionsContentType.includes('form-data')) {
 						_body = await url.formData();
-					} else if (/json|text|xml/i.test(contentType) && !/css|(ecma|java)script/i.test(contentType)) {
+					} else if (
+						/json|text|xml/i.test(optionsContentType) &&
+						!/css|(ecma|java)script/i.test(optionsContentType)
+					) {
 						_body = await url.text();
 					}
 					if (_body) {
@@ -2602,14 +2632,14 @@
 			}
 			const {host} = new URL(url, location.origin);
 			if (host.includes(CONFIG.domain)) {
-				const headers = new Headers(options.headers);
-				const originApiUserAgent = headers.get('api-user-agent') ?? headers.get('Api-User-Agent');
-				headers.delete('Api-User-Agent');
-				headers.set(
+				const _headers = new Headers(options.headers);
+				const originApiUserAgent = _headers.get('api-user-agent') ?? _headers.get('Api-User-Agent');
+				_headers.delete('Api-User-Agent');
+				_headers.set(
 					'api-user-agent',
 					originApiUserAgent ? `${apiUserAgent} ${originApiUserAgent}` : apiUserAgent
 				);
-				options.headers = headers;
+				options.headers = _headers;
 			}
 			const response = await originFetch(url, options).catch((error) => {
 				console.log('WikiMirror fetch error:', {error, options, url});
@@ -2617,10 +2647,11 @@
 			if (!response) {
 				return new Response(undefined, {status: 418});
 			}
-			const contentType = response.headers.get('content-type') ?? response.headers.get('Content-Type');
+			const responseContentType = response.headers.get('content-type') ?? response.headers.get('Content-Type');
 			if (
-				!contentType ||
-				(contentType && (/css|(ecma|java)script/i.test(contentType) || !/json|text|xml/i.test(contentType)))
+				!responseContentType ||
+				(responseContentType &&
+					(/css|(ecma|java)script/i.test(responseContentType) || !/json|text|xml/i.test(responseContentType)))
 			) {
 				return response;
 			}
