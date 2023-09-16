@@ -16,14 +16,14 @@
 			all: {
 				ajaxLogin: {
 					enable: true,
-					param: 'init',
+					parameter: 'init',
 				},
 				confirmLogout: {
 					enable: true,
 				},
 				darkMode: {
 					enable: true,
-					param: 'normal',
+					parameter: 'normal',
 				},
 				floatTOC: {
 					enable: true,
@@ -38,7 +38,7 @@
 			body: {
 				displayAnonHide: {
 					enable: true,
-					param: false,
+					parameter: false,
 				},
 			},
 			dom: {},
@@ -258,9 +258,9 @@
 		///////////////////////////
 		async init() {
 			const moduleLoader = (modules) => {
-				for (const [moduleName, {enable, param}] of Object.entries(modules)) {
+				for (const [moduleName, {enable, parameter}] of Object.entries(modules)) {
 					if (this.isValidKey(this, moduleName) && enable) {
-						this[moduleName](param);
+						this[moduleName](parameter);
 					}
 				}
 			};
@@ -619,7 +619,7 @@
 							tag: 'token',
 						});
 					}
-					const params = {
+					const parameters = {
 						action: 'clientlogin',
 						format: 'json',
 						formatversion: '2',
@@ -628,16 +628,16 @@
 						username: username ?? nameInput.getValue(),
 						password: password ?? pwdInput.getValue(),
 					};
-					password = params.password;
+					password = parameters.password;
 					if (keepLoginCheckbox.isSelected()) {
-						params.rememberMe = '1';
+						parameters.rememberMe = '1';
 					}
 					if (loginContinue || retypePassword) {
 						await this.windowManager.clearWindows();
-						delete params.loginreturnurl;
-						delete params.username;
-						delete params.password;
-						params.logincontinue = true;
+						delete parameters.loginreturnurl;
+						delete parameters.username;
+						delete parameters.password;
+						parameters.logincontinue = true;
 						const prompt = async () => {
 							const codeDialog = new OO.ui.MessageDialog();
 							const codeInput = new OO.ui.TextInputWidget({
@@ -690,18 +690,18 @@
 							return;
 						}
 						if (retypePassword) {
-							params.password = value;
-							params.retype = value;
+							parameters.password = value;
+							parameters.retype = value;
 						} else {
-							params.OATHToken = value;
+							parameters.OATHToken = value;
 						}
 					}
 					this.showNotice(t('Logging in'), {
 						tag: 'login',
 					});
-					const response = await api.post(params);
+					const response = await api.post(parameters);
 					if (response['clientlogin']?.status === 'PASS') {
-						const hour = params.rememberMe ? 8760 : 720;
+						const hour = parameters.rememberMe ? 8760 : 720;
 						this.showNotice(t('Login succeed'), {
 							tag: 'login',
 						});
@@ -721,7 +721,7 @@
 								this.setCookie({name: `${cookiePrefix}Password`, value: 'deleted', hour: -1});
 							}
 						}
-						if (params.OATHToken) {
+						if (parameters.OATHToken) {
 							this.setCookie({name: `${cookiePrefix}Use2FA`, value: '1', hour});
 						} else {
 							this.setCookie({name: `${cookiePrefix}Use2FA`, value: 'deleted', hour: -1});
@@ -1164,7 +1164,7 @@
 				if (oldId) {
 					await mw.loader.using('mediawiki.api');
 					const api = new mw.Api();
-					const params = {
+					const parameters = {
 						action: 'compare',
 						format: 'json',
 						formatversion: '2',
@@ -1173,7 +1173,7 @@
 						torelative: 'prev',
 					};
 					try {
-						const response = await api.get(params);
+						const response = await api.get(parameters);
 						if (
 							diffId === this.getConf('wgDiffNewId') &&
 							response['compare']?.fromrevid === this.getConf('wgDiffOldId')
@@ -1477,9 +1477,30 @@
 			) {
 				return;
 			}
+			const STORAGE_KEY = 'wikimirror-viewonotherwikis';
 			const t = (key) => this.messages.viewOnOtherWikis[key] || key;
 			const hosts = {Moegirl: 'https://zh.moegirl.org.cn', Qiuwen: 'https://www.qiuwenbaike.cn'};
 			const wgTitle = this.getConf('wgTitle');
+			const checkTimeout = (_pageStatus) => {
+				const {timestamp} = _pageStatus;
+				if (!timestamp) {
+					return true;
+				}
+				return Date.now() - +timestamp > 300_000;
+			};
+			const updateTimestamp = (_pageStatusMap, _wgTitle) => {
+				const pageStatus = _pageStatusMap.get(_wgTitle);
+				pageStatus.timestamp = Date.now();
+				_pageStatusMap.set(wgTitle, pageStatus);
+				return _pageStatusMap;
+			};
+			const getPageStatusMap = () => {
+				return new Map(JSON.parse(this.localStorage(STORAGE_KEY) ?? '[]'));
+			};
+			const setPageStatusMap = (_pageStatusMap, _wgTitle) => {
+				const pageStatusMapWithTimestamp = updateTimestamp(_pageStatusMap, _wgTitle);
+				this.localStorage(STORAGE_KEY, JSON.stringify([...pageStatusMapWithTimestamp]));
+			};
 			const notice = ({site: currentSite, title, path}) => {
 				const headerElement = document.querySelector('.mw-first-heading')?.firstChild;
 				const pageTitle = headerElement?.textContent ?? wgTitle;
@@ -1493,21 +1514,24 @@
 					tag: 'viewOnOtherWikis',
 				});
 			};
-			const pageStatusOld = this.localStorage('wikimirror-viewonotherwikis');
-			const pageStatus = pageStatusOld ? new Map(JSON.parse(pageStatusOld)) : new Map();
-			if (pageStatus.size >= 100) {
-				const pageStatusKeysIterator = pageStatus.keys();
-				pageStatus.delete(pageStatusKeysIterator.next().value);
+			const pageStatusMap = getPageStatusMap();
+			if (pageStatusMap.size >= 100) {
+				const pageStatusKeysIterator = pageStatusMap.keys();
+				pageStatusMap.delete(pageStatusKeysIterator.next().value);
 			}
-			const hasPageInfo = pageStatus.has(wgTitle);
-			if (hasPageInfo) {
-				notice(pageStatus.get(wgTitle));
+			const hasPageStatus = pageStatusMap.has(wgTitle);
+			if (hasPageStatus) {
+				const pageStatus = pageStatusMap.get(wgTitle);
+				if (checkTimeout(pageStatus)) {
+					setPageStatusMap(pageStatusMap, wgTitle);
+					notice(pageStatus);
+				}
 				return;
 			}
 			let site = 'Qiuwen';
 			for (const element of document.querySelectorAll('.mw-parser-output p:nth-child(-n+10)')) {
 				if (
-					/[动動][画畫漫]|漫[画畫]|游[戏戲]|小[说説]|音[乐樂]|偶像|声优|聲優|歌手|配音|演[员員]|作品|[发發]行|出版/.test(
+					/[动動][漫画畫]|漫[画畫]|游[戏戲]|小[説说]|音[乐樂]|偶像|声优|聲優|歌手|配音|演[员員]|作品|[发發]行|出版/.test(
 						element.innerText
 					)
 				) {
@@ -1519,7 +1543,7 @@
 			let apiError;
 			const queryApi = async (currentSite) => {
 				const api = new mw.ForeignApi(`${hosts[currentSite]}/api.php`, {anonymous: true});
-				const params = {
+				const parameters = {
 					format: 'json',
 					formatversion: '2',
 					action: 'query',
@@ -1531,7 +1555,7 @@
 					redirects: 1,
 				};
 				try {
-					return await api.get(params);
+					return await api.get(parameters);
 				} catch (error) {
 					apiError = error;
 					return {query: {pages: [{title: '', fullurl: '', missing: true}]}};
@@ -1567,9 +1591,9 @@
 					},
 				} = response;
 				const path = fullurl.replace(hosts[site], '');
-				pageStatus.set(wgTitle, {site, title, path});
-				this.localStorage('wikimirror-viewonotherwikis', JSON.stringify([...pageStatus]));
-				notice({site, title, path});
+				pageStatusMap.set(wgTitle, {site, title, path});
+				setPageStatusMap(pageStatusMap, wgTitle);
+				notice(pageStatusMap.get(wgTitle));
 			} catch {
 				console.log('WikiMirror viewOnOtherWikis method error:', apiError);
 			}
@@ -1754,7 +1778,7 @@
 						break;
 					}
 				}
-				for (const key of [...new Set([locale, ...fallbackList, ...defaultFallbackList])]) {
+				for (const key of new Set([locale, ...fallbackList, ...defaultFallbackList])) {
 					if (this.isValidKey(candidates, key)) {
 						return candidates[key];
 					}
@@ -1887,8 +1911,8 @@
 			const base64Data = (value + '='.repeat((4 - (value.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/');
 			const rawData = atob(base64Data);
 			const outputArray = new Uint8Array(rawData.length);
-			for (let i = 0; i < rawData.length; ++i) {
-				outputArray[i] = rawData.charCodeAt(i);
+			for (let index = 0; index < rawData.length; ++index) {
+				outputArray[index] = rawData.charCodeAt(index);
 			}
 			return outputArray;
 		}
@@ -1985,24 +2009,24 @@
 					const getDeflateRaw = (deflateRawValue) => {
 						return this.deflateRaw(this.getRealText(this.inflateRaw(deflateRawValue)));
 					};
-					const {searchParams: getParams} = getURL;
-					const {searchParams: postParams} = postURL;
-					setTag(postParams);
-					postParams.delete('md5');
+					const {searchParams: getParameters} = getURL;
+					const {searchParams: postParameters} = postURL;
+					setTag(postParameters);
+					postParameters.delete('md5');
 					for (const text of textArray) {
-						if (getParams.has(text)) {
-							getParams.set(text, this.getRealText(getParams.get(text)));
+						if (getParameters.has(text)) {
+							getParameters.set(text, this.getRealText(getParameters.get(text)));
 						}
-						if (postParams.has(text)) {
-							postParams.set(text, this.getRealText(postParams.get(text)));
+						if (postParameters.has(text)) {
+							postParameters.set(text, this.getRealText(postParameters.get(text)));
 						}
 					}
-					switch (postParams.get('action')) {
+					switch (postParameters.get('action')) {
 						case 'cxpublish':
-							postParams.set('html', getDeflateRaw(postParams.get('html')));
+							postParameters.set('html', getDeflateRaw(postParameters.get('html')));
 							break;
 						case 'cxsave':
-							postParams.set('content', getDeflateRaw(postParams.get('content')));
+							postParameters.set('content', getDeflateRaw(postParameters.get('content')));
 							break;
 						case 'logout':
 							for (const cookiePrefix of ['lastLogin', 'lastLoginWikitech']) {
@@ -2073,7 +2097,7 @@
 			};
 			const parseHtmlString = (htmlString = '', mimeType = 'text/html') => {
 				const doc = new DOMParser().parseFromString(htmlString, mimeType.match(/^([+/a-z-]+?)(?:;|$)/)[1]);
-				const {documentElement: element} = doc;
+				const {doctype, documentElement: element} = doc;
 				element.querySelector('parsererror')?.remove();
 				for (const _element of element.querySelectorAll('span[data-mw-variant]')) {
 					const mwVariantObject = JSON.parse(_element.dataset['mwVariant']);
@@ -2098,7 +2122,7 @@
 				}
 				return {
 					dec: htmlString.match(/^\s*?(<\?xml.+?\?>)/)?.[0] ?? '',
-					dtd: doc.doctype ? `${new XMLSerializer().serializeToString(doc.doctype)}\n` : '',
+					dtd: doctype ? `${new XMLSerializer().serializeToString(doctype)}\n` : '',
 					element,
 				};
 			};
@@ -2167,17 +2191,16 @@
 				response.response = JSON.stringify(responseObject);
 			} catch {
 				const responseHeaders = response.originResponse?.headers ?? response.headers ?? {};
-				const {response: responseText} = response;
-				const {url: responseUrl} = response.config;
+				const {
+					config: {xhr, url: responseUrl},
+					response: responseText,
+				} = response;
 				const contentType =
 					(typeof responseHeaders.get === 'function'
 						? responseHeaders.get('content-type') ?? responseHeaders.get('Content-Type')
 						: responseHeaders['content-type'] ?? responseHeaders['Content-Type']) ?? '';
 				if (/xml/i.test(contentType)) {
-					const elementObject = parseHtmlString(
-						responseText ?? response.config.xhr?.responseXML,
-						contentType
-					);
+					const elementObject = parseHtmlString(responseText ?? xhr?.responseXML, contentType);
 					for (const element of elementObject.element.querySelectorAll('a,rev,text')) {
 						element.innerHTML = this.getRealText(element.innerHTML);
 					}
