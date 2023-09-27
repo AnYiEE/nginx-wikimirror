@@ -297,9 +297,7 @@
 						element.href = this.getRealText(element.href);
 					}
 				});
-				window.addEventListener('afterprint', () => {
-					location.reload();
-				});
+				window.addEventListener('afterprint', location.reload);
 				if (isMediaWiki) {
 					this.getRealText(undefined, 'wiki');
 					const wpSave = document.querySelector('#wpSave');
@@ -487,10 +485,10 @@
 				}
 				const elementList = [
 					...document.querySelectorAll(
-						'#ca-cb-login,#topbar>a[href*="UserLogin"],#pt-login-2,.vector-user-menu-login,#pt-login'
+						'#ca-cb-login>a,#topbar>a[href*="UserLogin"],#pt-login>a,#pt-login-private>a,#pt-login-2>a,#pt-login-private-2>a,.vector-user-menu-login>a'
 					),
 				];
-				const minervaLoginElement = document.querySelector('.minerva-icon--minerva-logIn')?.parentElement;
+				const minervaLoginElement = document.querySelector('.minerva-icon--logIn')?.parentElement;
 				if (minervaLoginElement) {
 					elementList.push(minervaLoginElement);
 				}
@@ -827,9 +825,9 @@
 		}
 		confirmLogout() {
 			const $element = jQuery()
-				.add(jQuery('#ca-cb-logout>a,#topbar>a[href*="UserLogout"],#pt-logout>a,.vector-user-menu-logout'))
+				.add(jQuery('#ca-cb-logout>a,#topbar>a[href*="UserLogout"],#pt-logout>a'))
 				.add(
-					jQuery('.minerva-icon--minerva-logOut')
+					jQuery('.minerva-icon--logOut')
 						.parent('.minerva-user-menu,.toggle-list-item__anchor')
 						.not('[target]')
 				);
@@ -862,12 +860,37 @@
 					this.showNetworkErrorNotice();
 				}
 			};
-			const overHander = () => {
-				$element.off('click');
-				$element.on('click', clickHander);
+			const addEventListener = (_$element) => {
+				const overHander = () => {
+					_$element.off('click');
+					_$element.on('click', clickHander);
+				};
+				const overHanderDebounce = this.debounce(overHander, 200, true);
+				_$element.on('mouseover touchstart', overHanderDebounce);
 			};
-			const overHanderDebounce = this.debounce(overHander, 200, true);
-			$element.on('mouseover touchstart', overHanderDebounce);
+			addEventListener($element);
+			if (!this.hasClass('skin-vector-2022')) {
+				return;
+			}
+			const callback = (_mutations, observer) => {
+				if (!this.hasClass('vector-sticky-header-visible')) {
+					return;
+				}
+				const SELECTOR = '#pt-logout-sticky-header>a';
+				const element = document.querySelector(SELECTOR);
+				if (!element) {
+					return;
+				}
+				const elementClone = element.cloneNode(true);
+				element.replaceWith(elementClone);
+				addEventListener(jQuery(SELECTOR));
+				observer.disconnect();
+			};
+			const mutationObserver = new MutationObserver(callback);
+			mutationObserver.observe(document.body, {
+				attributes: true,
+				attributeFilter: ['class'],
+			});
 		}
 		darkMode(method, item, value) {
 			if (!this.localStorage()) {
@@ -1048,8 +1071,8 @@
 						if (button === null) {
 							return;
 						}
-						const targetElement = button?.firstElementChild || document.querySelector(`#${ID}`);
-						targetElement.addEventListener('click', (event) => {
+						const targetElement = (button ?? document.querySelector(`#${ID}`))?.querySelector('a');
+						targetElement?.addEventListener('click', (event) => {
 							event.preventDefault();
 							modeSwitcher();
 							this.darkMode('insert');
@@ -1112,10 +1135,10 @@
 				portletId = 'p-tb';
 			}
 			const doIns = async ({text, tooltip, link, isPermaLink}) => {
-				let element = document.querySelector(`#${ID}`);
+				let element = document.querySelector(`#${ID}`)?.querySelector('a');
 				if (!element) {
 					await mw.loader.using('mediawiki.util');
-					element = mw.util.addPortletLink(portletId, '#', text, ID, tooltip);
+					element = mw.util.addPortletLink(portletId, '#', text, ID, tooltip)?.querySelector('a');
 					if (!element) {
 						return;
 					}
@@ -1126,9 +1149,6 @@
 							`wikimirror-css-difflink`
 						);
 					}
-				}
-				if (portletId === 'mw-mf-diffarea' || this.hasClass('skin-minerva')) {
-					element = element.firstElementChild;
 				}
 				element.onclick = async (event) => {
 					event.preventDefault();
@@ -1425,7 +1445,7 @@
 			)}" target="_blank" title="${Title}">${Text}</a></li>`;
 			const RedirectMinerva = `<li class="toggle-list-item" id="${ID}"><a class="toggle-list-item__anchor" href="${this.getLocate(
 				'originUrl'
-			)}" target="_blank" title="${Title}"><span class="minerva-icon minerva-icon--minerva-logOut"></span><span class="toggle-list-item__label">${Text}</span></a></li>`;
+			)}" target="_blank" title="${Title}"><span class="minerva-icon minerva-icon--logOut"></span><span class="toggle-list-item__label">${Text}</span></a></li>`;
 			const apihelpFlagsUl = document.querySelector('.apihelp-flags>ul');
 			if (this.hasClass('skin-apioutput') && apihelpFlagsUl) {
 				return apihelpFlagsUl.insertAdjacentHTML('beforeend', Redirect);
