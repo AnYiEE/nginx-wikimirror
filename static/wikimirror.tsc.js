@@ -494,17 +494,10 @@
 				}
 				const savedUsername = this.getCookie(`${cookiePrefix}UserName`);
 				const savedPassword = this.getCookie(`${cookiePrefix}Password`);
-				const checkPressedKey = (event) => {
-					if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') {
-						return true;
-					}
-					return false;
-				};
 				const ajaxLoginHandler = (event) => {
-					if (checkPressedKey(event)) {
+					if (this.checkA11yKey(event, {preventDefault: true})) {
 						return;
 					}
-					event.preventDefault();
 					this.ajaxLogin();
 				};
 				for (const element of elementList) {
@@ -524,10 +517,9 @@
 					};
 					if (this.getCookie(`${cookiePrefix}Use2FA`) === '1') {
 						const autoLoginHandler = (event) => {
-							if (checkPressedKey(event)) {
+							if (this.checkA11yKey(event, {preventDefault: true})) {
 								return;
 							}
-							event.preventDefault();
 							autoLogin();
 						};
 						for (const element of elementList) {
@@ -1297,12 +1289,6 @@
 			let isShow;
 			let preNotification;
 			let disableStyleTimer;
-			const checkPressedKey = (event) => {
-				if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') {
-					return true;
-				}
-				return false;
-			};
 			const disableStyle = () => {
 				if (disableStyleTimer) {
 					clearTimeout(disableStyleTimer);
@@ -1372,10 +1358,9 @@
 				} else {
 					_preNotification = await this.notify($floatToc, {classes: 'noprint', id: ID, autoHide: false});
 					const notificationHandler = (event) => {
-						if (checkPressedKey(event)) {
+						if (this.checkA11yKey(event, {stopPropagation: true})) {
 							return;
 						}
-						event.stopPropagation();
 						const {target} = event;
 						if (target.id === 'close') {
 							closeNotification(_preNotification);
@@ -1401,7 +1386,7 @@
 			$originTocItem.on('click', smoothScroll);
 			$originTocItem.on('keydown', smoothScroll);
 			const openerHandler = async (event) => {
-				if (checkPressedKey(event)) {
+				if (this.checkA11yKey(event, {preventDefault: true})) {
 					return;
 				}
 				preNotification = await tocToggle('open');
@@ -1673,32 +1658,17 @@
 				}, 10);
 			});
 		}
-		getConf(key) {
-			if (typeof mw === 'object' && typeof mw.config?.get === 'function') {
-				return mw.config.get(key);
+		checkA11yKey(event, {preventDefault = false, stopPropagation = false} = {}) {
+			if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') {
+				return true;
 			}
-			if (typeof RLCONF === 'object') {
-				return RLCONF[key] ?? null;
+			if (preventDefault) {
+				event.preventDefault();
 			}
-			return null;
-		}
-		getCookie(name) {
-			return `; ${this.decodeURIComponent(document.cookie)}`.split(`; ${name}=`).pop()?.split(';').shift();
-		}
-		getLocate(method) {
-			const originHash = this.getRealText(location.hash);
-			const originHost = this.getRealText(location.host);
-			const originUrl = this.getRealText(location.href);
-			switch (method) {
-				case 'originHash':
-					return originHash;
-				case 'originHost':
-					return originHost;
-				case 'originUrl':
-					return originUrl;
-				default:
-					return originUrl;
+			if (stopPropagation) {
+				event.stopPropagation();
 			}
+			return false;
 		}
 		debounce(callback, timeout = 500, immediate = false) {
 			let timer;
@@ -1735,6 +1705,33 @@
 				.replace(/\*/g, '%2A')
 				.replace(/%5B/g, '[')
 				.replace(/%5D/g, ']');
+		}
+		getConf(key) {
+			if (typeof mw === 'object' && typeof mw.config?.get === 'function') {
+				return mw.config.get(key);
+			}
+			if (typeof RLCONF === 'object') {
+				return RLCONF[key] ?? null;
+			}
+			return null;
+		}
+		getCookie(name) {
+			return `; ${this.decodeURIComponent(document.cookie)}`.split(`; ${name}=`).pop()?.split(';').shift();
+		}
+		getLocate(method) {
+			const originHash = this.getRealText(location.hash);
+			const originHost = this.getRealText(location.host);
+			const originUrl = this.getRealText(location.href);
+			switch (method) {
+				case 'originHash':
+					return originHash;
+				case 'originHost':
+					return originHost;
+				case 'originUrl':
+					return originUrl;
+				default:
+					return originUrl;
+			}
 		}
 		hasClass(name, selector = 'body') {
 			if (!name || !document.querySelector(selector)) {
