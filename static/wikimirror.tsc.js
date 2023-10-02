@@ -116,9 +116,6 @@
 				}`
 			);
 			const wpTextbox1 = document.querySelector('#wpTextbox1');
-			const wrapEmoji = (emojiHtml) => {
-				return emojiHtml.replace(REGEX_EMOJI, '<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>');
-			};
 			const nodeFilter = () => {
 				if (
 					!pageNodeList ||
@@ -145,8 +142,8 @@
 					}
 				}
 				for (const node of nodeArray) {
-					let nodeValue = node.nodeValue ?? '';
-					if (!nodeValue.trim()) {
+					let {nodeValue} = node;
+					if (!nodeValue?.trim()) {
 						continue;
 					}
 					if (nodeValue.match(regexUrlRoot) || nodeValue.match(regexOther1)) {
@@ -160,8 +157,9 @@
 							node.nodeValue = nodeValue;
 						});
 					}
+					const emojiRegExpMatchArray = nodeValue.match(REGEX_EMOJI);
 					if (
-						nodeValue.match(REGEX_EMOJI) &&
+						emojiRegExpMatchArray &&
 						!(
 							WikiMirrorPrivateMethod.hasClass('action-edit') ||
 							WikiMirrorPrivateMethod.hasClass('action-submit')
@@ -174,12 +172,29 @@
 								WikiMirror.getRealText === undefined)) ||
 							WikiMirror === undefined)
 					) {
-						const element = document.createElement('wikimirror-emoji-line');
-						element.innerHTML = wrapEmoji(nodeValue);
-						if (node.parentNode) {
+						const surroundEmoji = function (emoji) {
+							const {nodeValue: _nodeValue} = this;
+							if (!_nodeValue) {
+								return;
+							}
+							emoji ??= _nodeValue;
+							const startIndex = _nodeValue.indexOf(emoji);
+							if (startIndex === -1) {
+								return;
+							}
+							const element = document.createElement('wikimirror-emoji');
+							element.className = 'mw-no-invert';
+							const range = document.createRange();
+							range.setStart(this, startIndex);
+							range.setEnd(this, startIndex + emoji.length);
+							range.surroundContents(element);
+							return element;
+						};
+						for (const emoji of emojiRegExpMatchArray) {
 							requestAnimationFrame(() => {
-								node.parentNode.insertBefore(element, node.nextSibling);
-								node.remove();
+								Text.prototype.surroundEmoji = surroundEmoji;
+								node.surroundEmoji(emoji);
+								delete Text.prototype.surroundEmoji;
 							});
 						}
 					}
@@ -229,7 +244,9 @@
 				return value;
 			}
 			if (method === 'emoji') {
-				value = value.match(REGEX_EMOJI) ? wrapEmoji(value) : value;
+				value = value.match(REGEX_EMOJI)
+					? value.replace(REGEX_EMOJI, '<wikimirror-emoji class="mw-no-invert">$&</wikimirror-emoji>')
+					: value;
 				this.textCache.set(originValue, value);
 				return value;
 			}
