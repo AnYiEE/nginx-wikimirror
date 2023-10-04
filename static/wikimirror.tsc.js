@@ -206,9 +206,7 @@
 					}
 					delete Text.prototype.surroundEmoji;
 				};
-				textNodeArrayFilter(fullPageTextNodeArray, (textNode, nodeValue) => {
-					surroundEmojiText(textNode, nodeValue);
-				});
+				textNodeArrayFilter(fullPageTextNodeArray, surroundEmojiText);
 			};
 			const correctPageText = () => {
 				correctTextNode();
@@ -1898,7 +1896,7 @@
 			};
 		}
 		static isValidKey(object, key) {
-			return key in object;
+			return Object.hasOwn(object, key) && key in object;
 		}
 		static localStorage(name, value) {
 			const isStorageEnable = (() => {
