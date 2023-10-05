@@ -268,9 +268,7 @@
 			} else {
 				value = value
 					.replace(new RegExp(`phab\\.${this.DOMAIN}`, 'gi'), 'phab.wmfusercontent.org')
-					.replace(new RegExp(`xtools-api\\.${this.DOMAIN}\\/`, 'gi'), 'xtools.wmcloud.org/api/')
 					.replace(new RegExp(`wma\\.${this.DOMAIN_REGEX}`, 'gi'), 'wma.wmcloud.org')
-					.replace(new RegExp(`recommend\\.${this.DOMAIN_REGEX}`, 'gi'), 'recommend.wmflabs.org')
 					.replace(regexUrlLatex, 'wikimedia.org/api/rest_v1/media/math/render/$1')
 					.replace(regexUrlSub, '$1.org')
 					.replace(regexUrlRoot, 'wikimedia.org')
@@ -303,6 +301,20 @@
 				}
 			};
 			// stand alone functions
+			let RLPAGEMODULES;
+			Object.defineProperty(window, 'RLPAGEMODULES', {
+				get() {
+					return RLPAGEMODULES;
+				},
+				set(_RLPAGEMODULES) {
+					const PAGEMODULE_BLACK_LIST = ['ext.gadget.mirrorsite'];
+					RLPAGEMODULES = (_RLPAGEMODULES ?? []).filter((moduleName) => {
+						return !PAGEMODULE_BLACK_LIST.includes(moduleName);
+					});
+				},
+				configurable: true,
+				enumerable: true,
+			});
 			moduleLoader(this.MODULE_LIST.standard);
 			if (this.darkMode('check') && !this.REGEX_LIST.noDarkmode.test(location.host)) {
 				document.documentElement.style.filter = 'invert(.95) hue-rotate(.5turn)';
@@ -2179,6 +2191,14 @@
 							const [, p1, p2] = regExpMatchArray;
 							getURL.host = `latex-${p1}.${this.DOMAIN}`;
 							getURL.pathname = `/${p2}`;
+						}
+					}
+					if (urlWithPath.includes('wikimedia.org/api/rest_v1/metrics/pageviews/')) {
+						const regExpMatchArray = urlWithPath.match(/^wikimedia\.org\/(\S+?)$/);
+						if (regExpMatchArray) {
+							const [, p1] = regExpMatchArray;
+							getURL.host = `pageviews.${this.DOMAIN}`;
+							getURL.pathname = `/${this.getRealText(p1)}`;
 						}
 					}
 					if (config.body) {
