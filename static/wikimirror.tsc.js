@@ -292,13 +292,14 @@
 		async init() {
 			const moduleLoader = (modules) => {
 				for (const [moduleName, {enable, isStatic, parameter}] of Object.entries(modules)) {
-					if (WikiMirrorPrivateMethod.isValidKey(this, moduleName) && enable) {
-						if (isStatic) {
-							WikiMirrorPrivateMethod[moduleName](parameter);
-						} else {
-							this[moduleName](parameter);
-						}
+					if (!enable) {
+						continue;
 					}
+					const target = isStatic ? WikiMirrorPrivateMethod : this;
+					if (!WikiMirrorPrivateMethod.isValidKey(target, moduleName, false)) {
+						continue;
+					}
+					target[moduleName](parameter);
 				}
 			};
 			// stand alone functions
@@ -1895,8 +1896,9 @@
 				},
 			};
 		}
-		static isValidKey(object, key) {
-			return Object.hasOwn(object, key) && key in object;
+		static isValidKey(object, key, checkOwnPropertyOnly = true) {
+			const isOwnProperty = checkOwnPropertyOnly ? Object.hasOwn(object, key) : true;
+			return isOwnProperty && key in object;
 		}
 		static localStorage(name, value) {
 			const isStorageEnable = (() => {
