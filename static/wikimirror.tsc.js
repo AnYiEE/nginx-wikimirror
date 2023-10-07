@@ -122,7 +122,7 @@
 					}
 					return textNodeArray;
 				};
-				const textNodeArrayFilter = (textNodeArray, callback) => {
+				const filterTextNodeArray = (textNodeArray, callback) => {
 					for (const textNode of textNodeArray) {
 						const {nodeValue} = textNode;
 						if (!nodeValue?.trim()) {
@@ -155,7 +155,7 @@
 					}
 					return nodeValue;
 				};
-				textNodeArrayFilter(wikiPageTextNodeArray, (textNode, nodeValue) => {
+				filterTextNodeArray(wikiPageTextNodeArray, (textNode, nodeValue) => {
 					const correctedNodeValue = getCorrectedNodeValue(nodeValue);
 					if (correctedNodeValue !== nodeValue) {
 						textNode.nodeValue = correctedNodeValue;
@@ -206,7 +206,7 @@
 					}
 					delete Text.prototype.surroundEmoji;
 				};
-				textNodeArrayFilter(fullPageTextNodeArray, surroundEmojiText);
+				filterTextNodeArray(fullPageTextNodeArray, surroundEmojiText);
 			};
 			const correctPageText = () => {
 				correctTextNode();
@@ -288,7 +288,7 @@
 		///// private methods /////
 		///////////////////////////
 		async init() {
-			const moduleLoader = (modules) => {
+			const loadModules = (modules) => {
 				for (const [moduleName, {enable, isStatic, parameter}] of Object.entries(modules)) {
 					if (!enable) {
 						continue;
@@ -301,25 +301,25 @@
 				}
 			};
 			// stand alone functions
-			let RLPAGEMODULES;
+			let rlPageModules;
 			Object.defineProperty(window, 'RLPAGEMODULES', {
 				get() {
-					return RLPAGEMODULES;
+					return rlPageModules;
 				},
-				set(_RLPAGEMODULES) {
+				set(_rlPageModules) {
 					const PAGEMODULE_BLACK_LIST = ['ext.gadget.mirrorsite'];
-					RLPAGEMODULES = (_RLPAGEMODULES ?? []).filter((moduleName) => {
+					rlPageModules = (_rlPageModules ?? []).filter((moduleName) => {
 						return !PAGEMODULE_BLACK_LIST.includes(moduleName);
 					});
 				},
 				configurable: true,
 				enumerable: true,
 			});
-			moduleLoader(this.MODULE_LIST.standard);
+			loadModules(this.MODULE_LIST.standard);
 			if (this.darkMode('check') && !this.REGEX_LIST.noDarkmode.test(location.host)) {
 				document.documentElement.style.filter = 'invert(.95) hue-rotate(.5turn)';
 			}
-			this.setCss('/wikimirror.css?date=20231004', 'url')
+			this.setCss('/wikimirror.css?date=20231007', 'url')
 				.then(() => {
 					console.log('WikiMirror basic stylesheet load succeeded.');
 				})
@@ -328,7 +328,7 @@
 				});
 			// functions only need body's attrs
 			const isMediaWiki = await WikiMirrorPrivateMethod.bodyReady();
-			moduleLoader(this.MODULE_LIST.body);
+			loadModules(this.MODULE_LIST.body);
 			if (isMediaWiki) {
 				this.darkMode('init');
 				console.log('WikiMirror basic methods load succeeded.');
@@ -340,7 +340,7 @@
 			}
 			// functions only need dom ready
 			WikiMirrorPrivateMethod.domReady().then(() => {
-				moduleLoader(this.MODULE_LIST.dom);
+				loadModules(this.MODULE_LIST.dom);
 				window.addEventListener('beforeprint', () => {
 					this.darkMode('meta', 'color-scheme', 'remove');
 					for (const element of document.querySelectorAll('a')) {
@@ -352,18 +352,18 @@
 					this.getRealText(undefined, 'wiki');
 					const wpSave = document.querySelector('#wpSave');
 					if (wpSave) {
-						const handler = (event) => {
+						const clickListener = (event) => {
 							event.preventDefault();
 							this.getRealText(undefined, 'wiki');
-							wpSave.removeEventListener('click', handler);
+							wpSave.removeEventListener('click', clickListener);
 							wpSave.click();
 						};
-						wpSave.addEventListener('click', handler);
+						wpSave.addEventListener('click', clickListener);
 						if (!WikiMirrorPrivateMethod.getConf('wgUserName')) {
 							wpSave.removeAttribute('accesskey');
 						}
 					}
-					const callback = (mutations) => {
+					const observerCallback = (mutations) => {
 						for (const mutationRecord of mutations) {
 							for (const node of mutationRecord.addedNodes) {
 								if (!(node instanceof HTMLElement)) {
@@ -400,7 +400,7 @@
 							}
 						}
 					};
-					const mutationObserver = new MutationObserver(callback);
+					const mutationObserver = new MutationObserver(observerCallback);
 					mutationObserver.observe(document.body, {
 						childList: true,
 						subtree: true,
@@ -430,7 +430,7 @@
 						console.log('WikiMirror dependencies load succeeded.');
 						// mw basic methods ready
 						this.messages = WikiMirrorPrivateMethod.initMessages();
-						moduleLoader(this.MODULE_LIST.mw);
+						loadModules(this.MODULE_LIST.mw);
 						document.addEventListener('copy', (event) => {
 							let value = getSelection()?.toString() ?? '';
 							if (new RegExp(this.DOMAIN_REGEX, 'gi').test(value)) {
@@ -450,13 +450,13 @@
 							if (!wpSave) {
 								return;
 							}
-							const handler = (event) => {
+							const clickListener = (event) => {
 								event.preventDefault();
 								editor.setValue(this.getRealText(editor.getValue()));
-								wpSave.removeEventListener('click', handler);
+								wpSave.removeEventListener('click', clickListener);
 								wpSave.click();
 							};
-							wpSave.addEventListener('click', handler);
+							wpSave.addEventListener('click', clickListener);
 						});
 						mw.hook('wikipage.content').add(($content) => {
 							if (!($content.attr('id') === 'mw-content-text' || $content.hasClass('mw-changeslist'))) {
@@ -474,7 +474,7 @@
 						});
 						// mw basic methods && dom all ready
 						await WikiMirrorPrivateMethod.domReady();
-						moduleLoader(this.MODULE_LIST.all);
+						loadModules(this.MODULE_LIST.all);
 						console.log('WikiMirror load succeeded.');
 					})
 					.catch(() => {
@@ -546,15 +546,19 @@
 				}
 				const savedUsername = WikiMirrorPrivateMethod.getCookie(`${cookiePrefix}UserName`);
 				const savedPassword = WikiMirrorPrivateMethod.getCookie(`${cookiePrefix}Password`);
-				const ajaxLoginHandler = (event) => {
-					if (WikiMirrorPrivateMethod.checkA11yKey(event, {preventDefault: true})) {
+				const ajaxLoginListener = (event) => {
+					if (
+						WikiMirrorPrivateMethod.checkA11yKey(event, {
+							preventDefault: true,
+						})
+					) {
 						return;
 					}
 					this.ajaxLogin();
 				};
 				for (const element of elementList) {
-					element.addEventListener('click', ajaxLoginHandler);
-					element.addEventListener('keydown', ajaxLoginHandler);
+					element.addEventListener('click', ajaxLoginListener);
+					element.addEventListener('keydown', ajaxLoginListener);
 				}
 				if (
 					savedUsername &&
@@ -573,17 +577,21 @@
 						});
 					};
 					if (WikiMirrorPrivateMethod.getCookie(`${cookiePrefix}Use2FA`) === '1') {
-						const autoLoginHandler = (event) => {
-							if (WikiMirrorPrivateMethod.checkA11yKey(event, {preventDefault: true})) {
+						const autoLoginListener = (event) => {
+							if (
+								WikiMirrorPrivateMethod.checkA11yKey(event, {
+									preventDefault: true,
+								})
+							) {
 								return;
 							}
 							autoLogin();
 						};
 						for (const element of elementList) {
-							element.removeEventListener('click', ajaxLoginHandler);
-							element.removeEventListener('keydown', ajaxLoginHandler);
-							element.addEventListener('click', autoLoginHandler);
-							element.addEventListener('keydown', autoLoginHandler);
+							element.removeEventListener('click', ajaxLoginListener);
+							element.removeEventListener('keydown', ajaxLoginListener);
+							element.addEventListener('click', autoLoginListener);
+							element.addEventListener('keydown', autoLoginListener);
 						}
 					} else {
 						autoLogin();
@@ -628,21 +636,29 @@
 				help: t('SelectedOrNot'),
 				label: t('Keep me logged in'),
 			});
-			const $label = jQuery('<label>')
-				.addClass('oo-ui-labelWidget oo-ui-labelElement-label')
-				.css({'font-size': 'small', 'text-align': 'justify'});
+			const $label = jQuery('<label>').addClass('oo-ui-labelWidget oo-ui-labelElement-label').css({
+				'font-size': 'small',
+				'text-align': 'justify',
+			});
 			const $autoLogin = $label.clone().append(autoLoginLayout.$element);
 			const $forgotPassword = $label
 				.clone()
 				.css('float', 'right')
 				.append(
 					jQuery('<a>')
-						.attr({href: '/wiki/Special:PasswordReset', title: t('Reset password')})
+						.attr({
+							href: '/wiki/Special:PasswordReset',
+							title: t('Reset password'),
+						})
 						.text(t('Forgot password?'))
 				);
 			const $inputBox = $label
 				.clone()
-				.css({display: 'block', 'font-size': 'inherit', padding: '6px 0'})
+				.css({
+					display: 'block',
+					'font-size': 'inherit',
+					padding: '6px 0',
+				})
 				.append(nameInput.$element.css('margin-bottom', '6px'), pwdInput.$element);
 			const $rememberMe = $label.clone().append(keepLoginLayout.$element.css('margin-top', '6px'));
 			const removeWindowResizeHandler = () => {
@@ -651,7 +667,7 @@
 				});
 			};
 			let loginToken = '';
-			const doLogin = async ({autoLogin = false, loginContinue = false, retypePassword = false} = {}) => {
+			const login = async ({autoLogin = false, loginContinue = false, retypePassword = false} = {}) => {
 				const api = new mw.Api();
 				try {
 					if (!loginContinue) {
@@ -703,7 +719,9 @@
 							removeWindowResizeHandler();
 							instance.opened.then(() => {
 								codeInput.on('enter', () => {
-									this.windowManager.getCurrentWindow().close({action: 'accept'});
+									this.windowManager.getCurrentWindow().close({
+										action: 'accept',
+									});
 								});
 								codeInput.focus();
 							});
@@ -724,13 +742,17 @@
 									autoHide: true,
 									tag: 'login',
 								});
-								doLogin({retypePassword: true});
+								login({
+									retypePassword: true,
+								});
 							} else {
 								this.showNotice(t('Empty2FA'), {
 									autoHide: true,
 									tag: 'login',
 								});
-								doLogin({loginContinue: true});
+								login({
+									loginContinue: true,
+								});
 							}
 							return;
 						}
@@ -762,17 +784,33 @@
 								hour,
 							});
 						} else if (!autoLogin) {
-							this.setCookie({name: `${cookiePrefix}Password`, value: 'deleted', hour: -1});
+							this.setCookie({
+								name: `${cookiePrefix}Password`,
+								value: 'deleted',
+								hour: -1,
+							});
 						}
 						if (parameters.OATHToken) {
-							this.setCookie({name: `${cookiePrefix}Use2FA`, value: '1', hour});
+							this.setCookie({
+								name: `${cookiePrefix}Use2FA`,
+								value: '1',
+								hour,
+							});
 						} else {
-							this.setCookie({name: `${cookiePrefix}Use2FA`, value: 'deleted', hour: -1});
+							this.setCookie({
+								name: `${cookiePrefix}Use2FA`,
+								value: 'deleted',
+								hour: -1,
+							});
 						}
 						location.reload();
 					} else if (response['clientlogin']?.messagecode) {
 						if (autoLogin) {
-							this.setCookie({name: `${cookiePrefix}Password`, value: 'deleted', hour: -1});
+							this.setCookie({
+								name: `${cookiePrefix}Password`,
+								value: 'deleted',
+								hour: -1,
+							});
 						}
 						switch (response['clientlogin'].messagecode) {
 							case 'authmanager-authn-autocreate-failed':
@@ -787,20 +825,26 @@
 								this.showNotice(t('TooFrequent'));
 								break;
 							case 'oathauth-auth-ui':
-								doLogin({loginContinue: true});
+								login({
+									loginContinue: true,
+								});
 								break;
 							case 'oathauth-login-failed':
 								this.showNotice(t('Invalid 2FA verification code'), {
 									autoHide: true,
 									tag: 'login',
 								});
-								doLogin({loginContinue: true});
+								login({
+									loginContinue: true,
+								});
 								break;
 							case 'resetpass-temp-emailed':
 								this.showNotice(t('New password is required'), {
 									tag: 'login',
 								});
-								doLogin({retypePassword: true});
+								login({
+									retypePassword: true,
+								});
 								break;
 							case 'wrongpassword':
 								this.showNotice(t('Invalid useruame or password'), {
@@ -819,7 +863,9 @@
 				}
 			};
 			if (username && password) {
-				doLogin({autoLogin: true});
+				login({
+					autoLogin: true,
+				});
 				return;
 			}
 			const checkValid = () => {
@@ -834,14 +880,14 @@
 			};
 			pwdInput.on('enter', () => {
 				if (checkValid()) {
-					doLogin();
+					login();
 				}
 			});
 			messageDialog.getActionProcess = (action) => {
 				return new OO.ui.Process(() => {
 					if (action === 'login') {
 						if (checkValid()) {
-							doLogin();
+							login();
 						}
 					} else {
 						this.windowManager.clearWindows();
@@ -888,40 +934,42 @@
 			const t = (key) => {
 				return this.messages.confirmLogout[key] || key;
 			};
-			const clickHander = async (event) => {
+			const clickListener = async (event) => {
 				event.preventDefault();
 				await mw.loader.using('oojs-ui-windows');
-				const confirmed = await OO.ui.confirm(
+				const isConfirm = await OO.ui.confirm(
 					jQuery('<div>')
 						.addClass('WikiMirrorNotice WikiMirrorTip')
 						.append(jQuery('<span>').css('font-size', '1.2rem').text(t('Confirm')))
 				);
-				if (!confirmed) {
+				if (!isConfirm) {
 					return;
 				}
 				await mw.loader.using('mediawiki.api');
 				try {
 					this.showNotice(mw.message('logging-out-notify'));
 					const api = new mw.Api();
-					await api.postWithEditToken({action: 'logout'});
+					await api.postWithEditToken({
+						action: 'logout',
+					});
 					location.reload();
 				} catch {
 					this.showNetworkErrorNotice();
 				}
 			};
 			const addEventListener = (_$element) => {
-				const overHander = () => {
+				const hoverListener = () => {
 					_$element.off('click');
-					_$element.on('click', clickHander);
+					_$element.on('click', clickListener);
 				};
-				const overHanderDebounce = WikiMirrorPrivateMethod.debounce(overHander, 200, true);
-				_$element.on('mouseover touchstart', overHanderDebounce);
+				const hoverListenerWithDebounce = WikiMirrorPrivateMethod.debounce(hoverListener, 200, true);
+				_$element.on('mouseover touchstart', hoverListenerWithDebounce);
 			};
 			addEventListener($element);
 			if (!WikiMirrorPrivateMethod.hasClass('skin-vector-2022')) {
 				return;
 			}
-			const callback = (_mutations, observer) => {
+			const observerCallback = (_mutations, observer) => {
 				if (!WikiMirrorPrivateMethod.hasClass('vector-sticky-header-visible')) {
 					return;
 				}
@@ -935,7 +983,7 @@
 				addEventListener(jQuery(SELECTOR));
 				observer.disconnect();
 			};
-			const mutationObserver = new MutationObserver(callback);
+			const mutationObserver = new MutationObserver(observerCallback);
 			mutationObserver.observe(document.body, {
 				attributes: true,
 				attributeFilter: ['class'],
@@ -953,7 +1001,7 @@
 			const DarkTip = t('ToDark');
 			const Light = t('Light');
 			const LightTip = t('ToLight');
-			const modeSwitcher = () => {
+			const toggleMode = () => {
 				WikiMirrorPrivateMethod.localStorage(ID) === '0'
 					? WikiMirrorPrivateMethod.localStorage(ID, '1')
 					: WikiMirrorPrivateMethod.localStorage(ID, '0');
@@ -997,26 +1045,26 @@
 				case 'init': {
 					const darkMediaQueryList = matchMedia('(prefers-color-scheme:dark)');
 					const lightMediaQueryList = matchMedia('(prefers-color-scheme:light)');
-					const mediaQueryHandler = {
+					const mediaQueryListeners = {
 						dark: (mediaQueryListEvent) => {
 							if (mediaQueryListEvent.matches && WikiMirrorPrivateMethod.localStorage(ID) === '0') {
-								modeSwitcher();
+								toggleMode();
 								this.darkMode('insert');
 							}
 						},
 						light: (mediaQueryListEvent) => {
 							if (mediaQueryListEvent.matches && WikiMirrorPrivateMethod.localStorage(ID) === '1') {
-								modeSwitcher();
+								toggleMode();
 								this.darkMode('insert');
 							}
 						},
 					};
 					try {
-						darkMediaQueryList.addEventListener('change', mediaQueryHandler.dark);
-						lightMediaQueryList.addEventListener('change', mediaQueryHandler.light);
+						darkMediaQueryList.addEventListener('change', mediaQueryListeners.dark);
+						lightMediaQueryList.addEventListener('change', mediaQueryListeners.light);
 					} catch {
-						darkMediaQueryList.addListener(mediaQueryHandler.dark);
-						lightMediaQueryList.addListener(mediaQueryHandler.light);
+						darkMediaQueryList.addListener(mediaQueryListeners.dark);
+						lightMediaQueryList.addListener(mediaQueryListeners.light);
 					}
 					window.addEventListener('storage', (event) => {
 						if (event.key === ID) {
@@ -1029,9 +1077,9 @@
 							document.documentElement.style.height = 'auto';
 							document.documentElement.style.height = `${document.documentElement.scrollHeight}px`;
 						};
-						const callback = WikiMirrorPrivateMethod.debounce(resetDocumentHeight);
-						const mutationObserver = new MutationObserver(callback);
-						const resizeObserver = new ResizeObserver(callback);
+						const observerCallback = WikiMirrorPrivateMethod.debounce(resetDocumentHeight);
+						const mutationObserver = new MutationObserver(observerCallback);
+						const resizeObserver = new ResizeObserver(observerCallback);
 						mutationObserver.observe(document.body, {
 							attributes: true,
 							attributeFilter: ['class'],
@@ -1119,16 +1167,16 @@
 						return;
 					}
 					const element = document.querySelector('#pt-preferences') || document.querySelector('#p-personal');
-					const set = WikiMirrorPrivateMethod.localStorage(ID) === '1';
-					const unset = WikiMirrorPrivateMethod.localStorage(ID) === '0';
-					const doClick = (button) => {
+					const isDarkMode = WikiMirrorPrivateMethod.localStorage(ID) === '1';
+					const isLightMode = WikiMirrorPrivateMethod.localStorage(ID) === '0';
+					const click = (button) => {
 						if (button === null) {
 							return;
 						}
 						const targetElement = (button ?? document.querySelector(`#${ID}`))?.querySelector('a');
 						targetElement?.addEventListener('click', (event) => {
 							event.preventDefault();
-							modeSwitcher();
+							toggleMode();
 							this.darkMode('insert');
 						});
 					};
@@ -1137,27 +1185,27 @@
 						const ComAnd =
 							'"><span class="minerva-icon minerva-icon--wikimirror-darkmode"></span><span class="toggle-list-item__label">';
 						const ComFoot = '</span></a></li>';
-						if (set) {
+						if (isDarkMode) {
 							element.insertAdjacentHTML('beforeend', `${ComHead}${LightTip}${ComAnd}${Light}${ComFoot}`);
-						} else if (unset) {
+						} else if (isLightMode) {
 							element.insertAdjacentHTML('beforeend', `${ComHead}${DarkTip}${ComAnd}${Dark}${ComFoot}`);
 						}
-						doClick();
+						click();
 					} else if (
 						document.querySelector('#p-tb') ||
 						WikiMirrorPrivateMethod.hasClass('skin-apioutput') ||
 						WikiMirrorPrivateMethod.hasClass('skin-nostalgia')
 					) {
-						const pos =
+						const portletId =
 							WikiMirrorPrivateMethod.hasClass('skin-apioutput') ||
 							WikiMirrorPrivateMethod.hasClass('skin-nostalgia')
 								? 'mw-content-text'
 								: 'p-tb';
 						mw.loader.using('mediawiki.util').then(() => {
-							if (set) {
-								doClick(mw.util.addPortletLink(pos, '#', Light, ID, LightTip));
-							} else if (unset) {
-								doClick(mw.util.addPortletLink(pos, '#', Dark, ID, DarkTip));
+							if (isDarkMode) {
+								click(mw.util.addPortletLink(portletId, '#', Light, ID, LightTip));
+							} else if (isLightMode) {
+								click(mw.util.addPortletLink(portletId, '#', Dark, ID, DarkTip));
 							}
 						});
 					}
@@ -1191,7 +1239,7 @@
 			} else if (WikiMirrorPrivateMethod.hasClass('skin-minerva')) {
 				portletId = 'p-tb';
 			}
-			const doIns = async ({text, tooltip, link, isPermaLink}) => {
+			const ins = async ({text, tooltip, link, isPermaLink}) => {
 				let element = document.querySelector(`#${ID}`)?.querySelector('a');
 				if (!element) {
 					await mw.loader.using('mediawiki.util');
@@ -1217,11 +1265,18 @@
 							isPermaLink ? WikiMirrorPrivateMethod.decodeURIComponent(this.getLocate('originHash')) : ''
 						}]]`,
 					]) {
-						$element.append(new mw.widgets.CopyTextLayout({align: 'top', copyText: value}).$element);
+						$element.append(
+							new mw.widgets.CopyTextLayout({
+								align: 'top',
+								copyText: value,
+							}).$element
+						);
 					}
 					/android|iphone|mobile/i.test(navigator.userAgent)
 						? OO.ui.alert($element)
-						: OO.ui.alert($element, {size: 'medium'});
+						: OO.ui.alert($element, {
+								size: 'medium',
+						  });
 				};
 			};
 			const {diffId, oldId, revisionId} = ids;
@@ -1231,7 +1286,7 @@
 						link += `${_oldId}/`;
 					}
 					link += diffId;
-					doIns({
+					ins({
 						text: t('Diff'),
 						tooltip: t('CopyDiff'),
 						link,
@@ -1268,7 +1323,7 @@
 					document.querySelectorAll('main#content>.pre-content #mw-revision-nav').length,
 				].includes(1)
 			) {
-				doIns({
+				ins({
 					text: t('Permanent'),
 					tooltip: t('CopyPermanent'),
 					link: `Special:PermaLink/${revisionId}`,
@@ -1321,7 +1376,7 @@
 			}
 			await mw.loader.using(['oojs-ui.styles.icons-editing-citation', 'oojs-ui.styles.icons-interactions']);
 			this.setCss(
-				`#${ID}{padding:.5rem;cursor:auto}#${ID} .toc{display:block;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}.skin-timeless #${ID} .toc{max-height:85vh}#${ID} .toc>ul{overflow:auto;max-height:70vh;border-bottom:1px solid #cdcdcd}#${ID} .toctitle{line-height:1}#${ID} ul{padding-right:1rem}#${ID} #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#${ID} #close:hover{filter:drop-shadow(0 0 1px #000)}.skin-timeless #${ID} #close{top:.1rem}#${ID}-opener{position:fixed;z-index:203;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgba(255,255,255,.95);box-shadow:0 0 2px 2px rgba(0,0,0,.1);cursor:pointer;font-size:.5rem}#${ID}-opener:active{box-shadow:inset 0 0 2px 2px rgba(0,0,0,.1)}#${ID}-opener:hover{box-shadow: 0 0 4px 4px rgba(0,0,0,.1)}#${ID}-opener span{opacity:.6}#${ID}-opener span:first-child{position:relative;width:2.5em;height:2.5em}#${ID}-opener span:last-child{color:#000}.ve-activated #${ID}-opener{display:none}`,
+				`#${ID}{padding:.5rem;cursor:auto}#${ID} .toc{display:block;min-width:auto;max-height:90vh;padding-top:1em;margin:0 auto;font-size:1em;word-break:normal}.skin-timeless #${ID} .toc{max-height:85vh}#${ID} .toc>ul{overflow:auto;max-height:70vh;border-bottom:1px solid #cdcdcd}#${ID} .toctitle{line-height:1}#${ID} ul{padding-right:1rem}#${ID} #close{position:relative;top:0;width:1rem;height:1rem;cursor:pointer;float:right}#${ID} #close:hover{filter:drop-shadow(0 0 1px #000)}.skin-timeless #${ID} #close{top:.1rem}#${ID}-opener{position:fixed;z-index:203;top:10.5%;right:2rem;display:flex;width:2rem;height:2rem;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;padding:.5rem;border-radius:25px;backdrop-filter:saturate(50%) blur(16px);background:rgba(255,255,255,.95);box-shadow:0 0 2px 2px rgba(0,0,0,.1);cursor:pointer;font-size:.5rem}#${ID}-opener:active{box-shadow:inset 0 0 2px 2px rgba(0,0,0,.1)}#${ID}-opener:hover{box-shadow: 0 0 4px 4px rgba(0,0,0,.1)}#${ID}-opener span{opacity:.6}#${ID}-opener span:first-child{position:relative;width:2.5em;height:2.5em}#${ID}-opener span:last-child{color:#000}.ve-activated #${ID},.ve-activated #${ID}-opener{display:none!important}`,
 				'css',
 				'wikimirror-css-floattoc'
 			);
@@ -1343,11 +1398,21 @@
 				.prepend(
 					jQuery('<span>')
 						.addClass('oo-ui-indicatorElement-indicator oo-ui-icon-close')
-						.attr({id: 'close', title: t('Close'), role: 'button', tabindex: '0'})
+						.attr({
+							id: 'close',
+							title: t('Close'),
+							role: 'button',
+							tabindex: '0',
+						})
 				);
 			const $floatTocOpener = jQuery('<div>')
 				.addClass('noprint')
-				.attr({id: `${ID}-opener`, title: t('Toc'), role: 'button', tabindex: '0'})
+				.attr({
+					id: `${ID}-opener`,
+					title: t('Toc'),
+					role: 'button',
+					tabindex: '0',
+				})
 				.append(
 					jQuery('<span>').addClass('oo-ui-indicatorElement-indicator oo-ui-icon-reference'),
 					jQuery('<span>').text(t('Toc'))
@@ -1429,8 +1494,12 @@
 						id: ID,
 						autoHide: false,
 					});
-					const notificationHandler = (event) => {
-						if (WikiMirrorPrivateMethod.checkA11yKey(event, {stopPropagation: true})) {
+					const notificationListener = (event) => {
+						if (
+							WikiMirrorPrivateMethod.checkA11yKey(event, {
+								stopPropagation: true,
+							})
+						) {
 							return;
 						}
 						const {target} = event;
@@ -1440,8 +1509,8 @@
 							smoothScroll(event);
 						}
 					};
-					_preNotification.$notification.on('click', notificationHandler);
-					_preNotification.$notification.on('keydown', notificationHandler);
+					_preNotification.$notification.on('click', notificationListener);
+					_preNotification.$notification.on('keydown', notificationListener);
 				}
 				return _preNotification;
 			};
@@ -1457,14 +1526,18 @@
 			const $originTocItem = jQuery(originToc).find('a');
 			$originTocItem.on('click', smoothScroll);
 			$originTocItem.on('keydown', smoothScroll);
-			const openerHandler = async (event) => {
-				if (WikiMirrorPrivateMethod.checkA11yKey(event, {preventDefault: true})) {
+			const openerListener = async (event) => {
+				if (
+					WikiMirrorPrivateMethod.checkA11yKey(event, {
+						preventDefault: true,
+					})
+				) {
 					return;
 				}
 				preNotification = await tocToggle('open');
 			};
-			$floatTocOpener.on('click', openerHandler);
-			$floatTocOpener.on('keydown', openerHandler);
+			$floatTocOpener.on('click', openerListener);
+			$floatTocOpener.on('keydown', openerListener);
 		}
 		showNotice(value, {autoHide = false, forceNotify = false, tag} = {}) {
 			const t = (key) => {
@@ -1588,7 +1661,7 @@
 				const pageStatusMapWithTimestamp = updateTimestamp(_pageStatusMap, _wgTitle);
 				WikiMirrorPrivateMethod.localStorage(STORAGE_KEY, JSON.stringify([...pageStatusMapWithTimestamp]));
 			};
-			const notice = ({site: currentSite, title, path}) => {
+			const notify = ({site: currentSite, title, path}) => {
 				const headerElement = document.querySelector('.mw-first-heading')?.firstChild;
 				const pageTitle = headerElement?.textContent ?? wgTitle;
 				const message = t(currentSite)
@@ -1611,7 +1684,7 @@
 				const pageStatus = pageStatusMap.get(wgTitle);
 				if (checkTimeout(pageStatus)) {
 					setPageStatusMap(pageStatusMap, wgTitle);
-					notice(pageStatus);
+					notify(pageStatus);
 				}
 				return;
 			}
@@ -1629,17 +1702,19 @@
 			await mw.loader.using('mediawiki.ForeignApi');
 			let apiError;
 			const queryApi = async (currentSite) => {
-				const api = new mw.ForeignApi(`${hosts[currentSite]}/api.php`, {anonymous: true});
+				const api = new mw.ForeignApi(`${hosts[currentSite]}/api.php`, {
+					anonymous: true,
+				});
 				const parameters = {
+					action: 'query',
 					format: 'json',
 					formatversion: '2',
-					action: 'query',
-					prop: 'info',
 					titles: wgTitle,
-					converttitles: 1,
+					prop: 'info',
+					converttitles: true,
 					inprop: 'url',
-					iwurl: 1,
-					redirects: 1,
+					iwurl: true,
+					redirects: true,
 				};
 				try {
 					return await api.get(parameters);
@@ -1678,9 +1753,13 @@
 					},
 				} = response;
 				const path = fullurl.replace(hosts[site], '');
-				pageStatusMap.set(wgTitle, {site, title, path});
+				pageStatusMap.set(wgTitle, {
+					site,
+					title,
+					path,
+				});
 				setPageStatusMap(pageStatusMap, wgTitle);
-				notice(pageStatusMap.get(wgTitle));
+				notify(pageStatusMap.get(wgTitle));
 			} catch {
 				console.log('WikiMirror viewOnOtherWikis method error:', apiError);
 			}
@@ -1792,10 +1871,16 @@
 		}
 		static getConf(key) {
 			if (typeof mw === 'object' && typeof mw.config?.get === 'function') {
-				return mw.config.get(key);
+				if (key) {
+					return mw.config.get(key);
+				}
+				return mw.config.get();
 			}
 			if (typeof RLCONF === 'object') {
-				return RLCONF[key] ?? null;
+				if (key) {
+					return RLCONF[key] ?? null;
+				}
+				return RLCONF;
 			}
 			return null;
 		}
@@ -2041,7 +2126,11 @@
 			return btoa(result);
 		}
 		static deflateRaw(value, prefix = 'rawdeflate,') {
-			return `${prefix}${WikiMirrorPrivateMethod.uint8arrayToBase64(pako.deflateRaw(value, {level: 5}))}`;
+			return `${prefix}${WikiMirrorPrivateMethod.uint8arrayToBase64(
+				pako.deflateRaw(value, {
+					level: 5,
+				})
+			)}`;
 		}
 		static inflateRaw(value, prefix = 'rawdeflate,') {
 			return pako.inflateRaw(WikiMirrorPrivateMethod.base64ToUint8Array(value.replace(prefix, '')), {
@@ -2150,8 +2239,16 @@
 						case 'logout':
 							for (const cookiePrefix of ['lastLogin', 'lastLoginWikitech']) {
 								if (WikiMirrorPrivateMethod.getCookie(`${cookiePrefix}Password`)) {
-									this.setCookie({name: `${cookiePrefix}Password`, value: 'deleted', hour: -1});
-									this.setCookie({name: `${cookiePrefix}Use2FA`, value: 'deleted', hour: -1});
+									this.setCookie({
+										name: `${cookiePrefix}Password`,
+										value: 'deleted',
+										hour: -1,
+									});
+									this.setCookie({
+										name: `${cookiePrefix}Use2FA`,
+										value: 'deleted',
+										hour: -1,
+									});
 								}
 							}
 							break;
@@ -2362,14 +2459,14 @@
 			return response;
 		}
 		extraCss(id) {
-			const commonCss =
+			const COMMON_LOGO_CSS =
 				'.mw-wiki-logo{background-image:url(/static/images/mobile/copyright/wikipedia.png)!important;background-size:100px;filter:invert(.9)}';
 			const logoPath = `//upload.${this.DOMAIN}/wikimirror/zh/darkmode/zhwiki`;
 			switch (id) {
 				case 'wikimirror-css-darkmode-logo-wiki-monobook':
-					return `${commonCss}@media only screen and (min-width:551px){body.skin--responsive #column-one{padding-top: 110px}body.skin--responsive #p-logo a,body.skin--responsive #p-logo a:hover{background-position:50% 15%!important}}`;
+					return `${COMMON_LOGO_CSS}@media only screen and (min-width:551px){body.skin--responsive #column-one{padding-top: 110px}body.skin--responsive #p-logo a,body.skin--responsive #p-logo a:hover{background-position:50% 15%!important}}`;
 				case 'wikimirror-css-darkmode-logo-wiki-vector-legacy':
-					return `${commonCss}#p-logo{height:100px}#p-logo a{height:125px}`;
+					return `${COMMON_LOGO_CSS}#p-logo{height:100px}#p-logo a{height:125px}`;
 				case 'wikimirror-css-darkmode-logo-zhwiki':
 					return `.mw-wiki-logo{background-image:url(${logoPath}.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${logoPath}-hans.png)}@media(-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(min-resolution:1.5dppx),(min-resolution:144dpi){.mw-wiki-logo{background-image:url(${logoPath}-1.5x.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${logoPath}-hans-1.5x.png)}}@media(-webkit-min-device-pixel-ratio:2),(min--moz-device-pixel-ratio:2),(min-resolution:2dppx),(min-resolution:192dpi){.mw-wiki-logo{background-image:url(${logoPath}-2x.png)}.mw-wiki-logo:lang(zh-hans),.mw-wiki-logo:lang(zh-cn),.mw-wiki-logo:lang(zh-my),.mw-wiki-logo:lang(zh-sg){background-image:url(${logoPath}-hans-2x.png)}}`;
 			}
@@ -2797,7 +2894,9 @@
 					if (_body) {
 						try {
 							JSON.parse(`${_body}`);
-							_options.body = privateMethod.ahCallback_Request({body: _body}).body;
+							_options.body = privateMethod.ahCallback_Request({
+								body: _body,
+							}).body;
 						} catch {
 							if (typeof _body === 'string' && !_body.includes('?')) {
 								_options.body = privateMethod.getRealText(_body);
@@ -2828,10 +2927,16 @@
 				options.headers = _headers;
 			}
 			const response = await originFetch(url, options).catch((error) => {
-				console.log('WikiMirror fetch error:', {error, options, url});
+				console.log('WikiMirror fetch error:', {
+					error,
+					options,
+					url,
+				});
 			});
 			if (!response) {
-				return new Response(undefined, {status: 418});
+				return new Response(undefined, {
+					status: 418,
+				});
 			}
 			const responseContentType = response.headers.get('content-type') ?? response.headers.get('Content-Type');
 			if (
