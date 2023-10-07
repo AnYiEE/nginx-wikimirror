@@ -1692,7 +1692,7 @@
 			for (const element of document.querySelectorAll('.mw-parser-output p:nth-child(-n+10)')) {
 				if (
 					/[动動][漫画畫]|漫[画畫]|游[戏戲]|小[説说]|音[乐樂]|偶像|声优|聲優|歌手|配音|演[员員]|作品|[发發]行|出版/.test(
-						element.innerText
+						element.textContent ?? ''
 					)
 				) {
 					site = 'Moegirl';
