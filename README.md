@@ -55,11 +55,9 @@
 
 * conf/wiki-sub.conf
 
-  用你的域名替换`example.org`，注意以下行：L-30<br>Replace example.org with your domain. Note the following line: L-30
+  用你的域名替换`example.org`，注意以下行：L-22<br>Replace example.org with your domain. Note the following line: L-22
 
   假设你的域名为`test.com`，则用你的域名替换`example\.org`为`test\.com`；假设你的域名为`test.com.cn`，则用你的域名替换`example\.org`为`test\.com\.cn`<br>Assuming your domain is `test.com`, replace `example\.org` with `test\.com`. Assuming your domain is `test.com.cn`, replace `example\.org` with `test\.com\.cn`
-
-  在L-27和L-28的`url = url.match(/(.+?\.org)(.+)/)[1] + $fn(url.match(/(.+?\.org)(.+)/)[2])`中，总共四处`\.org`也需要根据实际情况修改（假设你的域名为`test.com`，则用你的域名替换`\.org`为`\.com`；假设你的域名为`test.com.cn`，则用你的域名替换`\.org`为`\.com\.cn`）<br>`url = url.match(/(.+?\.org)(.+)/)[1] + $fn(url.match(/(.+?\.org)(.+)/)[2])` in L-27 and L-28, replace all instances of `\.org` according to your actual situation. Assuming your domain name is `test.com`, replace `\.org` with `\.com`. Assuming your domain name is `test.com.cn`, replace `\.org` with `\.com\.cn`.
 
 * static/wikimirror.js
 

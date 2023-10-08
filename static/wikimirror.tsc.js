@@ -304,13 +304,13 @@
 			let rlPageModules;
 			Object.defineProperty(window, 'RLPAGEMODULES', {
 				get() {
-					return rlPageModules;
-				},
-				set(_rlPageModules) {
 					const PAGEMODULE_BLACK_LIST = ['ext.gadget.mirrorsite'];
-					rlPageModules = (_rlPageModules ?? []).filter((moduleName) => {
+					return (rlPageModules ?? []).filter((moduleName) => {
 						return !PAGEMODULE_BLACK_LIST.includes(moduleName);
 					});
+				},
+				set(_rlPageModules) {
+					rlPageModules = _rlPageModules;
 				},
 				configurable: true,
 				enumerable: true,
@@ -429,6 +429,29 @@
 					.then(async () => {
 						console.log('WikiMirror dependencies load succeeded.');
 						// mw basic methods ready
+						const originMwConfigGet = mw.config.get;
+						const hookedMwConfigGet = (selection, fallback) => {
+							const originReturnValue = originMwConfigGet.call(mw.config, selection, fallback);
+							if (originReturnValue && !fallback) {
+								switch (selection) {
+									case 'wgGraphAllowedDomains':
+										return originReturnValue['https']?.push(this.DOMAIN);
+									case 'wgKartographerMapServer':
+										return `https://maps.${this.DOMAIN}`;
+									case 'wgMultimediaViewer':
+										for (const [key, value] of Object.entries(originReturnValue)) {
+											if (key.includes('Link')) {
+												const urlObject = new URL(value);
+												urlObject.host = `www.mediawiki.${this.DOMAIN}`;
+												originReturnValue[key] = urlObject.toString();
+											}
+										}
+										return originReturnValue;
+								}
+							}
+							return originReturnValue;
+						};
+						mw.config.get = hookedMwConfigGet;
 						this.messages = WikiMirrorPrivateMethod.initMessages();
 						loadModules(this.MODULE_LIST.mw);
 						document.addEventListener('copy', (event) => {
