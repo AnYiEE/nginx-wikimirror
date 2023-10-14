@@ -83,7 +83,7 @@ server {
 
 server {
     listen       80;
-    server_name  ~^[^.]+(?:\.m)?(?:\.(?:wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki|planet))?\.example\.org$;
+    server_name  ~^[^.]+(?:\.m)?(?:\.(?:wiki(?:books|data|functions|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki|planet|wikimediafoundation))?\.example\.org$;
     include      /path/to/wikimirror/conf/wiki-site-http.conf;
 
     return 301 https://$host$request_uri;
@@ -268,7 +268,7 @@ server {
         proxy_set_header  Referer https://$subdomain.$hostdomain.org$request_uri;
     }
     location /img {
-        if ($arg_domain ~* (.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org) {
+        if ($arg_domain ~* (.*?)(\.wiki(?:books|data|functions|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org) {
             set  $arg_domain $1$2.org;
             return 301 https://$host$uri?lang=$arg_lang&domain=$arg_domain&title=$arg_title&groups=$arg_groups;
         }
@@ -378,6 +378,23 @@ server {
 }
 
 server {
+    server_name  ~^(?<subdomain>((?:m|www)\.)?)wikimediafoundation\.example\.org$;
+    include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
+    set          $hostdomain wikimediafoundation;
+
+    location / {
+        include           /path/to/wikimirror/conf/wiki-sub.conf;
+        include           /path/to/wikimirror/conf/wiki.conf;
+        proxy_pass        https://wikimediafoundation.org;
+        proxy_set_header  Accept-Encoding "";
+        proxy_set_header  Host $subdomain$hostdomain.org;
+        proxy_set_header  Referer https://$subdomain$hostdomain.org$request_uri;
+    }
+    include  /path/to/wikimirror/conf/wiki-location-static.conf;
+    proxy_hide_header  Upgrade;
+}
+
+server {
     server_name  wikitech-static.example.org;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
     set          $hostdomain wikimedia;
@@ -445,7 +462,7 @@ server {
     location / {
         more_set_headers  "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Methods: GET, HEAD, POST" "Access-Control-Allow-Origin: $http_origin";
         if ($request_uri ~* ^\/.*?(?:\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/.*?$) {
-            rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
+            rewrite ^\/(.*?)(\.wiki(?:books|data|functions|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
         }
         include            /path/to/wikimirror/conf/wiki-sub.conf;
         include            /path/to/wikimirror/conf/wiki.conf;
@@ -557,7 +574,7 @@ server {
     location / {
         more_set_headers  "Access-Control-Allow-Headers: $http_access_control_request_headers" "Access-Control-Allow-Methods: GET, HEAD, POST" "Access-Control-Allow-Origin: $http_origin";
         if ($request_uri ~* ^\/.*?(?:\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/.*?$) {
-            rewrite ^\/(.*?)(\.wiki(?:books|data|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
+            rewrite ^\/(.*?)(\.wiki(?:books|data|functions|news|pedia|quote|versity|voyage)|\.?wikisource|\.wiktionary|\.mediawiki)\.example\.org\/(.*?)$ /$1$2.org/$3 redirect;
         }
         error_page              404 = @errors;
         include                 /path/to/wikimirror/conf/wiki.conf;
@@ -583,7 +600,7 @@ server {
     server_name  20.wikipedia.example.org;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
-    return 301 https://wikimediafoundation.org/wikipedia20/;
+    return 302 https://wikimediafoundation.example.org/wikipedia20/;
 }
 
 server {
@@ -663,7 +680,7 @@ server {
 }
 
 server {
-    server_name  ~^(?<subdomain>[^.]+(?:\.m)?)?\.(?<hostdomain>(wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki))\.example\.org$;
+    server_name  ~^(?<subdomain>[^.]+(?:\.m)?)?\.(?<hostdomain>(wiki(?:books|data|functions|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki))\.example\.org$;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
     if ($subdomain ~* ^(?:(?:m|www)\.m)$) {
@@ -683,6 +700,8 @@ server {
     set          $hostdomain wikimedia;
     set          $subdomain  www;
 
+    error_page  400 403 404 500 = https://www.example.org;
+
     location / {
         return 302 https://www.wikipedia.example.org;
     }
@@ -698,7 +717,7 @@ server {
 }
 
 server {
-    server_name  ~^(?<subdomain>[^.]+(?:\.m)?)?\.example\.org$;
+    server_name  ~^(?<subdomain>[^.]+(?:\.(?:m|wikimediafoundation))?)?\.example\.org$;
     include      /path/to/wikimirror/conf/wiki-site-ssl.conf;
 
     error_page  400 403 404 500 = https://www.example.org;

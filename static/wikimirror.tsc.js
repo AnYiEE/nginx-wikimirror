@@ -90,7 +90,7 @@
 			}
 			const regexUrlRoot = new RegExp(this.DOMAIN_REGEX, 'gi');
 			const regexUrlSub = new RegExp(
-				`(wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki|planet)\\.${this.DOMAIN_REGEX}`,
+				`(wiki(?:books|data|functions|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki|planet|wikimediafoundation)\\.${this.DOMAIN_REGEX}`,
 				'gi'
 			);
 			const regexUrlLatex = new RegExp(`latex-(png|svg)\\.${this.DOMAIN_REGEX}`, 'gi');
@@ -2376,12 +2376,13 @@
 							break;
 					}
 					for (const regex of [
-						/^([^.]+(?:\.m)?\.planet)\.wikimedia\.org$/,
-						/^((?:[^.]+(?:\.m)?\.(?:wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki))|wikisource)\.org$/,
-						/^(advisors(?:\.m)?|advisory(?:\.m)?|affcom|am(?:\.m)?|analytics|annual|api(?:\.m)?|ar(?:\.m)?|auditcom|bd(?:\.m)?|be(?:\.m)?|blog|board|boardgovcom|br(?:\.m)?|bugzilla|ca(?:\.m)?|chair|checkuser(?:\.m)?|cn(?:\.m)?|co(?:\.m)?|collab|(?:test-)?commons(?:\.m)?|config-master|cxserver|dbtree|design|developer|diff|dk(?:\.m)?|doc|ec(?:\.m)?|ee(?:\.m)?|electcom(?:\.m)?|etherpad|exec(?:\.m)?|fdc(?:\.m)?|fi(?:\.m)?|foundation(?:\.m)?|ge(?:\.m)?|gerrit|gitlab|gr(?:\.m)?|grafana|grants(?:\.m)?|graphite|hi(?:\.m)?|horizon|id(?:\.m)?|id-internal(?:\.m)?|idp|iegcom(?:\.m)?|il|incubator(?:\.m)?|intake-(?:analytics|logging)|integration|internal|labtestwikitech|legalteam(?:\.m)?|lists|login(?:\.m)?|logstash|mai(?:\.m)?|maps|meta(?:\.m)?|mk(?:\.m)?|movementroles|mx(?:\.m)?|ng(?:\.m)?|nl(?:\.m)?|no(?:\.m)?|noboard-chapters|noc|nyc(?:\.m)?|nz(?:\.m)?|office(?:\.m)?|ombuds(?:\.m)?|ombudsmen|ores|otrs-wiki(?:\.m)?|outreach(?:\.m)?|pa-us(?:\.m)?|people|pl(?:\.m)?|performance|phabricator|planet|policy|pt(?:\.m)?|projectcom|punjabi(?:\.m)?|quality(?:\.m)?|research|romd(?:\.m)?|rs(?:\.m)?|rt|ru(?:\.m)?|se(?:\.m)?|searchcom|schema|secure|spcom|species(?:\.m)?|static-(?:bugzilla|codereview)|steward(?:\.m)?|strategy(?:\.m)?|stream|svn|techblog|techconduct|ticket|tr(?:\.m)?|transitionteam(?:\.m)?|toolsadmin|transparency|ua(?:\.m)?|upload|usability|vote(?:\.m)?|vrt-wiki(?:\.m)?|wb(?:\.m)?|wikimania(?:200[5-9]|201[0-8]|wikitech-static|team)?(?:\.m)?|wikitech)\.wikimedia\.org$/,
+						/^((?:[^.]+(?:\.m)?\.)?wikimediafoundation)\.org$/,
+						/^((?:[^.]+(?:\.m)?\.)?planet)\.wikimedia\.org$/,
+						/^((?:(?:[^.]+(?:\.m)?\.(?:wiki(?:books|data|functions|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki))|wikisource)\.)org$/,
+						/^((?:advisors(?:\.m)?|advisory(?:\.m)?|affcom|am(?:\.m)?|analytics|annual|api(?:\.m)?|ar(?:\.m)?|auditcom|bd(?:\.m)?|be(?:\.m)?|blog|board|boardgovcom|br(?:\.m)?|bugzilla|ca(?:\.m)?|chair|checkuser(?:\.m)?|cn(?:\.m)?|co(?:\.m)?|collab|(?:test-)?commons(?:\.m)?|config-master|cxserver|dbtree|design|developer|diff|dk(?:\.m)?|doc|ec(?:\.m)?|ee(?:\.m)?|electcom(?:\.m)?|etherpad|exec(?:\.m)?|fdc(?:\.m)?|fi(?:\.m)?|foundation(?:\.m)?|ge(?:\.m)?|gerrit|gitlab|gr(?:\.m)?|grafana|grants(?:\.m)?|graphite|hi(?:\.m)?|horizon|id(?:\.m)?|id-internal(?:\.m)?|idp|iegcom(?:\.m)?|il|incubator(?:\.m)?|intake-(?:analytics|logging)|integration|internal|labtestwikitech|legalteam(?:\.m)?|lists|login(?:\.m)?|logstash|mai(?:\.m)?|maps|meta(?:\.m)?|mk(?:\.m)?|movementroles|mx(?:\.m)?|ng(?:\.m)?|nl(?:\.m)?|no(?:\.m)?|noboard-chapters|noc|nyc(?:\.m)?|nz(?:\.m)?|office(?:\.m)?|ombuds(?:\.m)?|ombudsmen|ores|otrs-wiki(?:\.m)?|outreach(?:\.m)?|pa-us(?:\.m)?|people|pl(?:\.m)?|performance|phabricator|policy|pt(?:\.m)?|projectcom|punjabi(?:\.m)?|quality(?:\.m)?|research|romd(?:\.m)?|rs(?:\.m)?|rt|ru(?:\.m)?|se(?:\.m)?|searchcom|schema|secure|spcom|species(?:\.m)?|static-(?:bugzilla|codereview)|steward(?:\.m)?|strategy(?:\.m)?|stream|svn|techblog|techconduct|ticket|tr(?:\.m)?|transitionteam(?:\.m)?|toolsadmin|transparency|ua(?:\.m)?|upload|usability|vote(?:\.m)?|vrt-wiki(?:\.m)?|wb(?:\.m)?|wikimania(?:200[5-9]|201[0-8]|team)?(?:\.m)?|wikitech(?:-static)?)\.)wikimedia\.org$/,
 					]) {
 						if (regex.test(getURL.host)) {
-							getURL.host = getURL.host.replace(regex, `$1.${this.DOMAIN}`);
+							getURL.host = getURL.host.replace(regex, `$1${this.DOMAIN}`);
 						}
 					}
 					if (getURL.host === 'recommend.wmflabs.org') {
@@ -2570,7 +2571,7 @@
 					response.response = responseText
 						.replace(/\/\/([a-z-]+(?:\.m)?)\.wikimedia\.org/g, `//$1.${this.DOMAIN}`)
 						.replace(
-							/\/\/([a-z-]+\.)?(wiki(?:books|data|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki)\.org/g,
+							/\/\/([a-z-]+\.)?(wiki(?:books|data|functions|news|pedia|quote|source|versity|voyage)|wiktionary|mediawiki)\.org/g,
 							`//$1$2.${this.DOMAIN}`
 						);
 				}
