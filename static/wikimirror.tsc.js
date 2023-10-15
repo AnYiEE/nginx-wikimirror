@@ -490,17 +490,82 @@
 					mw.config.get = hookedMwConfigGet;
 					this.messages = WikiMirrorPrivateMethod.initMessages();
 					loadModules(this.MODULES.mw);
+					const copyCutListener = (event, isCut = false) => {
+						const {clipboardData, target} = event;
+						if (!clipboardData) {
+							return;
+						}
+						const selection = getSelection();
+						if (!selection) {
+							return;
+						}
+						const range = selection.getRangeAt(0);
+						const hasHtml = range.toString().trim();
+						const format = hasHtml ? 'text/html' : 'text/plain';
+						let value = selection.toString();
+						if (hasHtml) {
+							const wrapperElement = document.createElement('div');
+							wrapperElement.append(range.cloneContents());
+							value = wrapperElement.innerHTML;
+						}
+						if (!new RegExp(this.DOMAIN_REGEX, 'gi').test(value)) {
+							return;
+						}
+						const originValue = value;
+						value = this.getRealText(value);
+						event.preventDefault();
+						clipboardData.setData(format, value);
+						if (!isCut || !(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) {
+							return;
+						}
+						const {value: targetValue} = target;
+						target.value = targetValue.replace(originValue, '');
+					};
+					const pasteListener = (event) => {
+						const {clipboardData, target} = event;
+						if (
+							!clipboardData ||
+							!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)
+						) {
+							return;
+						}
+						let value = clipboardData.getData('text/html');
+						if (!value.trim()) {
+							value = clipboardData.getData('text/plain');
+						}
+						if (!new RegExp(this.DOMAIN_REGEX, 'gi').test(value)) {
+							return;
+						}
+						event.preventDefault();
+						value = this.getRealText(value);
+						const wrapperElement = document.createElement('div');
+						wrapperElement.innerHTML = value;
+						value = (wrapperElement.textContent ?? '').trim();
+						const {selectionEnd, selectionStart, value: targetValue} = target;
+						const newTargetValue =
+							targetValue.slice(0, Math.max(0, selectionStart ?? 0)) +
+							value +
+							targetValue.slice(Math.max(0, selectionEnd ?? 0));
+						target.value = newTargetValue;
+						const offset = (selectionStart ?? 0) + value.length;
+						target.setSelectionRange(offset, offset);
+					};
 					WikiMirrorPrivateMethod.addEventListener({
 						target: document,
 						type: 'copy',
+						listener: copyCutListener,
+					});
+					WikiMirrorPrivateMethod.addEventListener({
+						target: document,
+						type: 'cut',
 						listener: (event) => {
-							let value = getSelection()?.toString() ?? '';
-							if (new RegExp(this.DOMAIN_REGEX, 'gi').test(value)) {
-								event.preventDefault();
-								value = this.getRealText(value);
-								event.clipboardData?.setData('text/plain', value);
-							}
+							copyCutListener(event, true);
 						},
+					});
+					WikiMirrorPrivateMethod.addEventListener({
+						target: document,
+						type: 'paste',
+						listener: pasteListener,
 					});
 					let isAceInit = false;
 					mw.hook('codeEditor.configure').add((editor) => {
