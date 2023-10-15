@@ -462,7 +462,9 @@
 					// mw basic methods ready
 					const originMwConfigGet = mw.config.get;
 					const hookedMwConfigGet = (selection, fallback) => {
-						const originReturnValue = originMwConfigGet.call(mw.config, selection, fallback);
+						const originReturnValue = fallback
+							? originMwConfigGet.call(mw.config, selection, fallback)
+							: originMwConfigGet.call(mw.config, selection);
 						if (originReturnValue && !fallback) {
 							switch (selection) {
 								case 'wgGraphAllowedDomains':
