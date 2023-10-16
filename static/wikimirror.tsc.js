@@ -386,7 +386,7 @@
 				enumerable: true,
 			});
 			loadModules(this.MODULES.standard);
-			if (this.darkMode('check') && !this.REGEXPS.noDarkmode.test(location.host)) {
+			if (!this.REGEXPS.noDarkmode.test(location.host) && this.darkMode('check')) {
 				document.documentElement.style.filter = 'invert(.95) hue-rotate(.5turn)';
 			}
 			this.setCss('/wikimirror.css?date=20231014', 'url')
@@ -433,7 +433,7 @@
 						listener: (event) => {
 							event.preventDefault();
 							correctPageText(document.querySelectorAll('textarea'));
-							this.wpSaveClickListener.abort();
+							this.wpSaveClickListener.remove();
 							wpSave.click();
 						},
 					});
@@ -579,14 +579,14 @@
 						if (!wpSave) {
 							return;
 						}
-						this.wpSaveClickListener?.abort();
+						this.wpSaveClickListener?.remove();
 						this.wpSaveClickListener = WikiMirrorPrivateMethod.addEventListener({
 							target: wpSave,
 							type: 'click',
 							listener: (event) => {
 								event.preventDefault();
 								editor.setValue(this.getRealText(editor.getValue()));
-								this.wpSaveClickListener.abort();
+								this.wpSaveClickListener.remove();
 								wpSave.click();
 							},
 						});
@@ -712,7 +712,7 @@
 				};
 				if (WikiMirrorPrivateMethod.getCookie(`${cookiePrefix}Use2FA`) === '1') {
 					for (const listener of ajaxLoginListenerArray) {
-						listener.abort();
+						listener.remove();
 					}
 					const autoLoginListener = (event) => {
 						if (
@@ -1525,8 +1525,7 @@
 			if (
 				WikiMirrorPrivateMethod.hasClass('skin-minerva') ||
 				WikiMirrorPrivateMethod.hasClass('skin-vector-2022') ||
-				WikiMirrorPrivateMethod.getConf('wgAction') !== 'view' ||
-				!('IntersectionObserver' in window)
+				WikiMirrorPrivateMethod.getConf('wgAction') !== 'view'
 			) {
 				return;
 			}
@@ -1678,15 +1677,18 @@
 				}
 				return _preNotification;
 			};
-			const intersectionObserver = new IntersectionObserver(async (entries) => {
-				const [entry] = entries;
-				if (!entry) {
-					return;
-				}
-				const {intersectionRatio} = entry;
-				preNotification = await toggleToc(intersectionRatio === 0, preNotification);
-			});
-			intersectionObserver.observe(originToc);
+			if ('IntersectionObserver' in window) {
+				const observerCallback = async (entries) => {
+					const [entry] = entries;
+					if (!entry) {
+						return;
+					}
+					const {intersectionRatio} = entry;
+					preNotification = await toggleToc(intersectionRatio === 0, preNotification);
+				};
+				const intersectionObserver = new IntersectionObserver(observerCallback);
+				intersectionObserver.observe(originToc);
+			}
 			const $originTocItem = jQuery(originToc).find('a');
 			$originTocItem.on('click', smoothScroll);
 			$originTocItem.on('keydown', smoothScroll);
@@ -1990,13 +1992,11 @@
 			});
 		}
 		static addEventListener({target, type, listener, options = {}}) {
-			const controller = new AbortController();
-			target?.addEventListener(type, listener, {
-				...options,
-				signal: controller.signal,
-			});
+			target?.addEventListener(type, listener, options);
 			return {
-				abort: controller.abort.bind(controller),
+				remove: () => {
+					target?.removeEventListener(type, listener, options);
+				},
 			};
 		}
 		static checkA11yKey(event, {preventDefault = false, stopPropagation = false} = {}) {
