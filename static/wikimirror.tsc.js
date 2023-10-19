@@ -389,7 +389,7 @@
 			if (!this.REGEXPS.noDarkmode.test(location.host) && this.darkMode('check')) {
 				document.documentElement.style.filter = 'invert(.95) hue-rotate(.5turn)';
 			}
-			this.setCss('/wikimirror.css?date=20231014', 'url')
+			this.setCss('/wikimirror.css?date=20231019', 'url')
 				.then(() => {
 					console.log('WikiMirror basic stylesheet load succeeded.');
 				})
