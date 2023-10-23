@@ -528,26 +528,27 @@
 							return;
 						}
 						const range = selection.getRangeAt(0);
-						const hasHtml = !!range.toString().trim();
-						const format = hasHtml ? 'text/html' : 'text/plain';
-						let value = selection.toString();
-						if (hasHtml) {
+						let htmlValue = range.toString().trim();
+						if (htmlValue) {
 							const wrapperElement = document.createElement('div');
 							wrapperElement.append(range.cloneContents());
-							value = wrapperElement.innerHTML;
+							htmlValue = wrapperElement.innerHTML;
 						}
-						if (!new RegExp(this.DOMAIN_REGEX, 'gi').test(value)) {
+						const plainValue = selection.toString();
+						const regex = new RegExp(this.DOMAIN_REGEX, 'gi');
+						if (!regex.test(htmlValue) && !regex.test(plainValue)) {
 							return;
 						}
 						event.preventDefault();
-						const originValue = value;
-						value = this.getRealText(value);
-						clipboardData.setData(format, value);
+						if (htmlValue) {
+							clipboardData.setData('text/html', this.getRealText(htmlValue));
+						}
+						clipboardData.setData('text/plain', this.getRealText(plainValue));
 						if (!isCut || !(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) {
 							return;
 						}
 						const {value: targetValue} = target;
-						target.value = targetValue.replace(originValue, '');
+						target.value = targetValue.replace(plainValue, '');
 					};
 					const pasteListener = (event) => {
 						const {clipboardData, target} = event;
