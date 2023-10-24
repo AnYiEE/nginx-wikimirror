@@ -473,52 +473,59 @@
 					const hookedMwConfigGet = (...args) => {
 						let isMediaWikiConfigMap = false;
 						let originReturnValue;
-						switch (args.length) {
-							case 0:
+						if (args.length) {
+							if (Array.isArray(args[0])) {
 								isMediaWikiConfigMap = true;
-								originReturnValue = originMwConfigGet.bind(mw.config)();
-								break;
-							case 1:
-								originReturnValue = originMwConfigGet.call(mw.config, args[0]);
-								break;
-							default:
-								originReturnValue = originMwConfigGet.call(mw.config, args[0], args[1]);
-								break;
+							}
+							originReturnValue = originMwConfigGet.apply(mw.config, args);
+						} else {
+							isMediaWikiConfigMap = true;
+							originReturnValue = originMwConfigGet.bind(mw.config)();
 						}
-						const correctReturnValue = (selection, valueOfMediaWikiConfigMap) => {
-							const target = valueOfMediaWikiConfigMap ?? originReturnValue;
+						const correctReturnValue = (selection, target) => {
+							const isObject = Object.prototype.toString.call(target) === '[object Object]';
+							const isString = typeof target === 'string';
 							switch (selection) {
 								case 'wgGraphAllowedDomains':
-									return target['https']?.push(this.DOMAIN);
-								case 'wgKartographerMapServer':
-									return `https://maps.${this.DOMAIN}`;
-								case 'wgMultimediaViewer':
-									for (const [key, value] of Object.entries(target)) {
-										if (!key.includes('Link')) {
-											continue;
-										}
-										const urlObject = new URL(value);
-										urlObject.host = `www.mediawiki.${this.DOMAIN}`;
-										target[key] = urlObject.toString();
+									if (isObject) {
+										target['https']?.push(this.DOMAIN);
 									}
-									return target;
+									break;
+								case 'wgKartographerMapServer':
+									if (isString) {
+										target = `https://maps.${this.DOMAIN}`;
+									}
+									break;
+								case 'wgMultimediaViewer':
+									if (isObject) {
+										for (const [key, value] of Object.entries(target)) {
+											if (!key.includes('Link')) {
+												continue;
+											}
+											const urlObject = new URL(value);
+											urlObject.host = `www.mediawiki.${this.DOMAIN}`;
+											target[key] = urlObject.toString();
+										}
+									}
+									break;
 								case 'wgUrlShortenerAllowedDomains':
-									return target.replace('^', `^(.*\\.)?${this.DOMAIN_REGEX}$|^`);
+									if (isString) {
+										target = target.replace('^', `^(.*\\.)?${this.DOMAIN_REGEX}$|^`);
+									}
 							}
 							return target;
 						};
 						if (isMediaWikiConfigMap) {
 							const mediaWikiConfigMap = originReturnValue;
-							for (const key in mediaWikiConfigMap) {
-								if (!WikiMirrorPrivateMethod.isValidKey(mediaWikiConfigMap, key)) {
+							for (const [key, value] of Object.entries(mediaWikiConfigMap)) {
+								if (!value) {
 									continue;
 								}
-								const valueOfMediaWikiConfigMap = mediaWikiConfigMap[key];
-								mediaWikiConfigMap[key] = correctReturnValue(key, valueOfMediaWikiConfigMap);
+								mediaWikiConfigMap[key] = correctReturnValue(key, value);
 							}
 							originReturnValue = mediaWikiConfigMap;
-						} else {
-							originReturnValue = correctReturnValue(args[0]);
+						} else if (originReturnValue) {
+							originReturnValue = correctReturnValue(args[0], originReturnValue);
 						}
 						return originReturnValue;
 					};
