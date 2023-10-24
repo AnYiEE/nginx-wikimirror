@@ -358,9 +358,12 @@
 				}
 			};
 			// stand alone functions
-			let rlPageModules;
+			let {RLPAGEMODULES: rlPageModules} = window;
 			Object.defineProperty(window, 'RLPAGEMODULES', {
 				get() {
+					if (!rlPageModules) {
+						return;
+					}
 					const PAGEMODULE_BLACK_LIST = [
 						'CollapsibleSidebar',
 						'ConfirmLogout',
@@ -369,7 +372,7 @@
 						'MirrorSite',
 						'ScrollUpButton',
 					];
-					return (rlPageModules ?? []).filter((moduleName) => {
+					return rlPageModules.filter((moduleName) => {
 						moduleName = moduleName.toLowerCase().replace(/-_/g, '');
 						const pagemoduleBlackList = PAGEMODULE_BLACK_LIST.map((blackModuleName) => {
 							return `ext.gadget.${blackModuleName.toLowerCase()}`;
