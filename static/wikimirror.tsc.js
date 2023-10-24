@@ -77,8 +77,9 @@
 		wpSaveClickListener;
 		constructor({domain, modules, regexps}) {
 			this.DOMAIN = domain;
-			this.DOMAIN_REGEX = domain.replace('.', '\\.');
-			this.DOMAIN_SPLIT = domain.split('.');
+			this.DOMAIN_REGEX = domain.replace(/\./g, '\\.');
+			const domainSplitArray = domain.split('.');
+			this.DOMAIN_SPLIT = [domainSplitArray.shift(), domainSplitArray.join('.')];
 			this.MODULES = modules;
 			this.REGEXPS = regexps;
 			this.messages = WikiMirrorPrivateMethod.initMessages();
@@ -95,7 +96,10 @@
 			);
 			const regexUrlLatex = new RegExp(`latex-(png|svg)\\.${this.DOMAIN_REGEX}`, 'gi');
 			const regexOther1 = new RegExp(
-				`\\\\\\.wikipedia\\\\\\.\\(\\?:${this.DOMAIN_SPLIT[0]}\\\\\\.\\)\\?${this.DOMAIN_SPLIT[1]}`,
+				`\\\\\\.wikipedia\\\\\\.\\(\\?:${this.DOMAIN_SPLIT[0]}\\\\\\.\\)\\?${this.DOMAIN_SPLIT[1].replace(
+					/\./g,
+					'\\.'
+				)}`,
 				'g'
 			);
 			const regexOther2 = /background(-image)?:url\(('|")?(https?:)?\/\/upload\.wikimedia\.org/gi;
