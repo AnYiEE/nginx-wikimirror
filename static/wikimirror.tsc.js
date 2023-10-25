@@ -168,13 +168,13 @@
 					}
 				});
 				const EMOJI_NODE_NAME = 'WIKIMIRROR-EMOJI';
-				const surroundEmojiText = (node, nodeValue) => {
+				const surroundEmojiText = (textNode, nodeValue) => {
 					const emojiRegExpMatchArray = nodeValue.match(REGEX_EMOJI);
 					if (!emojiRegExpMatchArray) {
 						return;
 					}
-					const surroundTexts = (_node, emoji) => {
-						const {parentNode, nodeValue: _nodeValue} = _node;
+					const surroundTexts = (node, emoji) => {
+						const {parentNode, nodeValue: _nodeValue} = node;
 						if (!_nodeValue || !parentNode) {
 							return;
 						}
@@ -185,25 +185,25 @@
 						const element = document.createElement(EMOJI_NODE_NAME);
 						element.className = 'mw-no-invert';
 						const range = document.createRange();
-						range.setStart(_node, startIndex);
-						range.setEnd(_node, startIndex + emoji.length);
+						range.setStart(node, startIndex);
+						range.setEnd(node, startIndex + emoji.length);
 						range.surroundContents(element);
 					};
-					const recursiveNodeNextSibling = (_node) => {
-						if (!_node) {
+					const recursiveNodeNextSibling = (node) => {
+						if (!node) {
 							return;
 						}
-						const {nextSibling, nodeValue: _nodeValue} = _node;
-						const _emojiRegExpMatchArray = _nodeValue?.match(REGEX_EMOJI);
-						if (_emojiRegExpMatchArray) {
+						const {nextSibling, nodeValue: _nodeValue} = node;
+						const emojiRegExpMatchArrayInside = _nodeValue?.match(REGEX_EMOJI);
+						if (emojiRegExpMatchArrayInside) {
 							requestAnimationFrame(() => {
-								surroundTexts(_node, _emojiRegExpMatchArray[0]);
+								surroundTexts(node, emojiRegExpMatchArrayInside[0]);
 							});
 						}
 						recursiveNodeNextSibling(nextSibling);
 					};
 					for (const emoji of emojiRegExpMatchArray) {
-						const nodeName = [node.nodeName, node.parentNode?.nodeName];
+						const nodeName = [textNode.nodeName, textNode.parentNode?.nodeName];
 						if (
 							nodeName.includes('INPUT') ||
 							nodeName.includes('TEXTAREA') ||
@@ -212,9 +212,9 @@
 							continue;
 						}
 						requestAnimationFrame(() => {
-							surroundTexts(node, emoji);
+							surroundTexts(textNode, emoji);
 						});
-						recursiveNodeNextSibling(node);
+						recursiveNodeNextSibling(textNode);
 					}
 				};
 				filterTextNodeArray(targetTextNodeArray, surroundEmojiText);
@@ -377,8 +377,8 @@
 						const pagemoduleBlackList = PAGEMODULE_BLACK_LIST.map((blackModuleName) => {
 							return `ext.gadget.${blackModuleName.toLowerCase()}`;
 						});
-						for (const pagemoduleName of pagemoduleBlackList) {
-							if (!moduleName.includes(pagemoduleName)) {
+						for (const blackModuleName of pagemoduleBlackList) {
+							if (!moduleName.includes(blackModuleName)) {
 								continue;
 							}
 							return false;
@@ -412,6 +412,10 @@
 			console.log('WikiMirror basic methods load succeeded.');
 			// functions only need dom ready
 			WikiMirrorPrivateMethod.domReady().then(() => {
+				const cxSkinMenuContentList = document.querySelector('.cx-skin-menu-content-list');
+				if (cxSkinMenuContentList) {
+					cxSkinMenuContentList.id = 'p-tb';
+				}
 				loadModules(this.MODULES.dom);
 				const correctPageText = (target) => {
 					this.getRealText(target ?? document.body, true);
@@ -447,10 +451,6 @@
 					if (!WikiMirrorPrivateMethod.getConf('wgUserName')) {
 						wpSave.removeAttribute('accesskey');
 					}
-				}
-				const cxSkinMenuContentList = document.querySelector('.cx-skin-menu-content-list');
-				if (cxSkinMenuContentList) {
-					cxSkinMenuContentList.id = 'p-tb';
 				}
 				const {portalSearchDomain} = window;
 				if (portalSearchDomain) {
@@ -559,7 +559,7 @@
 						}
 						const plainValue = selection.toString();
 						const regex = new RegExp(this.DOMAIN_REGEX, 'gi');
-						if (!regex.test(htmlValue) && !regex.test(plainValue)) {
+						if (!regex.test(htmlValue + plainValue)) {
 							return;
 						}
 						event.preventDefault();
@@ -1382,15 +1382,17 @@
 							return;
 						}
 						const targetElement = (button ?? document.querySelector(`#${ID}`))?.querySelector('a');
-						WikiMirrorPrivateMethod.addEventListener({
-							target: targetElement,
-							type: 'click',
-							listener: (event) => {
-								event.preventDefault();
-								toggleMode();
-								this.darkMode('insert');
-							},
-						});
+						if (targetElement) {
+							WikiMirrorPrivateMethod.addEventListener({
+								target: targetElement,
+								type: 'click',
+								listener: (event) => {
+									event.preventDefault();
+									toggleMode();
+									this.darkMode('insert');
+								},
+							});
+						}
 					};
 					if (element && WikiMirrorPrivateMethod.hasClass('skin-minerva')) {
 						const ComHead = `<li class="toggle-list-item" id="${ID}"><a class="toggle-list-item__anchor" title="`;
@@ -1593,7 +1595,7 @@
 				'css',
 				'wikimirror-css-floattoc'
 			);
-			let state =
+			let currentState =
 				WikiMirrorPrivateMethod.localStorage(ID) ?? (window.outerHeight < window.outerWidth ? 'open' : 'close');
 			const style = this.setCss(
 				'.mw-notification-area{right:unset;width:auto;max-width:20em}.mw-notification{-webkit-transform:translateX(-999px);-moz-transform:translateX(-999px);transform:translateX(-999px)}.mw-notification-visible{-webkit-transform:translateX(0);-moz-transform:translateX(0);transform:translateX(0)}',
@@ -1645,9 +1647,9 @@
 					}
 				}, 5000);
 			};
-			const storeState = (_state) => {
-				state = _state;
-				WikiMirrorPrivateMethod.localStorage(ID, _state);
+			const storeState = (state) => {
+				currentState = state;
+				WikiMirrorPrivateMethod.localStorage(ID, state);
 			};
 			const smoothScroll = (event) => {
 				const {target} = event;
@@ -1684,7 +1686,7 @@
 				isShow = !!_isShow;
 				switch (_isShow) {
 					case true:
-						if (state === 'close') {
+						if (currentState === 'close') {
 							$floatTocOpener.fadeIn();
 							return;
 						}
@@ -2042,10 +2044,10 @@
 			});
 		}
 		static addEventListener({target, type, listener, options = {}}) {
-			target?.addEventListener(type, listener, options);
+			target.addEventListener(type, listener, options);
 			return {
 				remove: () => {
-					target?.removeEventListener(type, listener, options);
+					target.removeEventListener(type, listener, options);
 				},
 			};
 		}
@@ -2159,8 +2161,8 @@
 			};
 			const getDefaultFallbackList = () => {
 				const defaultLanguageCode = 'en';
-				const getLanguageCodeSplitArray = (_languageCode) => {
-					return _languageCode.split('-').map((value) => {
+				const getLanguageCodeSplitArray = (originLanguageCode) => {
+					return originLanguageCode.split('-').map((value) => {
 						return value.toLowerCase();
 					});
 				};
@@ -2364,7 +2366,7 @@
 			let result = '';
 			while (index < value.length) {
 				slice = value.subarray(index, Math.min(index + chunk, value.length));
-				result += Reflect.apply(String.fromCharCode, null, [...slice]);
+				result += String.fromCharCode(...slice);
 				index += chunk;
 			}
 			return btoa(result);
@@ -2565,33 +2567,30 @@
 			};
 			const parseHtmlString = (htmlString = '', mimeType = 'text/html') => {
 				const doc = new DOMParser().parseFromString(htmlString, mimeType.match(/^([+/a-z-]+?)(?:;|$)/)[1]);
-				const {doctype, documentElement: element} = doc;
-				element.querySelector('parsererror')?.remove();
-				for (const _element of element.querySelectorAll('span[data-mw-variant]')) {
-					const mwVariantObject = JSON.parse(_element.dataset['mwVariant']);
+				const {doctype, documentElement} = doc;
+				documentElement.querySelector('parsererror')?.remove();
+				for (const element of documentElement.querySelectorAll('span[data-mw-variant]')) {
+					const mwVariantObject = JSON.parse(element.dataset['mwVariant']);
 					recursiveObject(mwVariantObject, (object, key) => {
 						const value = key === 't' ? object[key] : '';
 						if (value && /^<(\w+?)\s.+?>.*?<\/\1>$/.test(value)) {
 							object[key] = parseHtmlString(value).element.querySelector('body').innerHTML;
 						}
 					});
-					_element.dataset['mwVariant'] = JSON.stringify(mwVariantObject);
+					element.dataset['mwVariant'] = JSON.stringify(mwVariantObject);
 				}
-				for (const _element of element.querySelectorAll('a,audio,base,img,source,video')) {
+				for (const element of documentElement.querySelectorAll('a,audio,base,img,source,video')) {
 					for (const attribute of ['href', 'poster', 'src', 'srcset']) {
-						const value = _element[attribute];
+						const value = element[attribute];
 						if (value) {
-							_element[attribute] = value.replace(
-								new RegExp(this.DOMAIN_REGEX, 'g'),
-								'r-e-p-l-a-c-e.org'
-							);
+							element[attribute] = value.replace(new RegExp(this.DOMAIN_REGEX, 'g'), 'r-e-p-l-a-c-e.org');
 						}
 					}
 				}
 				return {
 					dec: htmlString.match(/^\s*?(<\?xml.+?\?>)/)?.[0] ?? '',
 					dtd: doctype ? `${new XMLSerializer().serializeToString(doctype)}\n` : '',
-					element,
+					element: documentElement,
 				};
 			};
 			try {
