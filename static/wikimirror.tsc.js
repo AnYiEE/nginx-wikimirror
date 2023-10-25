@@ -469,67 +469,76 @@
 				.then(async () => {
 					console.log('WikiMirror dependencies load succeeded.');
 					// mw basic methods ready
-					const originMwConfigGet = mw.config.get;
-					const hookedMwConfigGet = (...args) => {
-						let isMediaWikiConfigMap = false;
-						let originReturnValue;
-						if (args.length) {
-							if (Array.isArray(args[0])) {
-								isMediaWikiConfigMap = true;
-							}
-							originReturnValue = originMwConfigGet.apply(mw.config, args);
-						} else {
-							isMediaWikiConfigMap = true;
-							originReturnValue = originMwConfigGet.bind(mw.config)();
-						}
-						const correctReturnValue = (selection, target) => {
-							const isObject = Object.prototype.toString.call(target) === '[object Object]';
-							const isString = typeof target === 'string';
-							switch (selection) {
-								case 'wgGraphAllowedDomains':
-									if (isObject) {
-										target['https']?.push(this.DOMAIN);
-									}
-									break;
-								case 'wgKartographerMapServer':
-									if (isString) {
-										target = `https://maps.${this.DOMAIN}`;
-									}
-									break;
-								case 'wgMultimediaViewer':
-									if (isObject) {
-										for (const [key, value] of Object.entries(target)) {
-											if (!key.includes('Link')) {
-												continue;
+					const mwConfigProxy = new Proxy(mw.config, {
+						get: (target, property, receiver) => {
+							switch (property) {
+								case 'get':
+									return (...args) => {
+										const correctConfig = (selection, configValue) => {
+											const isObject =
+												Object.prototype.toString.call(configValue) === '[object Object]';
+											const isString = typeof configValue === 'string';
+											switch (selection) {
+												case 'wgGraphAllowedDomains':
+													if (isObject) {
+														configValue['https']?.push(this.DOMAIN);
+													}
+													break;
+												case 'wgKartographerMapServer':
+													if (isString) {
+														configValue = `https://maps.${this.DOMAIN}`;
+													}
+													break;
+												case 'wgMultimediaViewer':
+													if (isObject) {
+														for (const [key, value] of Object.entries(configValue)) {
+															if (!key.includes('Link')) {
+																continue;
+															}
+															const urlObject = new URL(value);
+															urlObject.host = `www.mediawiki.${this.DOMAIN}`;
+															configValue[key] = urlObject.toString();
+														}
+													}
+													break;
+												case 'wgUrlShortenerAllowedDomains':
+													if (isString) {
+														configValue = configValue.replace(
+															'^',
+															`^(.*\\.)?${this.DOMAIN_REGEX}$|^`
+														);
+													}
 											}
-											const urlObject = new URL(value);
-											urlObject.host = `www.mediawiki.${this.DOMAIN}`;
-											target[key] = urlObject.toString();
+											return configValue;
+										};
+										const isConfigMap = args.length ? Array.isArray(args[0]) : true;
+										let config = target.get(...args);
+										if (isConfigMap) {
+											const configMap = config;
+											for (const [key, value] of Object.entries(configMap)) {
+												if (!value) {
+													continue;
+												}
+												configMap[key] = correctConfig(key, value);
+											}
+											config = configMap;
+										} else if (config) {
+											config = correctConfig(args[0], config);
 										}
-									}
-									break;
-								case 'wgUrlShortenerAllowedDomains':
-									if (isString) {
-										target = target.replace('^', `^(.*\\.)?${this.DOMAIN_REGEX}$|^`);
-									}
+										return config;
+									};
+								case 'values':
+									return receiver.get();
 							}
-							return target;
-						};
-						if (isMediaWikiConfigMap) {
-							const mediaWikiConfigMap = originReturnValue;
-							for (const [key, value] of Object.entries(mediaWikiConfigMap)) {
-								if (!value) {
-									continue;
-								}
-								mediaWikiConfigMap[key] = correctReturnValue(key, value);
-							}
-							originReturnValue = mediaWikiConfigMap;
-						} else if (originReturnValue) {
-							originReturnValue = correctReturnValue(args[0], originReturnValue);
-						}
-						return originReturnValue;
-					};
-					mw.config.get = hookedMwConfigGet;
+							const originValue = Reflect.get(target, property, receiver);
+							return typeof originValue === 'function' ? originValue.bind(target) : originValue;
+						},
+					});
+					Object.defineProperty(mw, 'config', {
+						value: mwConfigProxy,
+						configurable: true,
+						enumerable: true,
+					});
 					this.messages = WikiMirrorPrivateMethod.initMessages();
 					loadModules(this.MODULES.mw);
 					const copyCutListener = (event, isCut = false) => {
