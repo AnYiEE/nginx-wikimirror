@@ -725,13 +725,10 @@
 						target,
 						type,
 						listener: (event) => {
-							if (
-								WikiMirrorPrivateMethod.checkA11yKey(event, {
-									preventDefault: true,
-								})
-							) {
+							if (!WikiMirrorPrivateMethod.checkA11yConfirmKey(event)) {
 								return;
 							}
+							event.preventDefault();
 							this.ajaxLogin();
 						},
 					});
@@ -765,13 +762,10 @@
 						listener.remove();
 					}
 					const autoLoginListener = (event) => {
-						if (
-							WikiMirrorPrivateMethod.checkA11yKey(event, {
-								preventDefault: true,
-							})
-						) {
+						if (!WikiMirrorPrivateMethod.checkA11yConfirmKey(event)) {
 							return;
 						}
+						event.preventDefault();
 						autoLogin();
 					};
 					for (const element of elementList) {
@@ -1464,7 +1458,7 @@
 						this.setCss(
 							`#${ID}{float:right}#${ID}>a>span:first-child{vertical-align:text-bottom;padding-right:.5em}`,
 							'css',
-							`wikimirror-css-difflink`
+							'wikimirror-css-difflink'
 						);
 					}
 				}
@@ -1710,13 +1704,10 @@
 						autoHide: false,
 					});
 					const notificationListener = (event) => {
-						if (
-							WikiMirrorPrivateMethod.checkA11yKey(event, {
-								stopPropagation: true,
-							})
-						) {
+						if (!WikiMirrorPrivateMethod.checkA11yConfirmKey(event)) {
 							return;
 						}
+						event.stopPropagation();
 						const {target} = event;
 						if (target.id === 'close') {
 							closeNotification(_preNotification);
@@ -1745,13 +1736,10 @@
 			$originTocItem.on('click', smoothScroll);
 			$originTocItem.on('keydown', smoothScroll);
 			const openerListener = async (event) => {
-				if (
-					WikiMirrorPrivateMethod.checkA11yKey(event, {
-						preventDefault: true,
-					})
-				) {
+				if (!WikiMirrorPrivateMethod.checkA11yConfirmKey(event)) {
 					return;
 				}
+				event.preventDefault();
 				preNotification = await toggleToc('open');
 			};
 			$floatTocOpener.on('click', openerListener);
@@ -2051,15 +2039,12 @@
 				},
 			};
 		}
-		static checkA11yKey(event, {preventDefault = false, stopPropagation = false} = {}) {
-			if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') {
+		static checkA11yConfirmKey(event) {
+			if (['click', 'keydown'].includes(event.type)) {
+				if (event.type === 'keydown') {
+					return ['Enter', ' '].includes(event.key);
+				}
 				return true;
-			}
-			if (preventDefault) {
-				event.preventDefault();
-			}
-			if (stopPropagation) {
-				event.stopPropagation();
 			}
 			return false;
 		}
