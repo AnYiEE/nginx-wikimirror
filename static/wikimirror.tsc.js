@@ -74,6 +74,7 @@
 		textCache;
 		textNodeObserver;
 		windowManager;
+		diffLinkClickListener;
 		wpSaveClickListener;
 		constructor({domain, modules, regexps}) {
 			this.DOMAIN = domain;
@@ -281,7 +282,7 @@
 				}
 				for (const element of target.querySelectorAll('.mm-submenu a')) {
 					const urlObject = new URL(element.href, location.origin);
-					element.href = `${urlObject.origin}${this.getRealText(urlObject.pathname)}${urlObject.search}`;
+					element.href = urlObject.origin + this.getRealText(urlObject.pathname) + urlObject.search;
 				}
 				const caFileExporterA = target.querySelector('#ca-fileExporter a');
 				if (caFileExporterA) {
@@ -373,7 +374,7 @@
 						'ScrollUpButton',
 					];
 					return rlPageModules.filter((moduleName) => {
-						moduleName = moduleName.toLowerCase().replace(/-_/g, '');
+						moduleName = moduleName.toLowerCase().replace(/[-_]/g, '');
 						const pagemoduleBlackList = PAGEMODULE_BLACK_LIST.map((blackModuleName) => {
 							return `ext.gadget.${blackModuleName.toLowerCase()}`;
 						});
@@ -421,24 +422,16 @@
 					this.getRealText(target ?? document.body, true);
 				};
 				correctPageText();
-				WikiMirrorPrivateMethod.addEventListener({
-					target: window,
-					type: 'beforeprint',
-					listener: () => {
-						this.darkMode('meta', 'color-scheme', 'remove');
-						for (const element of document.querySelectorAll('a')) {
-							element.href = this.getRealText(element.href);
-						}
-					},
+				window.addEventListener('beforeprint', () => {
+					this.darkMode('meta', 'color-scheme', 'remove');
+					for (const element of document.querySelectorAll('a')) {
+						element.href = this.getRealText(element.href);
+					}
 				});
-				WikiMirrorPrivateMethod.addEventListener({
-					target: window,
-					type: 'afterprint',
-					listener: location.reload,
-				});
+				window.addEventListener('afterprint', location.reload);
 				const wpSave = document.querySelector('#wpSave');
 				if (wpSave) {
-					this.wpSaveClickListener = WikiMirrorPrivateMethod.addEventListener({
+					this.wpSaveClickListener = WikiMirrorPrivateMethod.addEventListenerWithRemover({
 						target: wpSave,
 						type: 'click',
 						listener: (event) => {
@@ -602,23 +595,11 @@
 						const offset = (selectionStart ?? 0) + value.length;
 						target.setSelectionRange(offset, offset);
 					};
-					WikiMirrorPrivateMethod.addEventListener({
-						target: document,
-						type: 'copy',
-						listener: copyCutListener,
+					document.addEventListener('copy', copyCutListener);
+					document.addEventListener('cut', (event) => {
+						copyCutListener(event, true);
 					});
-					WikiMirrorPrivateMethod.addEventListener({
-						target: document,
-						type: 'cut',
-						listener: (event) => {
-							copyCutListener(event, true);
-						},
-					});
-					WikiMirrorPrivateMethod.addEventListener({
-						target: document,
-						type: 'paste',
-						listener: pasteListener,
-					});
+					document.addEventListener('paste', pasteListener);
 					let isAceInit = false;
 					mw.hook('codeEditor.configure').add((editor) => {
 						if (isAceInit) {
@@ -630,7 +611,7 @@
 							return;
 						}
 						this.wpSaveClickListener?.remove();
-						this.wpSaveClickListener = WikiMirrorPrivateMethod.addEventListener({
+						this.wpSaveClickListener = WikiMirrorPrivateMethod.addEventListenerWithRemover({
 							target: wpSave,
 							type: 'click',
 							listener: (event) => {
@@ -646,9 +627,9 @@
 							return;
 						}
 						this.diffLink({
-							diffId: WikiMirrorPrivateMethod.getConf('wgDiffNewId'),
-							oldId: WikiMirrorPrivateMethod.getConf('wgDiffOldId'),
-							revisionId: WikiMirrorPrivateMethod.getConf('wgRevisionId'),
+							diffId: mw.config.get('wgDiffNewId'),
+							oldId: mw.config.get('wgDiffOldId'),
+							revisionId: mw.config.get('wgRevisionId'),
 						});
 					});
 					// mw basic methods && dom all ready
@@ -664,9 +645,9 @@
 		}
 		async collapsibleSidebar() {
 			if (
-				WikiMirrorPrivateMethod.hasClass('rtl') ||
-				['bo', 'dz'].includes(WikiMirrorPrivateMethod.getConf('wgContentLanguage')) ||
-				!WikiMirrorPrivateMethod.hasClass('skin-vector-legacy')
+				['bo', 'dz'].includes(mw.config.get('wgContentLanguage')) ||
+				jQuery(document.body).hasClass('rtl') ||
+				mw.config.get('skin') !== 'vector-legacy'
 			) {
 				return;
 			}
@@ -705,23 +686,24 @@
 			};
 			const cookiePrefix = location.host.includes('wikitech') ? 'lastLoginWikitech' : 'lastLogin';
 			if (method === 'init') {
-				if (WikiMirrorPrivateMethod.getConf('wgUserName')) {
+				const wgUserName = mw.config.get('wgUserName');
+				if (wgUserName) {
 					return;
 				}
-				const elementList = [
+				const elementArray = [
 					...document.querySelectorAll(
 						'#ca-cb-login>a,#topbar>a[href*="UserLogin"],#pt-login>a,#pt-login-private>a,#pt-login-2>a,#pt-login-private-2>a,.vector-user-menu-login>a'
 					),
 				];
 				const minervaLoginElement = document.querySelector('.minerva-icon--logIn')?.parentElement;
 				if (minervaLoginElement) {
-					elementList.push(minervaLoginElement);
+					elementArray.push(minervaLoginElement);
 				}
 				const savedUsername = WikiMirrorPrivateMethod.getCookie(`${cookiePrefix}UserName`);
 				const savedPassword = WikiMirrorPrivateMethod.getCookie(`${cookiePrefix}Password`);
 				const ajaxLoginListenerArray = [];
 				const ajaxLoginListener = (target, type) => {
-					return WikiMirrorPrivateMethod.addEventListener({
+					return WikiMirrorPrivateMethod.addEventListenerWithRemover({
 						target,
 						type,
 						listener: (event) => {
@@ -733,18 +715,13 @@
 						},
 					});
 				};
-				for (const element of elementList) {
+				for (const element of elementArray) {
 					ajaxLoginListenerArray.push(
 						ajaxLoginListener(element, 'click'),
 						ajaxLoginListener(element, 'keydown')
 					);
 				}
-				if (
-					savedPassword === 'deleted' ||
-					WikiMirrorPrivateMethod.getConf('wgUserName') ||
-					!savedUsername ||
-					!savedPassword
-				) {
+				if (savedPassword === 'deleted' || wgUserName || !savedUsername || !savedPassword) {
 					return;
 				}
 				const autoLogin = () => {
@@ -768,17 +745,9 @@
 						event.preventDefault();
 						autoLogin();
 					};
-					for (const element of elementList) {
-						WikiMirrorPrivateMethod.addEventListener({
-							target: element,
-							type: 'click',
-							listener: autoLoginListener,
-						});
-						WikiMirrorPrivateMethod.addEventListener({
-							target: element,
-							type: 'keydown',
-							listener: autoLoginListener,
-						});
+					for (const element of elementArray) {
+						element.addEventListener('click', autoLoginListener);
+						element.addEventListener('keydown', autoLoginListener);
 					}
 				} else {
 					autoLogin();
@@ -848,7 +817,7 @@
 				.append(nameInput.$element.css('margin-bottom', '6px'), pwdInput.$element);
 			const $rememberMe = $label.clone().append(keepLoginLayout.$element.css('margin-top', '6px'));
 			const removeWindowResizeHandler = () => {
-				$(window).off({
+				jQuery(window).off({
 					'orientationchange resize': this.windowManager.onWindowResizeHandler,
 				});
 			};
@@ -885,7 +854,7 @@
 						delete parameters.username;
 						delete parameters.password;
 						parameters.logincontinue = true;
-						const prompt = async () => {
+						const oouiPrompt = async () => {
 							const codeDialog = new OO.ui.MessageDialog();
 							const codeInput = new OO.ui.TextInputWidget({
 								icon: 'key',
@@ -915,7 +884,7 @@
 							const _data = data;
 							return _data?.action === 'accept' ? codeInput.getValue() : null;
 						};
-						const value = await prompt();
+						const value = await oouiPrompt();
 						if (value === null) {
 							this.showNotice(t('Login cancelled'), {
 								autoHide: true,
@@ -1111,7 +1080,7 @@
 						.parent('.minerva-user-menu,.toggle-list-item__anchor')
 						.not('[target]')
 				);
-			if (!$element.length || !WikiMirrorPrivateMethod.getConf('wgUserName')) {
+			if (!$element.length || !mw.config.get('wgUserName')) {
 				return;
 			}
 			const t = (key) => {
@@ -1130,7 +1099,7 @@
 				}
 				await mw.loader.using('mediawiki.api');
 				try {
-					this.showNotice(mw.message('logging-out-notify'));
+					this.showNotice(mw.message('logging-out-notify').toString());
 					const api = new mw.Api();
 					await api.postWithEditToken({
 						action: 'logout',
@@ -1141,20 +1110,21 @@
 					this.showNetworkErrorNotice();
 				}
 			};
-			const addEventListener = (_$element) => {
+			const refreshEventListener = async (_$element) => {
+				await mw.loader.using('mediawiki.util');
 				const hoverListener = () => {
 					_$element.off('click');
 					_$element.on('click', clickListener);
 				};
-				const hoverListenerWithDebounce = WikiMirrorPrivateMethod.debounce(hoverListener, 200, true);
+				const hoverListenerWithDebounce = mw.util.debounce(hoverListener, 200, true);
 				_$element.on('mouseover touchstart', hoverListenerWithDebounce);
 			};
-			addEventListener($element);
-			if (!WikiMirrorPrivateMethod.hasClass('skin-vector-2022')) {
+			refreshEventListener($element);
+			if (mw.config.get('skin') !== 'vector-2022') {
 				return;
 			}
 			const observerCallback = (_mutations, observer) => {
-				if (!WikiMirrorPrivateMethod.hasClass('vector-sticky-header-visible')) {
+				if (!jQuery(document.body).hasClass('vector-sticky-header-visible')) {
 					return;
 				}
 				const SELECTOR = '#pt-logout-sticky-header>a';
@@ -1164,7 +1134,7 @@
 				}
 				const elementClone = element.cloneNode(true);
 				element.replaceWith(elementClone);
-				addEventListener(jQuery(SELECTOR));
+				refreshEventListener(jQuery(SELECTOR));
 				observer.disconnect();
 			};
 			const mutationObserver = new MutationObserver(observerCallback);
@@ -1248,28 +1218,16 @@
 						},
 					};
 					try {
-						WikiMirrorPrivateMethod.addEventListener({
-							target: darkMediaQueryList,
-							type: 'change',
-							listener: mediaQueryListeners.dark,
-						});
-						WikiMirrorPrivateMethod.addEventListener({
-							target: lightMediaQueryList,
-							type: 'change',
-							listener: mediaQueryListeners.light,
-						});
+						darkMediaQueryList.addEventListener('change', mediaQueryListeners.dark);
+						lightMediaQueryList.addEventListener('change', mediaQueryListeners.light);
 					} catch {
 						darkMediaQueryList.addListener(mediaQueryListeners.dark);
 						lightMediaQueryList.addListener(mediaQueryListeners.light);
 					}
-					WikiMirrorPrivateMethod.addEventListener({
-						target: window,
-						type: 'storage',
-						listener: (event) => {
-							if (event.key === ID) {
-								this.darkMode('insert');
-							}
-						},
+					window.addEventListener('storage', (event) => {
+						if (event.key === ID) {
+							this.darkMode('insert');
+						}
 					});
 					this.darkMode('insert');
 					if (WikiMirrorPrivateMethod.hasClass('skin-vector-legacy')) {
@@ -1365,7 +1323,7 @@
 					break;
 				}
 				case 'normal': {
-					if (document.querySelector(`#${ID}`)) {
+					if (jQuery(`#${ID}`).length) {
 						return;
 					}
 					const element = document.querySelector('#pt-preferences') || document.querySelector('#p-personal');
@@ -1376,39 +1334,26 @@
 							return;
 						}
 						const targetElement = (button ?? document.querySelector(`#${ID}`))?.querySelector('a');
-						if (targetElement) {
-							WikiMirrorPrivateMethod.addEventListener({
-								target: targetElement,
-								type: 'click',
-								listener: (event) => {
-									event.preventDefault();
-									toggleMode();
-									this.darkMode('insert');
-								},
-							});
-						}
+						targetElement?.addEventListener('click', (event) => {
+							event.preventDefault();
+							toggleMode();
+							this.darkMode('insert');
+						});
 					};
-					if (element && WikiMirrorPrivateMethod.hasClass('skin-minerva')) {
+					const wgSkin = mw.config.get('skin');
+					if (element && wgSkin === 'minerva') {
 						const ComHead = `<li class="toggle-list-item" id="${ID}"><a class="toggle-list-item__anchor" title="`;
 						const ComAnd =
 							'"><span class="minerva-icon minerva-icon--wikimirror-darkmode"></span><span class="toggle-list-item__label">';
 						const ComFoot = '</span></a></li>';
 						if (isDarkMode) {
-							element.insertAdjacentHTML('beforeend', `${ComHead}${LightTip}${ComAnd}${Light}${ComFoot}`);
+							element.insertAdjacentHTML('beforeend', ComHead + LightTip + ComAnd + Light + ComFoot);
 						} else if (isLightMode) {
-							element.insertAdjacentHTML('beforeend', `${ComHead}${DarkTip}${ComAnd}${Dark}${ComFoot}`);
+							element.insertAdjacentHTML('beforeend', ComHead + DarkTip + ComAnd + Dark + ComFoot);
 						}
 						click();
-					} else if (
-						document.querySelector('#p-tb') ||
-						WikiMirrorPrivateMethod.hasClass('skin-apioutput') ||
-						WikiMirrorPrivateMethod.hasClass('skin-nostalgia')
-					) {
-						const portletId =
-							WikiMirrorPrivateMethod.hasClass('skin-apioutput') ||
-							WikiMirrorPrivateMethod.hasClass('skin-nostalgia')
-								? 'mw-content-text'
-								: 'p-tb';
+					} else if (['apioutput', 'nostalgia'].includes(wgSkin) || jQuery('#p-tb').length) {
+						const portletId = ['apioutput', 'nostalgia'].includes(wgSkin) ? 'mw-content-text' : 'p-tb';
 						mw.loader.using('mediawiki.util').then(() => {
 							if (isDarkMode) {
 								click(mw.util.addPortletLink(portletId, '#', Light, ID, LightTip));
@@ -1421,16 +1366,18 @@
 				}
 			}
 		}
-		async diffLink(ids) {
+		diffLink(ids) {
+			if (!ids) {
+				return;
+			}
+			const isMobileDiff = jQuery(document.body).hasClass('mw-special-MobileDiff');
+			const isRevisionPage =
+				(jQuery('#contentSub').find('#mw-revision-nav').length ||
+					jQuery('main#content>.pre-content #mw-revision-nav').length) > 0;
+			const wgSkin = mw.config.get('skin');
 			if (
-				!ids ||
-				!(
-					document.querySelector('#p-cactions') ||
-					document.querySelector('#p-tb') ||
-					WikiMirrorPrivateMethod.hasClass('skin-nostalgia') ||
-					WikiMirrorPrivateMethod.hasClass('mw-special-MobileDiff')
-				) ||
-				!(document.querySelector('#mw-revision-nav') || WikiMirrorPrivateMethod.hasClass('diff', 'table'))
+				!(isMobileDiff || wgSkin === 'nostalgia' || jQuery('#p-cactions').length || jQuery('#p-tb').length) ||
+				!(isRevisionPage || jQuery('table').hasClass('diff'))
 			) {
 				return;
 			}
@@ -1439,14 +1386,14 @@
 				return this.messages.diffLink[key] || key;
 			};
 			let portletId = 'p-cactions';
-			if (WikiMirrorPrivateMethod.hasClass('mw-special-MobileDiff')) {
+			if (isMobileDiff) {
 				portletId = 'mw-mf-diffarea';
-			} else if (WikiMirrorPrivateMethod.hasClass('skin-nostalgia')) {
+			} else if (wgSkin === 'nostalgia') {
 				portletId = 'mw-content-text';
-			} else if (WikiMirrorPrivateMethod.hasClass('skin-minerva')) {
+			} else if (wgSkin === 'minerva') {
 				portletId = 'p-tb';
 			}
-			const ins = async ({text, tooltip, link, isPermaLink}) => {
+			const addPortletLink = async ({text, tooltip, link, isPermaLink}) => {
 				let element = document.querySelector(`#${ID}`)?.querySelector('a');
 				if (!element) {
 					await mw.loader.using('mediawiki.util');
@@ -1462,7 +1409,10 @@
 						);
 					}
 				}
-				element.onclick = async (event) => {
+				if (this.diffLinkClickListener) {
+					this.diffLinkClickListener.remove();
+				}
+				const clickListener = async (event) => {
 					event.preventDefault();
 					await mw.loader.using(['mediawiki.widgets', 'oojs-ui-windows']);
 					const $element = jQuery('<div>');
@@ -1487,53 +1437,56 @@
 						});
 					}
 				};
+				this.diffLinkClickListener = WikiMirrorPrivateMethod.addEventListenerWithRemover({
+					target: element,
+					type: 'click',
+					listener: clickListener,
+				});
+			};
+			const buildLink = (_oldId, _diffId) => {
+				let link = 'Special:Diff/';
+				if (_oldId) {
+					link += `${_oldId}/`;
+				}
+				link += _diffId;
+				addPortletLink({
+					text: t('Diff'),
+					tooltip: t('CopyDiff'),
+					link,
+				});
+			};
+			const compareWithRemoteDiffId = async (_diffId) => {
+				await mw.loader.using('mediawiki.api');
+				const api = new mw.Api();
+				const parameters = {
+					action: 'compare',
+					format: 'json',
+					formatversion: '2',
+					prop: 'ids',
+					fromrev: _diffId,
+					torelative: 'prev',
+				};
+				try {
+					const response = await api.get(parameters);
+					if (
+						diffId === mw.config.get('wgDiffNewId') &&
+						response['compare']?.fromrevid === mw.config.get('wgDiffOldId')
+					) {
+						buildLink(0);
+					}
+				} catch (error) {
+					console.error('WikiMirror DiffLink ajax error:', error);
+					this.showNetworkErrorNotice();
+				}
 			};
 			const {diffId, oldId, revisionId} = ids;
 			if (diffId) {
-				const buildLink = (_oldId, link = 'Special:Diff/') => {
-					if (_oldId) {
-						link += `${_oldId}/`;
-					}
-					link += diffId;
-					ins({
-						text: t('Diff'),
-						tooltip: t('CopyDiff'),
-						link,
-					});
-				};
 				buildLink(oldId);
 				if (oldId) {
-					await mw.loader.using('mediawiki.api');
-					const api = new mw.Api();
-					const parameters = {
-						action: 'compare',
-						format: 'json',
-						formatversion: '2',
-						prop: 'ids',
-						fromrev: diffId,
-						torelative: 'prev',
-					};
-					try {
-						const response = await api.get(parameters);
-						if (
-							diffId === WikiMirrorPrivateMethod.getConf('wgDiffNewId') &&
-							response['compare']?.fromrevid === WikiMirrorPrivateMethod.getConf('wgDiffOldId')
-						) {
-							buildLink(0);
-						}
-					} catch (error) {
-						console.error('WikiMirror DiffLink ajax error:', error);
-						this.showNetworkErrorNotice();
-					}
+					compareWithRemoteDiffId(diffId);
 				}
-			} else if (
-				revisionId &&
-				[
-					document.querySelector('#contentSub')?.querySelectorAll('#mw-revision-nav').length,
-					document.querySelectorAll('main#content>.pre-content #mw-revision-nav').length,
-				].includes(1)
-			) {
-				ins({
+			} else if (revisionId && isRevisionPage) {
+				addPortletLink({
 					text: t('Permanent'),
 					tooltip: t('CopyPermanent'),
 					link: `Special:PermaLink/${revisionId}`,
@@ -1542,7 +1495,7 @@
 			}
 		}
 		static disableAnonEdit() {
-			if (WikiMirrorPrivateMethod.getConf('wgUserName')) {
+			if (mw.config.get('wgUserName')) {
 				return;
 			}
 			mw.hook('wikipage.editform').add(($editForm) => {
@@ -1568,11 +1521,8 @@
 			}
 		}
 		async floatTOC() {
-			if (
-				WikiMirrorPrivateMethod.hasClass('skin-minerva') ||
-				WikiMirrorPrivateMethod.hasClass('skin-vector-2022') ||
-				WikiMirrorPrivateMethod.getConf('wgAction') !== 'view'
-			) {
+			const wgSkin = mw.config.get('skin');
+			if (['minerva', 'vector-2022'].includes(wgSkin) || mw.config.get('wgAction') !== 'view') {
 				return;
 			}
 			const ID = 'wikimirror-floattoc';
@@ -1659,9 +1609,7 @@
 				event.preventDefault();
 				jQuery('html, body').animate(
 					{
-						scrollTop: WikiMirrorPrivateMethod.hasClass('skin-timeless')
-							? `${anchorOffset.top - 60}px`
-							: `${anchorOffset.top}px`,
+						scrollTop: wgSkin === 'timeless' ? `${anchorOffset.top - 60}px` : `${anchorOffset.top}px`,
 					},
 					{
 						duration: 660,
@@ -1833,11 +1781,11 @@
 		}
 		async viewOnOtherWikis() {
 			if (
-				WikiMirrorPrivateMethod.getConf('wgDiffNewId') ||
-				WikiMirrorPrivateMethod.getConf('wgIsRedirect') ||
-				WikiMirrorPrivateMethod.getConf('wgAction') !== 'view' ||
-				WikiMirrorPrivateMethod.getConf('wgDBname') !== 'zhwiki' ||
-				WikiMirrorPrivateMethod.getConf('wgNamespaceNumber') !== 0
+				mw.config.get('wgDiffNewId') ||
+				mw.config.get('wgIsRedirect') ||
+				mw.config.get('wgAction') !== 'view' ||
+				mw.config.get('wgDBname') !== 'zhwiki' ||
+				mw.config.get('wgNamespaceNumber') !== 0
 			) {
 				return;
 			}
@@ -1846,7 +1794,7 @@
 				return this.messages.viewOnOtherWikis[key] || key;
 			};
 			const hosts = {Moegirl: 'https://zh.moegirl.org.cn', Qiuwen: 'https://www.qiuwenbaike.cn'};
-			const wgTitle = WikiMirrorPrivateMethod.getConf('wgTitle');
+			const wgTitle = mw.config.get('wgTitle');
 			const checkTimeout = (_pageStatus) => {
 				const {timestamp} = _pageStatus;
 				if (!timestamp) {
@@ -1869,10 +1817,10 @@
 			};
 			const notify = ({site: currentSite, title, path}) => {
 				const headerElement = document.querySelector('.mw-first-heading')?.firstChild;
-				const pageTitle = headerElement?.textContent ?? wgTitle;
+				const pageTitle = headerElement?.textContent || wgTitle;
 				const message = t(currentSite)
 					.replace('$1', pageTitle)
-					.replace('$2', `${hosts[currentSite]}${path}`)
+					.replace('$2', hosts[currentSite] + path)
 					.replace('$3', title);
 				this.showNotice(message, {
 					autoHide: true,
@@ -1997,14 +1945,10 @@
 				if (checkReady()) {
 					resolve(true);
 				} else {
-					WikiMirrorPrivateMethod.addEventListener({
-						target: document,
-						type: 'readystatechange',
-						listener() {
-							if (checkReady()) {
-								resolve(true);
-							}
-						},
+					document.addEventListener('readystatechange', () => {
+						if (checkReady()) {
+							resolve(true);
+						}
 					});
 				}
 			});
@@ -2031,7 +1975,7 @@
 				}, 10);
 			});
 		}
-		static addEventListener({target, type, listener, options = {}}) {
+		static addEventListenerWithRemover({target, type, listener, options = {}}) {
 			target.addEventListener(type, listener, options);
 			return {
 				remove: () => {
@@ -2284,19 +2228,11 @@
 						}
 						element.href = value;
 						element.rel = 'stylesheet';
-						WikiMirrorPrivateMethod.addEventListener({
-							target: element,
-							type: 'load',
-							listener() {
-								resolve();
-							},
+						element.addEventListener('load', () => {
+							resolve();
 						});
-						WikiMirrorPrivateMethod.addEventListener({
-							target: element,
-							type: 'error',
-							listener() {
-								reject();
-							},
+						element.addEventListener('error', () => {
+							reject();
 						});
 						document.head.append(element);
 					});
@@ -2318,19 +2254,11 @@
 				if (method === 'defer') {
 					element.defer = true;
 				}
-				WikiMirrorPrivateMethod.addEventListener({
-					target: element,
-					type: 'load',
-					listener() {
-						resolve();
-					},
+				element.addEventListener('load', () => {
+					resolve();
 				});
-				WikiMirrorPrivateMethod.addEventListener({
-					target: element,
-					type: 'error',
-					listener() {
-						reject();
-					},
+				element.addEventListener('error', () => {
+					reject();
 				});
 				document.head.append(element);
 			});
@@ -2506,7 +2434,7 @@
 					if (getURL.host === `xtools-api.${this.DOMAIN}`) {
 						getURL.pathname = this.getRealText(getURL.pathname);
 					}
-					const urlWithPath = `${getURL.host}${getURL.pathname}`;
+					const urlWithPath = getURL.host + getURL.pathname;
 					if (this.REGEXPS.xtools_api.test(urlWithPath)) {
 						const path = this.getRealText(getURL.pathname);
 						getURL.host = `xtools-api.${this.DOMAIN}`;
@@ -2656,7 +2584,7 @@
 					for (const element of elementObject.element.querySelectorAll('a,rev,text')) {
 						element.innerHTML = this.getRealText(element.innerHTML);
 					}
-					response.response = `${elementObject.dec}${elementObject.dtd}${elementObject.element.outerHTML}`;
+					response.response = elementObject.dec + elementObject.dtd + elementObject.element.outerHTML;
 				} else if (responseUrl.includes('/w/index.php')) {
 					if (responseUrl.includes('action=render')) {
 						const {element} = parseHtmlString(responseText);
@@ -2673,7 +2601,7 @@
 					responseUrl.includes('/api/rest_v1/transform/wikitext/to/mobile-html')
 				) {
 					const elementObject = parseHtmlString(responseText);
-					response.response = `${elementObject.dtd}${this.getRealText(elementObject.element.outerHTML)}`;
+					response.response = elementObject.dtd + this.getRealText(elementObject.element.outerHTML);
 				} else if (responseUrl.includes('/api/rest_v1/transform/html/to/wikitext')) {
 					response.response = this.getRealText(responseText);
 				} else if (responseUrl.includes(`xtools-api.${this.DOMAIN}`) && responseUrl.includes('format=html')) {
@@ -3125,7 +3053,7 @@
 						}
 						if (_body) {
 							try {
-								JSON.parse(`${_body}`);
+								JSON.parse(_body.toString());
 								_options.body = privateMethod.ahCallback_Request({
 									body: _body,
 								}).body;
