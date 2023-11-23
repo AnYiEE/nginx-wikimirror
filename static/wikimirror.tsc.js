@@ -1480,7 +1480,7 @@
 						diffId === mw.config.get('wgDiffNewId') &&
 						response['compare']?.fromrevid === mw.config.get('wgDiffOldId')
 					) {
-						buildLink(0);
+						buildLink(0, _diffId);
 					}
 				} catch (error) {
 					console.error('WikiMirror DiffLink ajax error:', error);
@@ -1489,7 +1489,7 @@
 			};
 			const {diffId, oldId, revisionId} = ids;
 			if (diffId) {
-				buildLink(oldId);
+				buildLink(oldId, diffId);
 				if (oldId) {
 					compareWithRemoteDiffId(diffId);
 				}
