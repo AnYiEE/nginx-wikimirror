@@ -175,8 +175,8 @@
 						return;
 					}
 					const surroundTexts = (node, emoji) => {
-						const {parentNode, nodeValue: _nodeValue} = node;
-						if (!_nodeValue || !parentNode) {
+						const {nodeName, parentNode, nodeValue: _nodeValue} = node;
+						if (nodeName === '#comment' || !_nodeValue || !parentNode) {
 							return;
 						}
 						const startIndex = _nodeValue.indexOf(emoji);
@@ -1676,18 +1676,16 @@
 				}
 				return _preNotification;
 			};
-			if ('IntersectionObserver' in window) {
-				const observerCallback = async (entries) => {
-					const [entry] = entries;
-					if (!entry) {
-						return;
-					}
-					const {intersectionRatio} = entry;
-					preNotification = await toggleToc(intersectionRatio === 0, preNotification);
-				};
-				const intersectionObserver = new IntersectionObserver(observerCallback);
-				intersectionObserver.observe(originToc);
-			}
+			const observerCallback = async (entries) => {
+				const [entry] = entries;
+				if (!entry) {
+					return;
+				}
+				const {intersectionRatio} = entry;
+				preNotification = await toggleToc(intersectionRatio === 0, preNotification);
+			};
+			const intersectionObserver = new IntersectionObserver(observerCallback);
+			intersectionObserver.observe(originToc);
 			const $originTocItem = jQuery(originToc).find('a');
 			$originTocItem.on('click', smoothScroll);
 			$originTocItem.on('keydown', smoothScroll);
